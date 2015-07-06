@@ -1,0 +1,67 @@
+<!doctype html>
+<!--
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <title>GDG Suzhou</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="components/webcomponentsjs/webcomponents.js"></script>
+  
+  <link rel="stylesheet" href="theme.css" shim-shadowdom>
+  
+  <link rel="import" href="components/font-roboto/roboto.html">
+  <!--<link rel="import" href="components/topeka-elements/topeka-leaderboard.html">-->
+  <link rel="import" href="elements/gdg-topeka-leaderboard.html">
+  
+</head>
+<body unresolved>
+
+  <template is="auto-binding">
+
+    <img src="img/generico_v2.png" alt="" id="fundo" />
+    <h1></h1>
+    
+    <div id="begin">
+    
+    	<input type="button" id="pickerButton" style="display: none" value="Choose Spreadsheet"/>
+    	<input type="button" id="authorizeButton" style="display: none" value="Authorize" />
+    
+    	<span id="planilha"></span>
+    
+    </div>
+    <div id="checkin">
+    	<label>
+    		mostre o QRCode para a webcam ou digite seu e-mail informado no cadastro e pressione &lt;ENTER&gt;
+    		<!-- show the QRCode or type your e-mail and press ENTER -->
+    	</label>
+    	<input type="text" id="txtEmail" placeholder="informe seu e-mail e pressione &lt;ENTER&gt; ou mostre o QRCode"></input>
+    	<video id="v" autoplay></video>
+    </div>
+    <div id="result">
+    
+    </div>
+    
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link href='css/main.css' rel='stylesheet' type='text/css'>
+    
+    
+    <canvas id="qr-canvas" width="800" height="600" style="display: none;"></canvas>
+    <div id="outdiv"></div>
+    
+    <h2>Desenvolvido pelo GDG São Paulo - Setembro/2013 <a href="#" target="_blank"><span><!-- # of checked attendees/total --></span></a></h2>
+
+  
+  </template>
+  
+</body>
+</html>

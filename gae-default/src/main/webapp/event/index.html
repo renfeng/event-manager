@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>GDG Event Management</title>
+
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!--<link rel="shortcut icon" href="favicon.ico" />-->
+    <!--<link rel="icon" sizes="196x196" href="icons/icon-196.png" />-->
+    <!--<link rel="apple-touch-icon" sizes="152x152" href="icons/iPad@2x.png" />-->
+    <!--<link rel="apple-touch-icon" sizes="144x144" href="icons/Icon-72@2x.png" />-->
+    <!--<link rel="apple-touch-icon" sizes="120x120" href="icons/iPhone@2x.png" />-->
+  
+    <meta name="application-name" content="GDG Event Management" />
+  
+    <!--
+    Chrome 35 has old :host behavior before :host-context addition.
+    Since Chrome 35 does not have HTMLImports, we can use this as a decent signal
+    to force the ShadowDOM Polyfill.
+    -->
+    <script>
+      if (!('import' in document.createElement('link'))) {
+        var Platform = {flags: {shadow: true}};
+      }
+    </script>
+
+    <!-- 1. Load platform support before any code that touches the DOM. -->
+    <script src="../components/webcomponentsjs/webcomponents.min.js"></script>
+
+    <!-- 2. Load the component using an HTML Import -->
+    <link rel="import" href="../components/font-roboto/roboto.html" />
+    <link rel="import" href="../components/core-scaffold/core-scaffold.html" />
+    <link rel="import" href="../components/core-menu/core-menu.html" />
+    <link rel="import" href="../components/core-item/core-item.html" />
+    <link rel="import" href="../components/paper-input/paper-input-decorator.html" />
+
+    <style shim-shadowdom>
+      html,body {
+        height: 100%;
+        margin: 0;
+        background-color: #E5E5E5;
+        font-family: 'RobotoDraft', sans-serif;
+      }
+      core-header-panel {
+        height: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      paper-checkbox {
+        padding: 20px;
+      }
+    </style>
+
+    <script>
+      function validateEventId1() {
+        /*
+         * TODO onchange is not triggered
+         * https://www.polymer-project.org/0.5/docs/elements/paper-input-decorator.html
+         */
+        console.log(1);
+        $.eventIdValidator.validate;
+      }
+    </script>
+
+  </head>
+  <body>
+    <template is="auto-binding">
+      <core-scaffold>
+        <core-header-panel navigation flex>
+          <core-toolbar>GDG Event Management</core-toolbar>
+          <core-menu theme="core-light-theme">
+            <core-item icon="settings" label="My Events"></core-item>
+            <core-item icon="settings" label="item2"></core-item>
+          </core-menu>
+        </core-header-panel>
+        <div tool>Title</div>
+        <div style="padding: 1em;">
+          <paper-input-decorator id="eventIdValidator" floatingLabel
+              label="Event ID" 
+              error="Must be a 16-digit, e.g. 6721468938321920 as in https://developers.google.com/events/6721468938321920/" 
+              isInvalid="{{!$.eventId.validity.valid}}">
+            <input id="eventId" is="core-input" required pattern="^[0-9]{16}$"
+              onchange="{{validateEventId}}">
+          </paper-input-decorator>
+          <paper-input-decorator id="spreadsheetKeyValidator" floatingLabel
+              label="Spreadsheet key" 
+              error="Must be a 44 characters, e.g. 1YkctjcHKhVoj_G0HzBYMKrCY2jZKilrYcjVt-7zpo9A as in https://docs.google.com/spreadsheets/d/1YkctjcHKhVoj_G0HzBYMKrCY2jZKilrYcjVt-7zpo9A/edit#gid=187918259" 
+              isInvalid="{{!$.spreadsheetKey.validity.valid}}">
+            <input id="spreadsheetKey" is="core-input" required pattern="^[0-9a-zA-Z_-]{44}$">
+          </paper-input-decorator>
+          <paper-input-decorator id="spreadsheetGridIdValidator" floatingLabel
+              label="Spreadsheet grid ID (optional if there is only one worksheet)" 
+              error="Must be a 9-digit, e.g. 187918259 as in https://docs.google.com/spreadsheets/d/1YkctjcHKhVoj_G0HzBYMKrCY2jZKilrYcjVt-7zpo9A/edit#gid=187918259" 
+              isInvalid="{{!$.spreadsheetGridId.validity.valid}}">
+            <input id="spreadsheetGridId" is="core-input" pattern="^[0-9]{9}$">
+          </paper-input-decorator>
+        </div>
+      </core-scaffold>
+    </template>
+  </body>
+</html>

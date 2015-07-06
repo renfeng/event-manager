@@ -1,0 +1,32 @@
+<link rel="import" href="../components/paper-button/paper-button.html">
+<link rel="import" href="../components/core-ajax/core-ajax.html">
+
+<polymer-element name="gdg-organizer-check-in" vertical layout>
+  <template>
+    <core-ajax id="checkin" auto url="/organizer-check-in" handleAs="text" on-core-response="{{handleResponse}}"></core-ajax>
+    <p>
+      Client IP: <span>{{clientIp}}</span>
+    </p>
+    <paper-button on-tap="{{checkIn}}">Check In</paper-button>
+  </template>
+  <script>
+  (function() {
+  
+    Polymer('gdg-organizer-check-in', {
+      clientIp: "sdf",
+      // computed: {
+      //   clientIp: "response"
+      // },
+      ready: function() {
+      },
+      checkIn: function() {
+        console.log("check in");
+      },
+      handleResponse: function() {
+        this.clientIp = this.$.checkin.response;
+      }
+    });
+  
+  })();
+  </script>
+</polymer-element>

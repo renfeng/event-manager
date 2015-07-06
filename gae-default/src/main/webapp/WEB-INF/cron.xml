@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://developers.google.com/appengine/docs/java/config/cron -->
+<!-- https://developers.google.com/appengine/docs/java/config/cron#Java_appengine_web_xml_The_schedule_format -->
+<!-- https://googleappengine.googlecode.com/svn-history/r109/trunk/java/docs/cron.xsd -->
+<!-- xmlns="/home/renfeng/.m2/repository/com/google/appengine/appengine-java-sdk/1.8.9/appengine-java-sdk/appengine-java-sdk-1.8.9/docs/cron.xsd" -->
+<cronentries>
+
+    <!-- A cron job will invoke a URL, using an HTTP GET request, at a given
+        time of day. An HTTP request invoked by cron can run for up to 10 minutes,
+        but is subject to the same limits as other HTTP requests. -->
+    <!-- Free applications can have up to 20 scheduled tasks. Paid applications
+        can have up to 100 scheduled tasks. -->
+
+    <cron>
+        <url>/cron/refresh-ranking</url>
+        <schedule>every 24 hours</schedule>
+        <target>${appengine.app.version}.${appengine.module.ranking}</target>
+    </cron>
+
+</cronentries>

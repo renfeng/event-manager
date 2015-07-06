@@ -1,0 +1,8 @@
+# copy this file as message.properties, and update the values: refreshToken, clientId, and clientSecret
+title=hello
+loading=loading...
+appengine.app.version=${appengine.app.version}
+appengine.module.ranking=${appengine.module.ranking}
+refreshToken=<put your refresh token here>
+clientId=<put your client id here>
+clientSecret=<put your client secret here>

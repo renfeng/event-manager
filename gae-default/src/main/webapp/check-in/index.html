@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+    <title>GDG self-checkin</title>
+    <!-- Roboto commented due to slow internet connection -->
+    <!--<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>-->
+    <link href='css/main.css' rel='stylesheet' type='text/css'/>
+    <script src="js/jquery-1.10.1.min.js"></script>
+    <script src="js/DYMO.Label.Framework.latest.js" type="text/javascript" charset="UTF-8"></script>
+    <script src="js/llqrcode.js"></script>
+    <script src="js/webqr.js"></script>
+    <script type="text/javascript">
+        var printers = null;
+        var label_loaded = false;
+    
+        var tmrShowCheckin = null;
+    
+        $(document).ready(function(){
+    
+            console.log('document ready')
+    
+            printers = dymo.label.framework.getPrinters();
+            loadLabelFromWeb();
+    
+            if(isCanvasSupported())  {
+                initCanvas(800,600);
+                qrcode.callback = function(a) {
+                    validateAttendee(a, true);
+                };
+            }
+    
+            console.log("attendee list completed!");
+            setwebcam();
+            $("#begin").fadeOut();
+            showCheckin();
+        });
+    
+        function printLabel(name, number) {
+    
+            if (printers.length == 0 || !label) return;
+    
+            label.setObjectText("name", name);
+            label.setObjectText("number", number);
+    
+            label.print(printers[0].name);
+        }
+    
+        function loadLabelFromWeb() {    
+            $.get("/api/label", function(labelXml) {
+                label = dymo.label.framework.openLabelXml(labelXml);
+                label_loaded = true;
+            }, "text");
+        }
+    
+        function validateAttendee(id, isLocal) {
+            /*
+             * prompt processing
+             */
+            $("#outdiv").show();
+            /*
+             * ask server for validation
+             */
+            try {
+                $.ajax({
+                    url: "/api/check-in",
+                    type: "POST",
+                    dataType: "json",
+                    data: { "uuid": id},
+                    success: function(data, textStatus, jqXHR) {
+                        console.log( "Data Loaded: ", data );
+                        if (!data.error) {
+                            if (isLocal) {
+                                printLabel(data.name, data.number);
+
+                                $("#checkin").fadeOut(function() {
+                                    $("#result").empty().append("" + data.name + ", 欢迎参加 GDG Suzhou 的活动!").fadeIn(function(){
+                                        tmrShowCheckin = setTimeout(showCheckin, 2000);
+                                    });
+                                })
+                            }
+                            // checkAttendee(data.email);
+                        } else {
+                            if (isLocal) {
+                                var mensagem = data.error;
+
+                                $("#checkin").fadeOut(function(){
+                                    $("#result").empty().append(mensagem).fadeIn(function(){
+                                        tmrShowCheckin = setTimeout(showCheckin, 3000);
+                                    });
+                                });
+                            }
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        var mensagem = "无法核实您的报名信息。请向工作人员寻求帮助。";
+                        $("#checkin").fadeOut(function(){
+                            $("#result").empty().append(mensagem).fadeIn(function(){
+                                tmrShowCheckin = setTimeout(showCheckin, 3000);
+                            });
+                        });
+                    },
+                    complete: function(jqXHR, textStatus) {
+                        $("#outdiv").hide();
+                    }
+                });
+            } catch (ex) {
+                console.log(ex);
+                var mensagem = ex;
+                $("#checkin").fadeOut(function(){
+                    $("#result").empty().append(mensagem).fadeIn(function(){
+                        tmrShowCheckin = setTimeout(showCheckin, 3000);
+                    });
+                });
+            }
+        }
+
+        function showCheckin() {
+            if (tmrShowCheckin) {
+                clearTimeout(tmrShowCheckin);
+            }
+    
+            if ($("#checkin").is(":visible")) {
+                $("#txtEmail").focus();
+                return;
+            }
+          
+            $("#result").fadeOut();
+            $("#txtEmail").val("");
+            $("#checkin").fadeIn(function(){
+                $("#txtEmail").focus();
+            });
+            captureToCanvas(); 
+        }
+    </script>
+
+</head>
+<body>
+
+<img src="/api/logo"/>
+
+<div id="checkin">
+    <label>请出示二维码，或者向工作人员咨询，以获得帮助。</label>
+    <input type="text" id="txtEmail" placeholder="请出示二维码，或者向工作人员咨询，以获得帮助。" disabled="disabled"></input>
+    <video id="v" autoplay></video>
+</div>
+
+<div id="result"></div>
+
+<canvas id="qr-canvas" width="800" height="600" style="display: none;"></canvas>
+<div id="outdiv" style="display:none;">正在验证，请稍候……</div>
+
+<h2 style="background-color: black; color: white;">GDG Suzhou, 2015</h2>
+
+</body>
+</html>
