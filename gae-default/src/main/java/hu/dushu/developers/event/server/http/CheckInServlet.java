@@ -43,7 +43,7 @@ public class CheckInServlet extends HttpServlet {
 
 	@Inject
 	public CheckInServlet(HttpTransport transport, JsonFactory jsonFactory,
-	                      SpreadsheetManager spreadsheetManager, Provider<ActiveEvent> activeEventProvider) {
+						  SpreadsheetManager spreadsheetManager, Provider<ActiveEvent> activeEventProvider) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.spreadsheetManager = spreadsheetManager;
@@ -149,6 +149,9 @@ public class CheckInServlet extends HttpServlet {
 								activeEvent.getEvent());
 			}
 
+			/*
+			 * the check-in number is determined by the order of registration
+			 */
 //			numberThreadLocal.set("001");
 			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 
@@ -170,10 +173,11 @@ public class CheckInServlet extends HttpServlet {
 				}
 			};
 			try {
-			    /*
-			     * timestamp column here is to ensure the number won't duplicate when the email is removed to
-                 * allow check-in again.
-                 */
+				/*
+				 * timestamp column here was to ensure the number won't duplicate when the email is removed to
+                 * allow check-in again. it's not a problem any more since
+                 * the check-in number is determined by the order of registration
+				 */
 				cellFeedProcessor.process(checkInResponsesURL, checkInEmailColumn, checkInTimestampColumn);
 			} catch (ServiceException e) {
 				throw new ServletException(e);

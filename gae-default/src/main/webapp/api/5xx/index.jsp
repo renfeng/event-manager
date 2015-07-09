@@ -14,4 +14,3 @@
 	generator.writeEndObject();
 	generator.flush();
 %>
-
