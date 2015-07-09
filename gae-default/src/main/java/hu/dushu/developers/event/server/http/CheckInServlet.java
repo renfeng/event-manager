@@ -232,6 +232,7 @@ public class CheckInServlet extends HttpServlet {
 		generator.writeFieldName("error");
 		generator.writeString(error);
 		generator.writeEndObject();
+		generator.flush();
 	}
 
 	@Override

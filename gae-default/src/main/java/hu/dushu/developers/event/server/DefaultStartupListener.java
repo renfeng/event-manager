@@ -39,8 +39,8 @@ public class DefaultStartupListener extends GuiceServletContextListener {
 		 */
 		logger.info("created injector");
 		injector = Guice.createInjector(Stage.DEVELOPMENT,
-				new DevelopersSharedServletModule(),
 				new DevelopersSharedModule(),
+				new DevelopersSharedServletModule(),
 				new DefaultServletModule());
 
 		super.contextInitialized(sce);

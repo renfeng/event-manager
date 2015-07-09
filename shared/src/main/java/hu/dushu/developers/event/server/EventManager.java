@@ -160,7 +160,7 @@ public class EventManager {
 			}
 		};
 		cellFeedProcessor.process(
-				"https://docs.google.com/spreadsheets/d/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/edit#gid=0",
+				DevelopersSharedModule.getMessage("metaSpreadsheet"),
 				"Group", "Activity", "Date", "Status", "URL", "nickname", "emailAddress", "phoneNumber",
 				"timestamp", "timestamp.dateFormat", "timestamp.dateFormat.locale");
 
@@ -309,7 +309,7 @@ public class EventManager {
 
 	public void updateStreakRanking(List<ParticipantStatistics> activities) throws IOException, ServiceException {
 
-		String url = "https://docs.google.com/spreadsheets/d/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/edit#gid=351625001";
+		String url = DevelopersSharedModule.getMessage("streakRanking");
 		URL listFeedUrl = spreadsheetManager.getFeedURL(url, null, Namespaces.LIST_LINK_REL);
 
 		/*
@@ -394,7 +394,7 @@ public class EventManager {
 
 	public void updateCreditRanking(List<ParticipantStatistics> activities) throws IOException, ServiceException {
 
-		String url = "https://docs.google.com/spreadsheets/d/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/edit#gid=1345071268";
+		String url = DevelopersSharedModule.getMessage("creditRanking");
 		URL listFeedUrl = spreadsheetManager.getFeedURL(url, null, Namespaces.LIST_LINK_REL);
 
 		List<ListEntry> rows = spreadsheetManager.getListEntries(url, null);

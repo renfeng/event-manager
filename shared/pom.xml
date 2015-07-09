@@ -94,52 +94,34 @@
 			<groupId>com.google.gdata</groupId>
 			<artifactId>core</artifactId>
 		</dependency>
-		<!-- TODO comment out this -->
 		<dependency>
 			<groupId>com.google.api-client</groupId>
 			<artifactId>google-api-client-appengine</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>com.google.http-client</groupId> <artifactId>google-http-client-appengine</artifactId> 
-			</dependency> -->
-		<!-- <dependency> <groupId>com.google.http-client</groupId> <artifactId>google-http-client-gson</artifactId> 
-			<version>1.19.0</version> </dependency> -->
-		<!-- <dependency> <groupId>org.json</groupId> <artifactId>json</artifactId> 
-			</dependency> -->
 
+		<!-- for extracting data from html pages on DevSite -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>com.thoughtworks.xstream</groupId>
-			<artifactId>xstream</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.saxon</groupId>
-			<artifactId>Saxon-HE</artifactId>
-		</dependency>
-
-		<!-- <dependency> <groupId>org.mozilla</groupId> <artifactId>rhino</artifactId> 
-			</dependency> -->
 
 		<!-- utils -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-		</dependency>
-		<dependency>
+		</dependency>-->
+		<!--<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
-		</dependency>
-		<dependency>
+		</dependency>-->
+		<!--<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-		</dependency>
+		</dependency>-->
 
 		<dependency>
 			<groupId>com.google.appengine</groupId>
@@ -158,7 +140,7 @@
 			<artifactId>jsr107cache</artifactId>
 		</dependency>
 
-		<!-- <dependency> <groupId>com.googlecode.objectify</groupId> <artifactId>objectify</artifactId> 
+		<!-- <dependency> <groupId>com.googlecode.objectify</groupId> <artifactId>objectify</artifactId>
 			</dependency> -->
 
 		<dependency>

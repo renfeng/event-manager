@@ -81,8 +81,8 @@
 
 	</build>
 
-	<!-- All profiles that are active by default are automatically deactivated 
-		when a profile in the POM is activated on the command line or through its 
+	<!-- All profiles that are active by default are automatically deactivated
+		when a profile in the POM is activated on the command line or through its
 		activation config. - http://maven.apache.org/guides/introduction/introduction-to-profiles.html -->
 	<profiles>
 		<profile>
@@ -121,27 +121,6 @@
 			<artifactId>event-manager-shared</artifactId>
 		</dependency>
 
-		<!-- gdata and its dependencies -->
-		<!-- <dependency> <groupId>com.moparisthebest.aptIn16</groupId> <artifactId>apt-mirror-api</artifactId> 
-			<version>0.2</version> </dependency> -->
-		<!-- <dependency> <groupId>com.google.gdata</groupId> <artifactId>core</artifactId> 
-			</dependency> -->
-		<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava-gwt</artifactId> 
-			<version>18.0</version> </dependency> -->
-
-		<!-- <dependency> <groupId>net.sourceforge.javacsv</groupId> <artifactId>javacsv</artifactId> 
-			<version>2.0</version> </dependency> -->
-
-		<dependency>
-			<groupId>com.belerweb</groupId>
-			<artifactId>pinyin4j</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.mozilla</groupId>
-			<artifactId>rhino</artifactId>
-		</dependency>
-
 		<!-- testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -155,22 +134,13 @@
 			<groupId>com.google.appengine</groupId>
 			<artifactId>appengine-api-stubs</artifactId>
 		</dependency>
-		<!--<dependency> <groupId>com.oracle</groupId> <artifactId>ojdbc14</artifactId> 
+		<!--<dependency> <groupId>com.oracle</groupId> <artifactId>ojdbc14</artifactId>
 			<version>12.1.0.2</version> <scope>test</scope> </dependency> -->
-		<!--<dependency> <groupId>org.mybatis</groupId> <artifactId>mybatis-guice</artifactId> 
+		<!--<dependency> <groupId>org.mybatis</groupId> <artifactId>mybatis-guice</artifactId>
 			<version>3.6</version> <scope>test</scope> </dependency> -->
-		<!--<dependency> <groupId>org.mybatis</groupId> <artifactId>mybatis</artifactId> 
+		<!--<dependency> <groupId>org.mybatis</groupId> <artifactId>mybatis</artifactId>
 			<version>3.3.0</version> <scope>test</scope> </dependency> -->
 
 	</dependencies>
-
-	<!-- mvn site -->
-	<reporting>
-		<plugins>
-			<!-- not supports java 7? -->
-			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>cobertura-maven-plugin</artifactId> 
-				<version>2.6</version> </plugin> -->
-		</plugins>
-	</reporting>
 
 </project>

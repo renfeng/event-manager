@@ -43,6 +43,7 @@ public class UnauthorizedServlet extends HttpServlet {
 		generator.writeFieldName("agent");
 		generator.writeString(userAgent);
 		generator.writeEndObject();
+		generator.flush();
 
 		return;
 	}

@@ -80,6 +80,7 @@ public class EventsServlet extends HttpServlet {
 		}
 
 		generator.writeEndObject();
+		generator.flush();
 
 		if (jsonp != null) {
 			resp.getWriter().print(");");
@@ -109,8 +110,6 @@ public class EventsServlet extends HttpServlet {
 		}
 
 		generator.writeEndArray();
-
-		return;
 	}
 
 	private void extractAttendees(Document document, JsonGenerator generator) throws IOException {
