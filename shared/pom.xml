@@ -148,7 +148,6 @@
 			<artifactId>guice-servlet</artifactId>
 		</dependency>
 
-
 		<!-- logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>

@@ -67,7 +67,7 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
 				<configuration>
-					<scmDirectory>../..</scmDirectory>
+					<scmDirectory>..</scmDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
