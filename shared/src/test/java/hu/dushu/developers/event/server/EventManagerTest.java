@@ -20,9 +20,11 @@ public class EventManagerTest {
 
 	@Test
 	public void test() throws IOException, ServiceException {
-//		EventManager eventManager = injector.getInstance(EventManager.class);
-//		eventManager.importContactsFromSpreadsheets();
-//		eventManager.updateRanking();
+
+		EventManager eventManager = injector.getInstance(EventManager.class);
+		eventManager.importContactsFromSpreadsheets();
+		eventManager.updateRanking();
+
 		SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy HH:mm:ss");
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+08"));
 		try {

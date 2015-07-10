@@ -20,7 +20,7 @@ This is the best way to not be broken. The Polymer team doesn't use bower in day
 
   1. Checkout topeka
   1. Make sure you have `npm` and `bower` [installed](http://bower.io/) installed.
-  1. `cd topeka` and `bower install`
+  1. `cd topeka` and `bower install --force-latest`
 
 ### Deploying the project
 
