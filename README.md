@@ -1,6 +1,6 @@
 A Guide on how to use (Work in progress)
 
-https://docs.google.com/presentation/d/1D_nGz3iRO593CQKBTHWbnKaADiv1mtESytF4HC3sz04/edit
+https://docs.google.com/presentation/d/1D_nGz3iRO593CQKBTHWbnKaADiv1mtESytF4HC3sz04/pub
 
 
 VM options for logging and proxy

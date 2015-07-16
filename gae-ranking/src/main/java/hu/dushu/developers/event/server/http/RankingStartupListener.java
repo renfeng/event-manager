@@ -1,11 +1,10 @@
-package hu.dushu.developers.server.http;
+package hu.dushu.developers.event.server.http;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.google.inject.servlet.GuiceServletContextListener;
 import hu.dushu.developers.event.server.DevelopersSharedModule;
-import hu.dushu.developers.event.server.http.DevelopersSharedServletModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,9 @@ public class RankingStartupListener extends GuiceServletContextListener {
 		 * TODO switch to production
 		 */
 		injector = Guice.createInjector(Stage.DEVELOPMENT,
-				new DevelopersSharedServletModule(), new DevelopersSharedModule());
+				new DevelopersSharedModule(),
+				new DevelopersSharedServletModule(),
+				new RankingServletModule());
 		logger.info("created injector");
 
 		super.contextInitialized(sce);
