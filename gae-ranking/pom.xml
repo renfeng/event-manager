@@ -3,7 +3,7 @@
 
 	<parent>
 		<artifactId>event-manager-parent</artifactId>
-		<groupId>hu.dushu.developers</groupId>
+		<groupId>com.google.developers</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
@@ -92,7 +92,7 @@
 				<defaultGoal>install</defaultGoal>
 			</build>
 			<properties>
-				<guice.filter>hu.dushu.developers.event.server.http.DevelopersSharedFilter</guice.filter>
+				<guice.filter>com.google.developers.event.server.http.DevelopersSharedFilter</guice.filter>
 			</properties>
 		</profile>
 		<profile>
@@ -101,7 +101,7 @@
 				<defaultGoal>install appengine:update</defaultGoal>
 			</build>
 			<properties>
-				<guice.filter>hu.dushu.developers.event.server.http.DevelopersSharedFilter</guice.filter>
+				<guice.filter>com.google.developers.event.server.http.DevelopersSharedFilter</guice.filter>
 			</properties>
 		</profile>
 		<profile>
@@ -117,7 +117,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>hu.dushu.developers</groupId>
+			<groupId>com.google.developers</groupId>
 			<artifactId>event-manager-shared</artifactId>
 		</dependency>
 	</dependencies>

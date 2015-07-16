@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
-        <groupId>hu.dushu.developers</groupId>
+        <groupId>com.google.developers</groupId>
         <artifactId>event-manager-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -85,13 +85,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>hu.dushu.developers</groupId>
+            <groupId>com.google.developers</groupId>
             <artifactId>event-manager-gae-default</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
-            <groupId>hu.dushu.developers</groupId>
+            <groupId>com.google.developers</groupId>
             <artifactId>event-manager-gae-ranking</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <type>war</type>

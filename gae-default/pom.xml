@@ -3,7 +3,7 @@
 
 	<parent>
 		<artifactId>event-manager-parent</artifactId>
-		<groupId>hu.dushu.developers</groupId>
+		<groupId>com.google.developers</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
@@ -114,7 +114,7 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>hu.dushu.developers</groupId>
+			<groupId>com.google.developers</groupId>
 			<artifactId>event-manager-shared</artifactId>
 		</dependency>
 

@@ -3,7 +3,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>hu.dushu.developers</groupId>
+	<groupId>com.google.developers</groupId>
 	<artifactId>event-manager-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
@@ -13,7 +13,7 @@
 
 	<description></description>
 
-	<url>http://developers.dushu.hu/</url>
+	<url>https://developers.google.com/</url>
 
 	<developers>
 		<developer>
@@ -22,7 +22,7 @@
 			<email>renfeng.cn@gmail.com</email>
 			<url>https://plus.google.com/+FrankR</url>
 			<organization>GDG Suzhou</organization>
-			<organizationUrl>http://developers.dushu.hu</organizationUrl>
+			<organizationUrl>https://developers.google.com</organizationUrl>
 			<timezone>+8</timezone>
 			<roles>
 				<role>Organizer</role>
@@ -352,7 +352,7 @@
 		<dependencies>
 
 			<dependency>
-				<groupId>hu.dushu.developers</groupId>
+				<groupId>com.google.developers</groupId>
 				<artifactId>event-manager-shared</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
