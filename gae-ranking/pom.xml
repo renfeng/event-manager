@@ -92,7 +92,7 @@
 				<defaultGoal>install</defaultGoal>
 			</build>
 			<properties>
-				<guice.filter>com.google.developers.event.server.http.DevelopersSharedFilter</guice.filter>
+				<guice.filter>com.google.developers.event.http.DevelopersSharedFilter</guice.filter>
 			</properties>
 		</profile>
 		<profile>
@@ -101,7 +101,7 @@
 				<defaultGoal>install appengine:update</defaultGoal>
 			</build>
 			<properties>
-				<guice.filter>com.google.developers.event.server.http.DevelopersSharedFilter</guice.filter>
+				<guice.filter>com.google.developers.event.http.DevelopersSharedFilter</guice.filter>
 			</properties>
 		</profile>
 		<profile>

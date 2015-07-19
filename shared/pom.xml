@@ -21,33 +21,6 @@
 
 	<build>
 		<defaultGoal>compile exec:java</defaultGoal>
-		<resources>
-			<resource>
-				<filtering>true</filtering>
-				<directory>src/main/resources</directory>
-				<includes>
-					<include>DescribeSpotInstanceRequestsResponse.xsl</include>
-					<include>RequestSpotInstancesResponse.xsl</include>
-					<include>DescribeInstancesResponse.xsl</include>
-					<include>message.properties</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
-		<testResources>
-			<testResource>
-				<filtering>true</filtering>
-				<directory>src/test/resources</directory>
-				<includes>
-					<include>*Response.xml</include>
-				</includes>
-			</testResource>
-			<testResource>
-				<directory>src/test/resources</directory>
-			</testResource>
-		</testResources>
 		<plugins>
 
 			<!-- phase: prepare-package -->
@@ -69,6 +42,27 @@
 			</plugin>
 
 			<!-- phase: n/a - manual -->
+			<!-- http://mojo.codehaus.org/exec-maven-plugin/usage.html -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<configuration>
+
+					<mainClass>com.google.developers.setup.Setup</mainClass>
+
+					<!-- http://mojo.codehaus.org/exec-maven-plugin/java-mojo.html#cleanupDaemonThreads -->
+					<cleanupDaemonThreads>false</cleanupDaemonThreads>
+
+					<!-- not works, http://mojo.codehaus.org/exec-maven-plugin/usage.html -->
+					<systemProperties>
+						<systemProperty>
+							<key>java.util.logging.config.file</key>
+							<value>src/main/resources/logging.properties</value>
+						</systemProperty>
+					</systemProperties>
+
+				</configuration>
+			</plugin>
 
 		</plugins>
 	</build>
@@ -100,29 +94,17 @@
 			<artifactId>google-api-client-appengine</artifactId>
 		</dependency>
 
-		<!-- for extracting data from html pages on DevSite -->
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-		</dependency>
-
 		<!-- utils -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
-		<!--<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>-->
-		<!--<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-		</dependency>-->
-		<!--<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>-->
+
+		<!-- for extracting data from html pages on DevSite -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>com.google.appengine</groupId>
@@ -140,9 +122,6 @@
 			<groupId>net.sf.jsr107cache</groupId>
 			<artifactId>jsr107cache</artifactId>
 		</dependency>
-
-		<!-- <dependency> <groupId>com.googlecode.objectify</groupId> <artifactId>objectify</artifactId>
-			</dependency> -->
 
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>

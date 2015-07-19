@@ -17,7 +17,7 @@
 	</filter-mapping>
 
 	<listener>
-		<listener-class>com.google.developers.event.server.DefaultStartupListener</listener-class>
+		<listener-class>com.google.developers.event.DefaultStartupListener</listener-class>
 	</listener>
 
 	<error-page>
