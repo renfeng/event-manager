@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class Scheduler extends ScheduledThreadPoolExecutor {
 
 	public Scheduler() {
-		super(Integer.MAX_VALUE, new DaemonThreadFactory("Developers"));
+//		super(Integer.MAX_VALUE, new DaemonThreadFactory("Developers"));
+		super(8, new DaemonThreadFactory("Developers"));
 	}
 }

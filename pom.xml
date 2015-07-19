@@ -241,6 +241,8 @@
 							<!--<jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>-->
 							<jvmFlag>-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>
 
+							<!--<jvmFlag>-Dhttps.proxyHost=localhost -Dhttps.proxyPort=8118 -Dhttp.proxyHost=localhost -Dhttp.proxyPort=8118</jvmFlag>-->
+
 							<!-- hrd -->
 							<jvmFlag>-Ddatastore.default_high_rep_job_policy_unapplied_job_pct=50</jvmFlag>
 

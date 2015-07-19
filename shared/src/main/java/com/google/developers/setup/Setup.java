@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 
 /**
  * Created by renfeng on 7/19/15.
@@ -222,6 +223,7 @@ public class Setup {
 				public Void call() throws Exception {
 
 					try {
+						logger.trace("people: " + id + "=" + email);
 						GenericUrl url = new GenericUrl(
 								"https://plus.google.com/" + id);
 
@@ -239,12 +241,15 @@ public class Setup {
 							 * with custom url
 							 */
 							filtered.put(id, email);
-							// List<String> location = (List<String>)
-							// response.getHeaders()
-							// .get("Location");
+							logger.trace("custom url: " + response.getHeaders().getLocation());
 						} else {
-							filtered.put("#" + id, email);
+//							filtered.put("#" + id, email);
+							filtered.put(id, email);
+							logger.trace("(no custom url)");
 						}
+					} catch (Exception ex) {
+						logger.error("failed to detect custom url", ex);
+//						throw ex;
 					} finally {
 						latch.countDown();
 					}
@@ -256,6 +261,7 @@ public class Setup {
 		}
 
 		latch.await();
+
 
 		return filtered;
 	}

@@ -940,20 +940,25 @@ public class ContactManager extends ServiceManager<ContactsService> {
 		 * get gplus id
 		 */
 		String gplusId = null;
-		for (Email email : entry.getEmailAddresses()) {
-			gplusId = gplusIdMap.get(email.getAddress());
-			if (gplusId != null) {
-				break;
-			}
-		}
+//		for (Email email : entry.getEmailAddresses()) {
+//			gplusId = gplusIdMap.get(email.getAddress());
+//			if (gplusId != null) {
+//				break;
+//			}
+//		}
 		if (gplusId == null) {
+			logger.info("retrieving G+ ID from Google Contacts API");
 			for (Website w : entry.getWebsites()) {
 				String href = w.getHref();
 				Website.Rel rel = w.getRel();
 				if ("Profile".equals(rel) && href.startsWith("http://www.google.com/profiles/")) {
 					gplusId = href.substring("http://www.google.com/profiles/".length());
+					logger.info("G+ ID: " + gplusId);
 					break;
 				}
+			}
+			if (gplusId == null) {
+				logger.info("G+ ID: (missing)");
 			}
 		}
 
