@@ -4,8 +4,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class Scheduler extends ScheduledThreadPoolExecutor {
 
+//	private static final int POOL_SIZE = Integer.MAX_VALUE;
+	private static final int POOL_SIZE = 8;
+
 	public Scheduler() {
-//		super(Integer.MAX_VALUE, new DaemonThreadFactory("Developers"));
-		super(8, new DaemonThreadFactory("Developers"));
+		super(POOL_SIZE, new DaemonThreadFactory("Developers"));
 	}
 }

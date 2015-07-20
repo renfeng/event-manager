@@ -8,6 +8,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.developers.MemcacheKey;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.inject.*;
 import com.google.inject.name.Names;
@@ -17,9 +18,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ResourceBundle;
 
-public class DevelopersSharedModule implements Module {
-
-	public static final String ACTIVE_EVENT_MEMCACHE = "activeEvent";
+public class DevelopersSharedModule implements Module, MemcacheKey {
 
 	@Override
 	public void configure(Binder binder) {
@@ -68,7 +67,7 @@ public class DevelopersSharedModule implements Module {
 	ActiveEvent provideActiveEvent(Provider<SpreadsheetManager> spreadsheetManagerProvider) throws IOException {
 
 		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
-		ActiveEvent activeEvent = (ActiveEvent) syncCache.get(ACTIVE_EVENT_MEMCACHE);
+		ActiveEvent activeEvent = (ActiveEvent) syncCache.get(ACTIVE_EVENT);
 		if (activeEvent == null) {
 			activeEvent = new ActiveEvent(spreadsheetManagerProvider.get());
 		}

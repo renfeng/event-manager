@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  */
 public abstract class CellFeedProcessor {
 
-	public static final Pattern cellIDPattern = Pattern.compile("R([0-9]+)C([0-9]+)");
+	private static final Pattern cellIDPattern = Pattern.compile("R([0-9]+)C([0-9]+)");
 //		Pattern titlePattern = Pattern.compile("([A-Z]+)([0-9]+)");
 
 	private final SpreadsheetManager spreadsheetManager;

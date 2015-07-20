@@ -2,6 +2,7 @@ package com.google.developers.api;
 
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
+import com.google.developers.PropertiesContant;
 import com.google.developers.event.EventActivities;
 import com.google.developers.event.EventParticipant;
 import com.google.developers.event.ParticipantStatistics;
@@ -34,7 +35,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ContactManager extends ServiceManager<ContactsService> {
+public class ContactManager extends ServiceManager<ContactsService> implements PropertiesContant {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ContactManager.class);
@@ -49,9 +50,9 @@ public class ContactManager extends ServiceManager<ContactsService> {
 
 	@Inject
 	public ContactManager(@Named("refreshToken") String refreshToken,
-	                      @Named("clientId") String clientId,
-	                      @Named("clientSecret") String clientSecret,
-	                      HttpTransport transport, JsonFactory jsonFactory) {
+						  @Named("clientId") String clientId,
+						  @Named("clientSecret") String clientSecret,
+						  HttpTransport transport, JsonFactory jsonFactory) {
 
 		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
 
@@ -286,8 +287,8 @@ public class ContactManager extends ServiceManager<ContactsService> {
 //			}
 
 				if (dirty) {
-				    /*
-				     * batch update
+					/*
+					 * batch update
 					 */
 //					contactEntry = contactEntry.update();
 //					if (emailAddress != null) {
@@ -296,8 +297,8 @@ public class ContactManager extends ServiceManager<ContactsService> {
 //					if (phoneNumber != null) {
 //						contactMap.put(phoneNumber, contactEntry);
 //					}
-                    /*
-                     * Batch requests are limited to 100 operations at a time.
+					/*
+					 * Batch requests are limited to 100 operations at a time.
 					 * https://developers.google.com/google-apps/contacts/v3/#batch_operations
 					 */
 					if (requestFeed.getEntries().size() < 100) {
@@ -717,7 +718,7 @@ public class ContactManager extends ServiceManager<ContactsService> {
 	}
 
 	private boolean addEmail(String nickname, String emailAddress,
-	                         ContactEntry entry) {
+							 ContactEntry entry) {
 
 		boolean dirty = false;
 
@@ -877,20 +878,26 @@ public class ContactManager extends ServiceManager<ContactsService> {
 
 		List<ParticipantStatistics> result = new ArrayList<>();
 
-		Map<String, String> gplusIdMap = new HashMap<>();
+		Map<String, String> peopleHaveyouGplusIdMap = new HashMap<>();
 		{
 			List<String> lines = IOUtils.readLines(
 					Thread.currentThread().getContextClassLoader().getResourceAsStream("peopleHaveyou.properties"));
 			for (String line : lines) {
-				int index = line.indexOf("=");
+				int index = line.indexOf(KEY_VALUE_DELIMITER);
 				String id = line.substring(0, index);
-				String email = line.substring(index + "=".length());
+				String email = line.substring(index + KEY_VALUE_DELIMITER.length());
 
-				if (id.startsWith("#")) {
+				if (id.startsWith(COMMENT_LINE_START)) {
 					id = id.substring(1);
 				}
+				if (email.startsWith(COMMENT_LINE_START)) {
+					email = email.substring(1);
+				}
 
-				gplusIdMap.put(email, id);
+				String oldId = peopleHaveyouGplusIdMap.put(email, id);
+				if (oldId != null && oldId.startsWith("+")) {
+					peopleHaveyouGplusIdMap.put(email, oldId);
+				}
 			}
 		}
 
@@ -910,7 +917,7 @@ public class ContactManager extends ServiceManager<ContactsService> {
 				ContactFeed.class);
 		for (ContactEntry entry : contactFeed.getEntries()) {
 			ParticipantStatistics participantStatistics = getParticipantStatistics(
-					cutoff, gplusIdMap, groupMap, entry);
+					cutoff, peopleHaveyouGplusIdMap, groupMap, entry);
 
 			logger.debug(participantStatistics.toString());
 			result.add(participantStatistics);
@@ -920,7 +927,7 @@ public class ContactManager extends ServiceManager<ContactsService> {
 	}
 
 	ParticipantStatistics getParticipantStatistics(
-			Date cutoff, Map<String, String> gplusIdMap, Map<String, String> groupMap, ContactEntry entry)
+			Date cutoff, Map<String, String> peopleHaveyouGplusIdMap, Map<String, String> groupMap, ContactEntry entry)
 			throws IOException, ServiceException {
 
 		String nickname;
@@ -929,6 +936,7 @@ public class ContactManager extends ServiceManager<ContactsService> {
 				nickname = entry.getNickname().getValue();
 			} else {
 				/*
+				 * do not use full name which is maintained manually, and for internal view only
 				 * TODO get gplus profile name
 				 */
 				nickname = "(anonymous)";
@@ -940,12 +948,12 @@ public class ContactManager extends ServiceManager<ContactsService> {
 		 * get gplus id
 		 */
 		String gplusId = null;
-//		for (Email email : entry.getEmailAddresses()) {
-//			gplusId = gplusIdMap.get(email.getAddress());
-//			if (gplusId != null) {
-//				break;
-//			}
-//		}
+		for (Email email : entry.getEmailAddresses()) {
+			gplusId = peopleHaveyouGplusIdMap.get(email.getAddress());
+			if (gplusId != null) {
+				break;
+			}
+		}
 		if (gplusId == null) {
 			logger.info("retrieving G+ ID from Google Contacts API");
 			for (Website w : entry.getWebsites()) {

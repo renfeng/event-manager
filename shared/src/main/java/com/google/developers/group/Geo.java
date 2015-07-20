@@ -8,24 +8,24 @@ import com.google.api.client.util.Key;
 public class Geo {
 
 	@Key
-	private String lat;
+	private float lat;
 
 	@Key
-	private String lng;
+	private float lng;
 
-	public String getLng() {
-		return lng;
-	}
-
-	public void setLng(String lng) {
-		this.lng = lng;
-	}
-
-	public String getLat() {
+	public float getLat() {
 		return lat;
 	}
 
-	public void setLat(String lat) {
+	public void setLat(float lat) {
 		this.lat = lat;
+	}
+
+	public float getLng() {
+		return lng;
+	}
+
+	public void setLng(float lng) {
+		this.lng = lng;
 	}
 }

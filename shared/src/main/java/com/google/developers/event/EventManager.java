@@ -330,7 +330,7 @@ public class EventManager {
 		while (rowIndex < rows.size() && activitiesIndex < activities.size()) {
 			ListEntry row = rows.get(rowIndex);
 			ParticipantStatistics p = activities.get(activitiesIndex);
-			if (updateStreakRanking(p, row)) {
+			if (updateStreakRanking(p, row, rowIndex)) {
 				logger.debug("updating streak: " + rowIndex + ", " + p);
 				row.update();
 //				BatchUtils.setBatchId(row, p.toString());
@@ -343,29 +343,33 @@ public class EventManager {
 			activitiesIndex++;
 		}
 
-		if (rowIndex < rows.size()) {
-			ListEntry row = rows.get(rowIndex);
-			do {
-				try {
-					logger.debug("deleting streak row: " + rowIndex);
-					row.delete();
-				} catch (InvalidEntryException ex) {
-					logger.warn("failed to delete streak row: " + rowIndex, ex);
-				}
+		for (int i = rowIndex; i < rows.size(); i++) {
+			ListEntry row = rows.get(i);
+			try {
+				logger.debug("deleting streak row: " + i);
+				row.delete();
+			} catch (InvalidEntryException ex) {
+				logger.warn("failed to delete streak row: " + i, ex);
+			}
+			/*
+			 * TODO batch
+			 */
 //				BatchUtils.setBatchId(row, i + "");
 //				BatchUtils.setBatchOperationType(row, BatchOperationType.DELETE);
 //				batchRequest.getEntries().add(row);
-				rowIndex++;
-			} while (rowIndex < rows.size());
 		}
 
 		while (activitiesIndex < activities.size()) {
 			ParticipantStatistics p = activities.get(activitiesIndex);
 			ListEntry row = new ListEntry();
-			if (updateStreakRanking(p, row)) {
+			if (updateStreakRanking(p, row, rowIndex)) {
 				logger.debug("inserting streak: " + activitiesIndex + ", " + p);
 				// Send the new row to the API for insertion.
 				spreadsheetManager.getService().insert(listFeedUrl, row);
+				rowIndex++;
+				/*
+				 * TODO batch
+				 */
 //				BatchUtils.setBatchId(row, p.toString());
 //				BatchUtils.setBatchOperationType(row, BatchOperationType.INSERT);
 //				batchRequest.getEntries().add(row);
@@ -375,6 +379,9 @@ public class EventManager {
 			activitiesIndex++;
 		}
 
+		/*
+		 * TODO batch
+		 */
 //		ListFeed batchResponse = spreadsheetManager.getService().batch(new URL(batchLink.getHref()), batchRequest);
 //
 //		// Check the results
@@ -403,7 +410,7 @@ public class EventManager {
 		while (rowIndex < rows.size() && activitiesIndex < activities.size()) {
 			ListEntry row = rows.get(rowIndex);
 			ParticipantStatistics p = activities.get(activitiesIndex);
-			if (updateCreditRanking(p, row)) {
+			if (updateCreditRanking(p, row, rowIndex)) {
 				logger.debug("updating credit: " + rowIndex + ", " + p);
 				row.update();
 				rowIndex++;
@@ -413,26 +420,24 @@ public class EventManager {
 			activitiesIndex++;
 		}
 
-		if (rowIndex < rows.size()) {
-			ListEntry row = rows.get(rowIndex);
-			do {
-				try {
-					logger.debug("deleting credit row: " + rowIndex);
-					row.delete();
-				} catch (InvalidEntryException ex) {
-					logger.warn("failed to delete credit row: " + rowIndex, ex);
-				}
-				rowIndex++;
-			} while (rowIndex < rows.size());
+		for (int i = rowIndex; i < rows.size(); i++) {
+			ListEntry row = rows.get(i);
+			try {
+				logger.debug("deleting credit row: " + i);
+				row.delete();
+			} catch (InvalidEntryException ex) {
+				logger.warn("failed to delete credit row: " + i, ex);
+			}
 		}
 
 		while (activitiesIndex < activities.size()) {
 			ParticipantStatistics p = activities.get(activitiesIndex);
 			ListEntry row = new ListEntry();
-			if (updateCreditRanking(p, row)) {
+			if (updateCreditRanking(p, row, rowIndex)) {
 				logger.debug("inserting credit: " + activitiesIndex + ", " + p);
 				// Send the new row to the API for insertion.
 				spreadsheetManager.getService().insert(listFeedUrl, row);
+				rowIndex++;
 			} else {
 				logger.debug("no credit to insert: " + activitiesIndex + ", " + p);
 			}
@@ -440,7 +445,7 @@ public class EventManager {
 		}
 	}
 
-	private boolean updateStreakRanking(ParticipantStatistics p, ListEntry row)
+	private boolean updateStreakRanking(ParticipantStatistics p, ListEntry row, int rowIndex)
 			throws IOException, ServiceException {
 
 		boolean dirty = false;
@@ -461,6 +466,9 @@ public class EventManager {
 
 				String gplusID = p.getGplusID();
 				if (gplusID != null) {
+					if (gplusID.startsWith("+")) {
+						gplusID = "'" + gplusID;
+					}
 					row.getCustomElements().setValueLocal("gplusID", gplusID);
 				}
 
@@ -471,6 +479,7 @@ public class EventManager {
 						ContactManager.DATE_FORMAT.format(latestStreak.getToDate()));
 
 				row.getCustomElements().setValueLocal("id", p.getContactID());
+				row.getCustomElements().setValueLocal("cardinal", rowIndex + 1 + "");
 
 				dirty = true;
 			}
@@ -479,7 +488,7 @@ public class EventManager {
 		return dirty;
 	}
 
-	private boolean updateCreditRanking(ParticipantStatistics p, ListEntry row)
+	private boolean updateCreditRanking(ParticipantStatistics p, ListEntry row, int rowIndex)
 			throws IOException, ServiceException {
 
 		boolean dirty = false;
@@ -493,6 +502,9 @@ public class EventManager {
 
 			String gplusID = p.getGplusID();
 			if (gplusID != null) {
+				if (gplusID.startsWith("+")) {
+					gplusID = "'" + gplusID;
+				}
 				row.getCustomElements().setValueLocal("gplusID", gplusID);
 			}
 
@@ -507,6 +519,7 @@ public class EventManager {
 					ContactManager.DATE_FORMAT.format(toDate));
 
 			row.getCustomElements().setValueLocal("id", p.getContactID());
+			row.getCustomElements().setValueLocal("cardinal", rowIndex + 1 + "");
 
 			dirty = true;
 		}

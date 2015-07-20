@@ -4,10 +4,11 @@ import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.developers.event.ActiveEvent;
-import com.google.developers.event.DevelopersSharedModule;
+import com.google.developers.MemcacheKey;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.SpreadsheetManager;
+import com.google.developers.event.ActiveEvent;
+import com.google.developers.event.DevelopersSharedModule;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -29,12 +30,12 @@ import java.util.Map;
  * Created by renfeng on 6/17/15.
  */
 @Singleton
-public class CheckInServlet extends HttpServlet {
+public class CheckInServlet extends HttpServlet implements MemcacheKey {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(CheckInServlet.class);
 
-	public static final String QR_CODE_COLUMN = "QR code";
+	private static final String QR_CODE_COLUMN = "QR code";
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
@@ -241,6 +242,6 @@ public class CheckInServlet extends HttpServlet {
 
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		MemcacheServiceFactory.getMemcacheService().delete(DevelopersSharedModule.ACTIVE_EVENT_MEMCACHE);
+		MemcacheServiceFactory.getMemcacheService().delete(ACTIVE_EVENT);
 	}
 }

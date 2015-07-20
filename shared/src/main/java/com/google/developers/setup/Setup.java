@@ -5,6 +5,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.appengine.labs.repackaged.org.json.JSONArray;
 import com.google.appengine.labs.repackaged.org.json.JSONException;
 import com.google.appengine.labs.repackaged.org.json.JSONObject;
+import com.google.developers.PropertiesContant;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,20 +17,19 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 
 /**
  * Created by renfeng on 7/19/15.
  */
-public class Setup {
+public class Setup implements PropertiesContant {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(Setup.class);
 
-	private static final String PEOPLE = "src/main/resources/peopleHaveyou.properties";
+	private static final String PEOPLE_PROPERTIES = "src/main/resources/peopleHaveyou.properties";
 
-	private static final String PEOPLE2_HTML = "src/site/resources/People.htm";
 	private static final String PEOPLE_HTML = "src/site/resources/peopleHaveyou.html";
+	private static final String PEOPLE_HTML_2 = "src/site/resources/peopleHaveyou2.html";
 
 	private static final HttpTransport transport = new NetHttpTransport();
 	private static final Scheduler scheduler = new Scheduler();
@@ -51,18 +51,18 @@ public class Setup {
 
 		Map<String, String> incoming = new HashMap<>();
 		extract(FileUtils.readFileToString(new File(PEOPLE_HTML)), incoming);
-		extract(FileUtils.readFileToString(new File(PEOPLE2_HTML)), incoming);
+		extract(FileUtils.readFileToString(new File(PEOPLE_HTML_2)), incoming);
 		incoming = filterCustomUrl(incoming);
 
 		{
 			Map<String, String> existing = new HashMap<>();
-			File file = new File(PEOPLE);
+			File file = new File(PEOPLE_PROPERTIES);
 			if (file.isFile()) {
 				List<String> lines = FileUtils.readLines(file);
 				for (String line : lines) {
-					int index = line.indexOf("=");
+					int index = line.indexOf(KEY_VALUE_DELIMITER);
 					String existingId = line.substring(0, index);
-					String existingEmail = line.substring(index + "=".length());
+					String existingEmail = line.substring(index + KEY_VALUE_DELIMITER.length());
 
 					/*
 					 * merge and resolve conflicts (properties file, html)
@@ -77,21 +77,22 @@ public class Setup {
 					 * a manually enabled row must start with an id different
 					 * from GPlus id
 					 */
-					if (existingId.startsWith("#")) {
+					if (existingId.startsWith(COMMENT_LINE_START)) {
 						String incomingEmail = incoming.remove(existingId);
 						if (incomingEmail == null) {
-							incomingEmail = incoming.remove(existingId
-									.substring(1));
+							String idWithCustomURL = existingId.substring(1);
+							incomingEmail = incoming.remove(idWithCustomURL);
 							if (incomingEmail != null) {
-								existingId = existingId.substring(1);
+								existingId = idWithCustomURL;
 							}
 						}
 					} else {
 						String incomingEmail = incoming.remove(existingId);
 						if (incomingEmail == null) {
-							incomingEmail = incoming.remove("#" + existingId);
+							String idWithoutCustomURL = COMMENT_LINE_START + existingId;
+							incomingEmail = incoming.remove(idWithoutCustomURL);
 							if (incomingEmail != null) {
-								existingId = "#" + existingId;
+								existingId = idWithoutCustomURL;
 							}
 						}
 					}
@@ -113,16 +114,19 @@ public class Setup {
 					int result;
 
 					String email1 = o1.getValue();
-					if (email1.startsWith("#")) {
+					if (email1.startsWith(COMMENT_LINE_START)) {
 						email1 = email1.substring(1);
 					}
 
 					String email2 = o2.getValue();
-					if (email2.startsWith("#")) {
+					if (email2.startsWith(COMMENT_LINE_START)) {
 						email2 = email2.substring(1);
 					}
 
 					result = email1.compareTo(email2);
+					if (result == 0) {
+						result = Integer.compare(o1.getKey().length(), o2.getKey().length());
+					}
 					if (result == 0) {
 						result = o1.getKey().compareTo(o2.getKey());
 					}
@@ -135,7 +139,7 @@ public class Setup {
 			for (Map.Entry<String, String> e : list) {
 				String id = e.getKey();
 				String email = e.getValue();
-				builder.append(id + "=" + email + "\n");
+				builder.append(id + KEY_VALUE_DELIMITER + email + "\n");
 			}
 
 			FileUtils.write(new File(
@@ -192,10 +196,14 @@ public class Setup {
 			logger.trace(company);
 			logger.trace(portrait);
 
-			if (email.length() == 0 && !"".equals(incoming.get(id))) {
-				continue;
+			if (email.length() > 0) {
+				String oldEmail = incoming.put(id, email);
+				if (oldEmail != null && !oldEmail.equals(email)) {
+					logger.info("replaced email for gplus id: " + id);
+					logger.info("old email: " + oldEmail);
+					logger.info("email: " + email);
+				}
 			}
-			incoming.put(id, email);
 		}
 	}
 
@@ -213,7 +221,7 @@ public class Setup {
 			final String email = e.getValue();
 
 			// if (email.length() == 0) {
-			// idEmailMap1.put("#" + id, "");
+			// idEmailMap1.put(COMMENT_LINE_START + id, "");
 			// continue;
 			// }
 
@@ -223,9 +231,8 @@ public class Setup {
 				public Void call() throws Exception {
 
 					try {
-						logger.trace("people: " + id + "=" + email);
-						GenericUrl url = new GenericUrl(
-								"https://plus.google.com/" + id);
+						logger.trace("people: " + id + KEY_VALUE_DELIMITER + email);
+						GenericUrl url = new GenericUrl("https://plus.google.com/" + id);
 
 						HttpRequest request = factory.buildGetRequest(url)
 								.setFollowRedirects(false)
@@ -238,13 +245,14 @@ public class Setup {
 						int statusCode = response.getStatusCode();
 						if (statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY) {
 							/*
-							 * with custom url
+							 * replace id with custom url
 							 */
-							filtered.put(id, email);
-							logger.trace("custom url: " + response.getHeaders().getLocation());
+//							filtered.put(id, email);
+							String location = response.getHeaders().getLocation();
+							filtered.put(location.substring("https://plus.google.com/".length()), email);
+							logger.trace("custom url: " + location);
 						} else {
-//							filtered.put("#" + id, email);
-							filtered.put(id, email);
+							filtered.put(COMMENT_LINE_START + id, email);
 							logger.trace("(no custom url)");
 						}
 					} catch (Exception ex) {
