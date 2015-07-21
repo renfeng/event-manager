@@ -373,7 +373,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 			BatchStatus status = BatchUtils.getBatchStatus(entry);
 			logger.debug(batchId + ": " + status.getCode() + " (" + status.getReason() + ")");
 			if (status.getCode() != HttpURLConnection.HTTP_OK) {
-			    /*
+				/*
 				 * map participant
 				 */
 				logger.error("failed to update: " + participantMap.get(batchId));
@@ -952,7 +952,12 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		 */
 		String gplusId = null;
 		for (Email email : entry.getEmailAddresses()) {
-			gplusId = peopleHaveyouGplusIdMap.get(email.getAddress());
+			String emailAddress = email.getAddress();
+			if (emailAddress.endsWith("@gmail.com")) {
+				emailAddress = emailAddress.substring(0, emailAddress.indexOf("@gmail.com")).replaceAll("[.]", "") +
+						"@gmail.com";
+			}
+			gplusId = peopleHaveyouGplusIdMap.get(emailAddress);
 			if (gplusId != null) {
 				break;
 			}
