@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,15 +55,17 @@ public class Setup implements PropertiesContant {
 		extract(FileUtils.readFileToString(new File(PEOPLE_HTML_2)), incoming);
 		incoming = filterCustomUrl(incoming);
 
-		{
-			Map<String, String> existing = new HashMap<>();
-			File file = new File(PEOPLE_PROPERTIES);
-			if (file.isFile()) {
-				List<String> lines = FileUtils.readLines(file);
-				for (String line : lines) {
-					int index = line.indexOf(KEY_VALUE_DELIMITER);
-					String existingId = line.substring(0, index);
-					String existingEmail = line.substring(index + KEY_VALUE_DELIMITER.length());
+		/*
+		 * merge incoming with existing
+		 */
+		Map<String, String> existing = new HashMap<>();
+		File file = new File(PEOPLE_PROPERTIES);
+		if (file.isFile()) {
+			List<String> lines = FileUtils.readLines(file);
+			for (String line : lines) {
+				int index = line.indexOf(KEY_VALUE_DELIMITER);
+				String existingId = line.substring(0, index);
+				String existingEmail = line.substring(index + KEY_VALUE_DELIMITER.length());
 
 					/*
 					 * merge and resolve conflicts (properties file, html)
@@ -77,75 +80,83 @@ public class Setup implements PropertiesContant {
 					 * a manually enabled row must start with an id different
 					 * from GPlus id
 					 */
-					if (existingId.startsWith(COMMENT_LINE_START)) {
-						String incomingEmail = incoming.remove(existingId);
-						if (incomingEmail == null) {
-							String idWithCustomURL = existingId.substring(1);
-							incomingEmail = incoming.remove(idWithCustomURL);
-							if (incomingEmail != null) {
-								existingId = idWithCustomURL;
-							}
-						}
-					} else {
-						String incomingEmail = incoming.remove(existingId);
-						if (incomingEmail == null) {
-							String idWithoutCustomURL = COMMENT_LINE_START + existingId;
-							incomingEmail = incoming.remove(idWithoutCustomURL);
-							if (incomingEmail != null) {
-								existingId = idWithoutCustomURL;
-							}
+				if (existingId.startsWith(COMMENT_LINE_START)) {
+					String incomingEmail = incoming.remove(existingId);
+					if (incomingEmail == null) {
+						String idWithCustomURL = existingId.substring(1);
+						incomingEmail = incoming.remove(idWithCustomURL);
+						if (incomingEmail != null) {
+							existingId = idWithCustomURL;
 						}
 					}
-
-					existing.put(existingId, existingEmail);
+				} else {
+					String incomingEmail = incoming.remove(existingId);
+					if (incomingEmail == null) {
+						String idWithoutCustomURL = COMMENT_LINE_START + existingId;
+						incomingEmail = incoming.remove(idWithoutCustomURL);
+						if (incomingEmail != null) {
+							existingId = idWithoutCustomURL;
+						}
+					}
 				}
+
+				existing.put(existingId, existingEmail);
 			}
+		}
 
-			existing.putAll(incoming);
+		existing.putAll(incoming);
 
-			ArrayList<Map.Entry<String, String>> list;
-			list = new ArrayList<>(existing.entrySet());
-			Collections.sort(list, new Comparator<Map.Entry<String, String>>() {
+		/*
+		 * sort by email
+		 */
+		ArrayList<Map.Entry<String, String>> list;
+		list = new ArrayList<>(existing.entrySet());
+		Collections.sort(list, new Comparator<Map.Entry<String, String>>() {
 
-				@Override
-				public int compare(Map.Entry<String, String> o1,
-								   Map.Entry<String, String> o2) {
+			@Override
+			public int compare(Map.Entry<String, String> o1,
+							   Map.Entry<String, String> o2) {
 
-					int result;
+				int result;
 
-					String email1 = o1.getValue();
-					if (email1.startsWith(COMMENT_LINE_START)) {
-						email1 = email1.substring(1);
-					}
+				String email1 = o1.getValue();
+				if (email1.startsWith(COMMENT_LINE_START)) {
+					email1 = email1.substring(1);
+				}
 
-					String email2 = o2.getValue();
-					if (email2.startsWith(COMMENT_LINE_START)) {
-						email2 = email2.substring(1);
-					}
+				String email2 = o2.getValue();
+				if (email2.startsWith(COMMENT_LINE_START)) {
+					email2 = email2.substring(1);
+				}
 
-					result = email1.compareTo(email2);
-					if (result == 0) {
+				result = email1.compareTo(email2);
+				if (result == 0) {
+					if (o1.getKey().startsWith("+") && !o2.getKey().startsWith("+")) {
+						result = -1;
+					} else if (!o1.getKey().startsWith("+") && o2.getKey().startsWith("+")) {
+						result = 1;
+					} else {
 						result = Integer.compare(o1.getKey().length(), o2.getKey().length());
 					}
-					if (result == 0) {
-						result = o1.getKey().compareTo(o2.getKey());
-					}
-
-					return result;
 				}
-			});
+				if (result == 0) {
+					result = o1.getKey().compareTo(o2.getKey());
+				}
 
-			StringBuilder builder = new StringBuilder();
-			for (Map.Entry<String, String> e : list) {
-				String id = e.getKey();
-				String email = e.getValue();
-				builder.append(id + KEY_VALUE_DELIMITER + email + "\n");
+				return result;
 			}
+		});
 
-			FileUtils.write(new File(
-					"src/main/resources/peopleHaveyou.properties"), builder
-					.toString());
+		StringBuilder builder = new StringBuilder();
+		for (Map.Entry<String, String> e : list) {
+			String id = e.getKey();
+			String email = e.getValue();
+			builder.append(id + KEY_VALUE_DELIMITER + email + "\n");
 		}
+
+		FileUtils.write(new File(
+				"src/main/resources/peopleHaveyou.properties"), builder
+				.toString());
 	}
 
 	static void extract(String html, Map<String, String> incoming) throws JSONException {
@@ -239,17 +250,22 @@ public class Setup implements PropertiesContant {
 								.setThrowExceptionOnExecuteError(false);
 
 						HttpResponse response = request.execute();
-						// String msg = IOUtils.toString(response.getContent());
-						// logger.debug(msg);
 
 						int statusCode = response.getStatusCode();
 						if (statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY) {
 							/*
-							 * replace id with custom url
+							 * save both id and custom url (path)
 							 */
-//							filtered.put(id, email);
+
+							filtered.put(id, email);
+
 							String location = response.getHeaders().getLocation();
-							filtered.put(location.substring("https://plus.google.com/".length()), email);
+							if (location.startsWith("https://plus.google.com/+")) {
+								String path = URLDecoder.decode(
+										location.substring("https://plus.google.com/+".length()), "UTF-8");
+								filtered.put("+" + path, email);
+								location = "https://plus.google.com/+" + path;
+							}
 							logger.trace("custom url: " + location);
 						} else {
 							filtered.put(COMMENT_LINE_START + id, email);
@@ -257,7 +273,6 @@ public class Setup implements PropertiesContant {
 						}
 					} catch (Exception ex) {
 						logger.error("failed to detect custom url", ex);
-//						throw ex;
 					} finally {
 						latch.countDown();
 					}
@@ -269,7 +284,6 @@ public class Setup implements PropertiesContant {
 		}
 
 		latch.await();
-
 
 		return filtered;
 	}

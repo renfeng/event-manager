@@ -17,6 +17,7 @@ public class DefaultServletModule extends ServletModule implements Path {
 		serve("/api/logo").with(LogoServlet.class);
 		serve("/api/chapters").with(ChaptersServlet.class);
 		serve("/api/events").with(EventsServlet.class);
+		serve("/api/activities").with(GPlusServlet.class);
 
 		serve(EVENTS_URL + "*").with(EventsServlet.class);
 	}

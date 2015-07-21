@@ -896,6 +896,9 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 
 				String oldId = peopleHaveyouGplusIdMap.put(email, id);
 				if (oldId != null && oldId.startsWith("+")) {
+					/*
+					 * custom url path is preferred over id
+					 */
 					peopleHaveyouGplusIdMap.put(email, oldId);
 				}
 			}
@@ -959,7 +962,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 			for (Website w : entry.getWebsites()) {
 				String href = w.getHref();
 				Website.Rel rel = w.getRel();
-				if ("Profile".equals(rel) && href.startsWith("http://www.google.com/profiles/")) {
+				if (href.startsWith("http://www.google.com/profiles/")) {
 					gplusId = href.substring("http://www.google.com/profiles/".length());
 					logger.info("G+ ID: " + gplusId);
 					break;
