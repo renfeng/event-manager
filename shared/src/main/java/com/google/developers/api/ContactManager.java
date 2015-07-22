@@ -23,6 +23,7 @@ import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -884,7 +885,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 					Thread.currentThread().getContextClassLoader().getResourceAsStream("peopleHaveyou.properties"));
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
-				String id = line.substring(0, index);
+				String id = StringEscapeUtils.unescapeJava(line.substring(0, index));
 				String email = line.substring(index + KEY_VALUE_DELIMITER.length());
 
 				if (id.startsWith(COMMENT_LINE_START)) {
@@ -954,6 +955,9 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		for (Email email : entry.getEmailAddresses()) {
 			String emailAddress = email.getAddress();
 			if (emailAddress.endsWith("@gmail.com")) {
+				/*
+				 * nomalize gmail address, e.g. change renfeng.cn@gmail.com to renfengcn@gmail.com
+				 */
 				emailAddress = emailAddress.substring(0, emailAddress.indexOf("@gmail.com")).replaceAll("[.]", "") +
 						"@gmail.com";
 			}
@@ -969,6 +973,18 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 				Website.Rel rel = w.getRel();
 				if (href.startsWith("http://www.google.com/profiles/")) {
 					gplusId = href.substring("http://www.google.com/profiles/".length());
+					logger.info("G+ ID: " + gplusId);
+					break;
+				} else if (href.startsWith("https://www.google.com/profiles/")) {
+					gplusId = href.substring("https://www.google.com/profiles/".length());
+					logger.info("G+ ID: " + gplusId);
+					break;
+				} else if (href.startsWith("https://plus.google.com/")) {
+					gplusId = href.substring("https://plus.google.com/".length());
+					logger.info("G+ ID: " + gplusId);
+					break;
+				} else if (href.startsWith("http://plus.google.com/")) {
+					gplusId = href.substring("http://plus.google.com/".length());
 					logger.info("G+ ID: " + gplusId);
 					break;
 				}

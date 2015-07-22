@@ -7,6 +7,7 @@ import com.google.appengine.labs.repackaged.org.json.JSONException;
 import com.google.appengine.labs.repackaged.org.json.JSONObject;
 import com.google.developers.PropertiesContant;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class Setup implements PropertiesContant {
 			List<String> lines = FileUtils.readLines(file);
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
-				String existingId = line.substring(0, index);
+				String existingId = StringEscapeUtils.unescapeJava(line.substring(0, index));
 				String existingEmail = line.substring(index + KEY_VALUE_DELIMITER.length());
 
 					/*
@@ -260,15 +261,17 @@ public class Setup implements PropertiesContant {
 							filtered.put(id, email);
 
 							String location = response.getHeaders().getLocation();
+							logger.trace("custom url: " + location);
 							if (location.startsWith("https://plus.google.com/+")) {
 								String path = URLDecoder.decode(
 										location.substring("https://plus.google.com/+".length()), "UTF-8");
 								filtered.put("+" + path, email);
-								location = "https://plus.google.com/+" + path;
+								logger.info("parsed g+ id: " + path);
+							} else {
+								logger.warn("failed to parse g+ id: " + location);
 							}
-							logger.trace("custom url: " + location);
 						} else {
-							filtered.put(COMMENT_LINE_START + id, email);
+							filtered.put(id, email);
 							logger.trace("(no custom url)");
 						}
 					} catch (Exception ex) {
