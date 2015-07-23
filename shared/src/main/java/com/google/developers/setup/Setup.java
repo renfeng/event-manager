@@ -157,12 +157,10 @@ public class Setup implements PropertiesContant {
 		for (Map.Entry<String, String> e : list) {
 			String id = e.getKey();
 			String email = e.getValue();
-			builder.append(id + KEY_VALUE_DELIMITER + email + "\n");
+			builder.append(StringEscapeUtils.escapeJava(id) + KEY_VALUE_DELIMITER + email + "\n");
 		}
 
-		FileUtils.write(new File(
-				"src/main/resources/peopleHaveyou.properties"), builder
-				.toString());
+		FileUtils.write(new File("src/main/resources/peopleHaveyou.properties"), builder.toString());
 	}
 
 	static void extract(String html, Map<String, String> incoming) throws JSONException {
