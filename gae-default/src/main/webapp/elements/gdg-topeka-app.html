@@ -7,8 +7,8 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../components/topeka-elements/topeka-categories.html">
-<link rel="import" href="../components/topeka-elements/topeka-category.html">
+<link rel="import" href="gdg-topeka-categories.html">
+<link rel="import" href="gdg-topeka-category.html">
 <link rel="import" href="gdg-topeka-leaderboard.html">
 <link rel="import" href="../components/topeka-elements/topeka-profile.html">
 <link rel="import" href="../components/core-drawer-panel/core-drawer-panel.html">
@@ -29,11 +29,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <span fit class="splash {{ {wide: wide} | tokenList }}" cross-fade></span>
     </div>
     
-    <topeka-categories id="categories" name="categories" user="{{user}}" allScores="{{allScores}}"
+    <gdg-topeka-categories id="categories" name="categories" user="{{user}}" allScores="{{allScores}}"
       categories="{{categories}}" category="{{category}}" wide="{{wide}}" 
-      on-core-activate="{{categorySelect}}"></topeka-categories>
+      on-core-activate="{{categorySelect}}"></gdg-topeka-categories>
   
-    <topeka-category id="category" name="category" user="{{user}}" category="{{category}}" allScores="{{allScores}}" wide="{{wide}}"></topeka-category>
+    <gdg-topeka-category id="category" name="category" user="{{user}}" category="{{category}}" allScores="{{allScores}}" wide="{{wide}}"></gdg-topeka-category>
       
     <gdg-topeka-leaderboard name="leaderboard" user="{{user}}" wide="{{wide}}" disabled="{{disableLeaderboard}}"></gdg-topeka-leaderboard>
 

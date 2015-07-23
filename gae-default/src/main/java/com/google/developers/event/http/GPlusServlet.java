@@ -8,6 +8,10 @@ import com.google.api.services.plus.model.ActivityFeed;
 import com.google.developers.api.GPlusManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -15,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by renfeng on 7/20/15.
@@ -74,13 +79,32 @@ public class GPlusServlet extends HttpServlet {
 				/*
 				 * TODO parse hash tags from content
 				 *
-				 * TODO replace +xxx? with links
+				 * TODO replace +xxx (g+ id), and hash tag with links
+				 *
+				 * "<b>Launching Google beacon platform</b><br /><br />Helping your apps work smarter: Introducing the <a rel=\"nofollow\" class=\"ot-hashtag\" href=\"https://plus.google.com/s/%23GoogleBeaconPlatform\">#GoogleBeaconPlatform</a> and the <a rel=\"nofollow\" class=\"ot-hashtag\" href=\"https://plus.google.com/s/%23Eddystone\">#Eddystone</a> BLE beacon format.\ufeff"
 				 */
+				String content = activity.getObject().getContent();
+
+				{
+					/*
+					 * extract hash tags
+					 */
+					jsonGenerator.writeFieldName("hashTags");
+					jsonGenerator.writeStartArray();
+					Document document = Jsoup.parse(content);
+					Elements hashTagAnchor = document.select("a[class=ot-hashtag]");
+					for (Element t : hashTagAnchor) {
+						String hashTag = t.text();
+						jsonGenerator.writeString(hashTag);
+					}
+					jsonGenerator.writeEndArray();
+				}
+
 				jsonGenerator.writeFieldName("content");
-				jsonGenerator.writeString(activity.getObject().getContent());
+				jsonGenerator.writeString(content);
 
 				List<Activity.PlusObject.Attachments> attachments = activity.getObject().getAttachments();
-				if (attachments!=null) {
+				if (attachments != null) {
 					Activity.PlusObject.Attachments attachment = attachments.get(0);
 					jsonGenerator.writeFieldName("attachmentName");
 					jsonGenerator.writeString(attachment.getDisplayName());
@@ -101,12 +125,16 @@ public class GPlusServlet extends HttpServlet {
 				break;
 			}
 
-			// Prepare to request the next page of activities
-			listActivities.setPageToken(activityFeed.getNextPageToken());
-
-			// Execute and process the next page request
-			activityFeed = listActivities.execute();
-			activities = activityFeed.getItems();
+			/*
+			 * TODO uncomment to load all activities
+			 */
+//			// Prepare to request the next page of activities
+//			listActivities.setPageToken(activityFeed.getNextPageToken());
+//
+//			// Execute and process the next page request
+//			activityFeed = listActivities.execute();
+//			activities = activityFeed.getItems();
+			activities = null;
 		}
 		jsonGenerator.writeEndArray();
 		jsonGenerator.flush();

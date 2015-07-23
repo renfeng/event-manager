@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../components/core-icons/core-icons.html">
 <link rel="import" href="../components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../components/core-animated-pages/core-animated-pages.html">
-<link rel="import" href="../components/firebase-element/firebase-element.html">
+<!--<link rel="import" href="../components/firebase-element/firebase-element.html">-->
 <link rel="import" href="../components/json-p/json-p.html">
 <link rel="import" href="../components/topeka-elements/theme.html">
 <link rel="import" href="../components/topeka-elements/avatars.html">
@@ -162,7 +162,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   </style>
 
-  <firebase-element id="fbLeaderboard" location="{{offline ? null : 'https://polymer-topeka.firebaseio.com/users'}}" on-data-change="{{leaderboardChange}}" data="{{leaderboard}}" limit="{{limit}}"></firebase-element>
+  <!--<firebase-element id="fbLeaderboard" location="{{offline ? null : 'https://polymer-topeka.firebaseio.com/users'}}" on-data-change="{{leaderboardChange}}" data="{{leaderboard}}" limit="{{limit}}"></firebase-element>-->
   <!-- TODO reverse proxy on ec2: dushu.hu >> google.com, *.dushu.hu >> *.google.com -->
   <json-p auto url="https://spreadsheets.dushu.hu/feeds/list/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/o5tcjjn/public/basic?alt=json-in-script"
           on-jsonp-complete="{{onStreakRankingReady}}" response="{{streakRanking}}"></json-p>

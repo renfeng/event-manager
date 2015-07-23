@@ -65,7 +65,12 @@ public class Setup implements PropertiesContant {
 			List<String> lines = FileUtils.readLines(file);
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
+				/*
+				 * java - How to convert a string with Unicode encoding to a string of letters - Stack Overflow
+				 * http://stackoverflow.com/a/14368185/333033
+				 */
 				String existingId = StringEscapeUtils.unescapeJava(line.substring(0, index));
+
 				String existingEmail = line.substring(index + KEY_VALUE_DELIMITER.length());
 
 					/*
