@@ -226,7 +226,7 @@
 					<artifactId>appengine-maven-plugin</artifactId>
 
 					<!-- <version>${appengine.target.version}</version> -->
-					<version>1.9.24</version>
+					<version>1.9.23</version>
 					<configuration>
 
 						<!-- com.google.appengine.DevAppServerRunner -->
