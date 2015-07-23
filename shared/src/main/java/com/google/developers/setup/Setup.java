@@ -62,7 +62,7 @@ public class Setup implements PropertiesContant {
 		Map<String, String> existing = new HashMap<>();
 		File file = new File(PEOPLE_PROPERTIES);
 		if (file.isFile()) {
-			List<String> lines = FileUtils.readLines(file);
+			List<String> lines = FileUtils.readLines(file, "UTF-8");
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
 				String existingId = StringEscapeUtils.unescapeJava(line.substring(0, index));
