@@ -62,7 +62,7 @@ public class Setup implements PropertiesContant {
 		Map<String, String> existing = new HashMap<>();
 		File file = new File(PEOPLE_PROPERTIES);
 		if (file.isFile()) {
-			List<String> lines = FileUtils.readLines(file, "UTF-8");
+			List<String> lines = FileUtils.readLines(file);
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
 				String existingId = StringEscapeUtils.unescapeJava(line.substring(0, index));
@@ -152,12 +152,10 @@ public class Setup implements PropertiesContant {
 		for (Map.Entry<String, String> e : list) {
 			String id = e.getKey();
 			String email = e.getValue();
-			builder.append(id + KEY_VALUE_DELIMITER + email + "\n");
+			builder.append(StringEscapeUtils.escapeJava(id) + KEY_VALUE_DELIMITER + email + "\n");
 		}
 
-		FileUtils.write(new File(
-				"src/main/resources/peopleHaveyou.properties"), builder
-				.toString());
+		FileUtils.write(new File("src/main/resources/peopleHaveyou.properties"), builder.toString());
 	}
 
 	static void extract(String html, Map<String, String> incoming) throws JSONException {

@@ -882,8 +882,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		Map<String, String> peopleHaveyouGplusIdMap = new HashMap<>();
 		{
 			List<String> lines = IOUtils.readLines(
-					Thread.currentThread().getContextClassLoader().getResourceAsStream("peopleHaveyou.properties"),
-					"UTF-8");
+					Thread.currentThread().getContextClassLoader().getResourceAsStream("peopleHaveyou.properties"));
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
 				String id = StringEscapeUtils.unescapeJava(line.substring(0, index));
