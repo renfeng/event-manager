@@ -162,8 +162,7 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
 				@Override
 				protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
-					if (valueMap.containsKey(checkInEmailColumn) &&
-							valueMap.get(checkInEmailColumn).equals(email)) {
+					if (email.equals(valueMap.get(checkInEmailColumn))) {
 						errorThreadLocal.set("Already checked in.");
 						return false;
 					}

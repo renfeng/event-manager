@@ -13,7 +13,8 @@
 
 	<cron>
 		<url>/cron/refresh-ranking</url>
-		<schedule>every 24 hours</schedule>
+		<!--<schedule>every 24 hours</schedule>-->
+		<schedule>every 60 minutes</schedule>
 		<!-- The target string is prepended to your app's hostname. It is usually the name of a module.
 		The cron job will be routed to the default version of the named module.
 		Note that if the default version of the module changes, the job will run in the new default version. -->
