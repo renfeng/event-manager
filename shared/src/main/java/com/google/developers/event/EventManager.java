@@ -11,9 +11,7 @@ import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.contacts.ContactGroupEntry;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
-import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
-import com.google.gdata.util.InvalidEntryException;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
@@ -249,24 +247,7 @@ public class EventManager {
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.YEAR, -1);
 		List<ParticipantStatistics> activities = contactManager.listActivities(calendar.getTime());
-
 		updateStreakRanking(activities);
-
-		Collections.sort(activities, new Comparator<ParticipantStatistics>() {
-			@Override
-			public int compare(ParticipantStatistics o1, ParticipantStatistics o2) {
-
-				int result = -Integer.compare(o1.getCredit(), o2.getCredit());
-				if (result == 0) {
-					result = -o1.getFromDate().compareTo(o2.getFromDate());
-					/*
-					 * TODO sort on streak on draw
-					 */
-				}
-
-				return result;
-			}
-		});
 		updateCreditRanking(activities);
 
 		/*
@@ -288,13 +269,13 @@ public class EventManager {
 			throws IOException, ServiceException {
 
 		final List<ParticipantStatistics> activitiesWithStreak = new ArrayList<>();
-		for (ParticipantStatistics s : activities) {
+		for (ParticipantStatistics p : activities) {
 			/*
 			 * it's just for distinguishing people attended at least one event from those who didn't at all,
 			 * in the last 90 days
 			 */
-			if (s.getLatestStreak() != null && s.getLatestStreak().getCount() > 0) {
-				activitiesWithStreak.add(s);
+			if (p.getLatestStreak() != null && p.getLatestStreak().getCount() > 0) {
+				activitiesWithStreak.add(p);
 			}
 		}
 
@@ -336,9 +317,6 @@ public class EventManager {
 			}
 		});
 
-		/*
-		 * TODO formula columns, hasGplus and gplus count
-		 */
 		String[] columnNames = {"nickname", "gplusID", "streak", "fromDate", "toDate", "id", "cardinal",
 				"hasGplus", "gplusCount"};
 
@@ -361,7 +339,9 @@ public class EventManager {
 		sheet = sheet.update();
 
 		long startTime = System.currentTimeMillis();
-		final CellFeed batchRequest = new CellFeed();
+		CellFeed batchRequest = new CellFeed();
+
+		final List<CellEntry> entries = batchRequest.getEntries();
 
 		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
 
@@ -384,8 +364,6 @@ public class EventManager {
 				 * it's guaranteed not to be greater than zero
 				 */
 				int count = latestStreak.getCount();
-
-				List<CellEntry> entries = batchRequest.getEntries();
 
 				String nickname = p.getNickname();
 				if (nickname != null) {
@@ -473,85 +451,139 @@ public class EventManager {
 	public void updateCreditRanking(List<ParticipantStatistics> activities)
 			throws IOException, ServiceException {
 
-		String url = DevelopersSharedModule.getMessage("creditRanking");
-
-		List<ListEntry> rows = spreadsheetManager.getListEntries(url);
-		int rowIndex = 0;
-		int activitiesIndex = 0;
-		while (rowIndex < rows.size() && activitiesIndex < activities.size()) {
-			ListEntry row = rows.get(rowIndex);
-			ParticipantStatistics p = activities.get(activitiesIndex);
-			if (updateCreditRanking(p, row, rowIndex)) {
-				logger.debug("updating credit: " + rowIndex + ", " + p);
-				row.update();
-				rowIndex++;
-			} else {
-				logger.debug("no credit to update: " + rowIndex + ", " + p);
-			}
-			activitiesIndex++;
-		}
-
-		for (int i = rowIndex; i < rows.size(); i++) {
-			ListEntry row = rows.get(i);
-			try {
-				logger.debug("deleting credit row: " + i);
-				row.delete();
-			} catch (InvalidEntryException ex) {
-				logger.warn("failed to delete credit row: " + i, ex);
+		final List<ParticipantStatistics> activitiesWithCredit = new ArrayList<>();
+		for (ParticipantStatistics p : activities) {
+			/*
+			 * it's just for distinguishing people attended at least one event from those who didn't at all,
+			 * in the last 90 days
+			 */
+			if (p.getCredit() > 0) {
+				activitiesWithCredit.add(p);
 			}
 		}
 
-//		while (activitiesIndex < activities.size()) {
-//			ParticipantStatistics p = activities.get(activitiesIndex);
-//			ListEntry row = new ListEntry();
-//			if (updateCreditRanking(p, row, rowIndex)) {
-//				logger.debug("inserting credit: " + activitiesIndex + ", " + p);
-//				// Send the new row to the API for insertion.
-//				spreadsheetManager.getService().insert(listFeedUrl, row);
-//				rowIndex++;
-//			} else {
-//				logger.debug("no credit to insert: " + activitiesIndex + ", " + p);
-//			}
-//			activitiesIndex++;
-//		}
-	}
+		Collections.sort(activitiesWithCredit, new Comparator<ParticipantStatistics>() {
+			@Override
+			public int compare(ParticipantStatistics o1, ParticipantStatistics o2) {
 
-	private boolean updateCreditRanking(ParticipantStatistics p, ListEntry row, int rowIndex)
-			throws IOException, ServiceException {
-
-		boolean dirty = false;
-
-		int credit = p.getCredit();
-		if (credit > 0) {
-			String nickname = p.getNickname();
-			if (nickname != null) {
-				row.getCustomElements().setValueLocal("nickname", nickname);
-			}
-
-			String gplusID = p.getGplusID();
-			if (gplusID != null) {
-				if (gplusID.startsWith("+")) {
-					gplusID = "'" + gplusID;
+				int result = -Integer.compare(o1.getCredit(), o2.getCredit());
+				if (result == 0) {
+					result = -o1.getFromDate().compareTo(o2.getFromDate());
+					/*
+					 * TODO sort on streak on draw
+					 */
 				}
-				row.getCustomElements().setValueLocal("gplusID", gplusID);
+
+				return result;
+			}
+		});
+
+		String[] columnNames = {"nickname", "gplusID", "credit", "fromDate", "toDate", "id", "cardinal",
+				"hasGplus", "gplusCount"};
+
+		String url = DevelopersSharedModule.getMessage("creditRanking");
+		WorksheetEntry sheet = spreadsheetManager.getWorksheet(url);
+
+		sheet.setRowCount(Math.min(activitiesWithCredit.size(), 2000000 / sheet.getColCount()));
+		sheet = sheet.update();
+
+		long startTime = System.currentTimeMillis();
+		CellFeed batchRequest = new CellFeed();
+
+		final List<CellEntry> entries = batchRequest.getEntries();
+
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+
+			int activitiesIndex = 0;
+
+			Map<String, CellEntry> cellMap = new HashMap<>();
+
+			@Override
+			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL) throws IOException, ServiceException {
+
+				ParticipantStatistics p = activitiesWithCredit.get(activitiesIndex);
+
+				int credit = p.getCredit();
+				String nickname = p.getNickname();
+				if (nickname != null) {
+					entries.add(updateCell(cellMap.get("nickname"), nickname));
+				}
+
+				String gplusID = p.getGplusID();
+				if (gplusID != null) {
+					if (gplusID.startsWith("+")) {
+						gplusID = "'" + gplusID;
+					}
+					entries.add(updateCell(cellMap.get("gplusID"), gplusID));
+				}
+
+				entries.add(updateCell(cellMap.get("credit"), credit + ""));
+				entries.add(updateCell(cellMap.get("fromDate"),
+						ContactManager.DATE_FORMAT.format(p.getFromDate())));
+				entries.add(updateCell(cellMap.get("toDate"),
+						ContactManager.DATE_FORMAT.format(p.getToDate())));
+
+				entries.add(updateCell(cellMap.get("id"), p.getContactID()));
+				entries.add(updateCell(cellMap.get("cardinal"), getRow() + ""));
+
+				entries.add(updateCell(cellMap.get("hasGplus"),
+						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")"));
+				entries.add(updateCell(cellMap.get("gplusCount"),
+						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)"));
+
+				logger.debug("updating credit: " + activitiesIndex + ", " + p);
+
+				activitiesIndex++;
+
+				cellMap = new HashMap<>();
+
+				return true;
 			}
 
-			row.getCustomElements().setValueLocal("credit", credit + "");
+			@Override
+			protected boolean processDataColumn(CellEntry cell, String columnName) {
+				cellMap.put(columnName, cell);
+				return true;
+			}
 
-			Date fromDate = p.getFromDate();
-			row.getCustomElements().setValueLocal("fromDate",
-					ContactManager.DATE_FORMAT.format(fromDate));
+			private CellEntry updateCell(CellEntry cellEntry, String value) {
 
-			Date toDate = p.getToDate();
-			row.getCustomElements().setValueLocal("toDate",
-					ContactManager.DATE_FORMAT.format(toDate));
+				CellEntry batchEntry = new CellEntry(cellEntry);
+				batchEntry.changeInputValueLocal(value);
 
-			row.getCustomElements().setValueLocal("id", p.getContactID());
-			row.getCustomElements().setValueLocal("cardinal", rowIndex + 1 + "");
+				BatchUtils.setBatchId(batchEntry, batchEntry.getId());
+				BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
 
-			dirty = true;
+				return batchEntry;
+			}
+		};
+		processor.process(sheet, columnNames);
+
+		/*
+		 * batchLink will be null for list feed
+		 */
+		URL cellFeedUrl = sheet.getCellFeedUrl();
+		SpreadsheetService ssSvc = spreadsheetManager.getService();
+		CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
+		Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
+		CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
+
+		// Check the results
+		boolean isSuccess = true;
+		for (CellEntry entry : batchResponse.getEntries()) {
+			String batchId = BatchUtils.getBatchId(entry);
+			if (!BatchUtils.isSuccess(entry)) {
+				isSuccess = false;
+				BatchStatus status = BatchUtils.getBatchStatus(entry);
+				logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
+				break;
+			}
 		}
 
-		return dirty;
+		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
+		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
+
+		sheet.setRowCount(processor.getRow());
+		sheet.update();
 	}
 }
