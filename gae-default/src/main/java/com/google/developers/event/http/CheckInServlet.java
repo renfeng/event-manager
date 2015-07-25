@@ -8,7 +8,6 @@ import com.google.developers.MemcacheKey;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
-import com.google.developers.event.DevelopersSharedModule;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -103,7 +102,7 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
 				private int number = 1;
 
 				@Override
-				protected boolean processDataRow(Map<String, String> valueMap, String rowNotation, URL cellFeedURL)
+				protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
 					String qrCode = valueMap.get(QR_CODE_COLUMN);
 					if (qrCode != null && qrCode.equals(uuid)) {
@@ -119,7 +118,9 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
 				}
 			};
 			try {
-				cellFeedProcessor.process(registerURL, registerEmailColumn, QR_CODE_COLUMN, registerNameColumn);
+				cellFeedProcessor.process(
+						spreadsheetManager.getWorksheet(registerURL),
+						registerEmailColumn, QR_CODE_COLUMN, registerNameColumn);
 			} catch (ServiceException e) {
 				throw new ServletException(e);
 			}
@@ -159,7 +160,7 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
 //				private int number = 1;
 
 				@Override
-				protected boolean processDataRow(Map<String, String> valueMap, String rowNotation, URL cellFeedURL)
+				protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
 					if (valueMap.containsKey(checkInEmailColumn) &&
 							valueMap.get(checkInEmailColumn).equals(email)) {
@@ -179,7 +180,9 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
                  * allow check-in again. it's not a problem any more since
                  * the check-in number is determined by the order of registration
 				 */
-				cellFeedProcessor.process(checkInResponsesURL, checkInEmailColumn, checkInTimestampColumn);
+				cellFeedProcessor.process(
+						spreadsheetManager.getWorksheet(checkInResponsesURL),
+						checkInEmailColumn, checkInTimestampColumn);
 			} catch (ServiceException e) {
 				throw new ServletException(e);
 			}

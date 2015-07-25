@@ -3,10 +3,16 @@ package com.google.developers.event;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.ContactManager;
 import com.google.developers.api.SpreadsheetManager;
+import com.google.gdata.client.spreadsheet.SpreadsheetService;
+import com.google.gdata.data.Link;
+import com.google.gdata.data.batch.BatchOperationType;
+import com.google.gdata.data.batch.BatchStatus;
+import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.contacts.ContactGroupEntry;
 import com.google.gdata.data.spreadsheet.CellEntry;
+import com.google.gdata.data.spreadsheet.CellFeed;
 import com.google.gdata.data.spreadsheet.ListEntry;
-import com.google.gdata.data.spreadsheet.Namespaces;
+import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.InvalidEntryException;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
@@ -84,10 +90,10 @@ public class EventManager {
 		return;
 	}
 
-	public void importContactsFromSpreadsheet(String spreadsheet, String worksheet)
+	public void importContactsFromSpreadsheet(String spreadsheet)
 			throws IOException, ServiceException, ParseException {
 
-		List<EventParticipant> participants = spreadsheetManager.getGoogleGroupsMember(spreadsheet, worksheet);
+		List<EventParticipant> participants = spreadsheetManager.getGoogleGroupsMember(spreadsheet);
 
 		contactManager.dedupeGroups();
 
@@ -113,7 +119,7 @@ public class EventManager {
 		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 
 			CellEntry statusCell = null;
-			String statusColumnNotation = null;
+			String statusColumn = null;
 
 			@Override
 			public boolean processDataColumn(CellEntry cell, String columnName) {
@@ -124,14 +130,14 @@ public class EventManager {
 			}
 
 			@Override
-			public void processHeaderColumn(String columnNotation, String columnName) {
+			public void processHeaderColumn(String column, String columnName) {
 				if ("Status".equals(columnName)) {
-					statusColumnNotation = columnNotation;
+					statusColumn = column;
 				}
 			}
 
 			@Override
-			public boolean processDataRow(Map<String, String> valueMap, String rowNotation, URL cellFeedURL)
+			public boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
 
 				/*
@@ -148,9 +154,7 @@ public class EventManager {
 						 * http://stackoverflow.com/a/12936664/333033
 						 * http://stackoverflow.com/a/30187245/333033
 						 */
-						statusCell = new CellEntry(
-								Integer.parseInt(rowNotation), Integer.parseInt(statusColumnNotation),
-								status);
+						statusCell = new CellEntry(getRow(), Integer.parseInt(statusColumn), status);
 						spreadsheetManager.getService().insert(cellFeedURL, statusCell);
 					}
 				}
@@ -160,7 +164,7 @@ public class EventManager {
 			}
 		};
 		cellFeedProcessor.process(
-				DevelopersSharedModule.getMessage("metaSpreadsheet"),
+				spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
 				"Group", "Activity", "Date", "Status", "URL", "nickname", "emailAddress", "phoneNumber",
 				"timestamp", "timestamp.dateFormat", "timestamp.dateFormat.locale");
 
@@ -246,33 +250,6 @@ public class EventManager {
 		calendar.add(Calendar.YEAR, -1);
 		List<ParticipantStatistics> activities = contactManager.listActivities(calendar.getTime());
 
-		Collections.sort(activities, new Comparator<ParticipantStatistics>() {
-			@Override
-			public int compare(ParticipantStatistics o1, ParticipantStatistics o2) {
-
-				int result;
-
-				Streak streak1 = o1.getLatestStreak();
-				Streak streak2 = o2.getLatestStreak();
-				if (streak1 == null && streak2 == null) {
-					result = 0;
-				} else if (streak1 != null && streak2 == null) {
-					result = -1;
-				} else if (streak1 == null && streak2 != null) {
-					result = 1;
-				} else {
-					result = -Integer.compare(streak1.getCount(), streak2.getCount());
-					if (result == 0) {
-						result = -streak1.getFromDate().compareTo(streak2.getFromDate());
-					}
-					/*
-					 * TODO sort on credit on draw
-					 */
-				}
-
-				return result;
-			}
-		});
 		updateStreakRanking(activities);
 
 		Collections.sort(activities, new Comparator<ParticipantStatistics>() {
@@ -307,104 +284,198 @@ public class EventManager {
 		return;
 	}
 
-	public void updateStreakRanking(List<ParticipantStatistics> activities) throws IOException, ServiceException {
+	public void updateStreakRanking(List<ParticipantStatistics> activities)
+			throws IOException, ServiceException {
 
-		String url = DevelopersSharedModule.getMessage("streakRanking");
-		URL listFeedUrl = spreadsheetManager.getFeedURL(url, null, Namespaces.LIST_LINK_REL);
+		final List<ParticipantStatistics> activitiesWithStreak = new ArrayList<>();
+		for (ParticipantStatistics s : activities) {
+			/*
+			 * it's just for distinguishing people attended at least one event from those who didn't at all,
+			 * in the last 90 days
+			 */
+			if (s.getLatestStreak() != null && s.getLatestStreak().getCount() > 0) {
+				activitiesWithStreak.add(s);
+			}
+		}
+
+		Collections.sort(activitiesWithStreak, new Comparator<ParticipantStatistics>() {
+			@Override
+			public int compare(ParticipantStatistics o1, ParticipantStatistics o2) {
+
+				int result;
+
+				Streak streak1 = o1.getLatestStreak();
+				Streak streak2 = o2.getLatestStreak();
+				/*
+				 * it's guaranteed not to be null, and greater than zero
+				 */
+//				if (streak1 == null && streak2 == null) {
+//					result = 0;
+//				} else if (streak1 != null && streak2 == null) {
+//					result = -1;
+//				} else if (streak1 == null && streak2 != null) {
+//					result = 1;
+//				} else {
+//					result = -Integer.compare(streak1.getCount(), streak2.getCount());
+//					if (result == 0) {
+//						result = -streak1.getFromDate().compareTo(streak2.getFromDate());
+//					}
+//					/*
+//					 * TODO sort on credit on draw
+//					 */
+//				}
+				result = -Integer.compare(streak1.getCount(), streak2.getCount());
+				if (result == 0) {
+					result = -streak1.getFromDate().compareTo(streak2.getFromDate());
+				}
+				/*
+				 * TODO sort on credit on draw
+				 */
+
+				return result;
+			}
+		});
 
 		/*
-		 * TODO cell batch update
+		 * TODO formula columns, hasGplus and gplus count
+		 */
+		String[] columnNames = {"nickname", "gplusID", "streak", "fromDate", "toDate", "id", "cardinal",
+				"hasGplus", "gplusCount"};
+
+		/*
+		 * Cells can be modified in place. Unlike other feeds, cells are not directly added nor deleted.
+		 * They are fixed in place, based on the dimensions of a given worksheet.
+		 * To add or remove cells from a worksheet, use the worksheets feed to change the dimension of the worksheet.
+		 * To empty a cell, simply update its value to be an empty string.
 		 *
-		 * batchLink will be null
+		 * cell batch update
 		 *
 		 * Important: Only the cells feed supports batching requests.
 		 * https://developers.google.com/google-apps/spreadsheets/#updating_multiple_cells_with_a_batch_request
 		 */
-//		long startTime = System.currentTimeMillis();
-//		ListFeed batchRequest = spreadsheetManager.getService().getFeed(listFeedUrl, ListFeed.class);
-//		Link batchLink = batchRequest.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
 
-		List<ListEntry> rows = spreadsheetManager.getListEntries(url, null);
-		int rowIndex = 0;
-		int activitiesIndex = 0;
-		while (rowIndex < rows.size() && activitiesIndex < activities.size()) {
-			ListEntry row = rows.get(rowIndex);
-			ParticipantStatistics p = activities.get(activitiesIndex);
-			if (updateStreakRanking(p, row, rowIndex)) {
-				logger.debug("updating streak: " + rowIndex + ", " + p);
-				row.update();
-//				BatchUtils.setBatchId(row, p.toString());
-//				BatchUtils.setBatchOperationType(row, BatchOperationType.UPDATE);
-//				batchRequest.getEntries().add(row);
-				rowIndex++;
-			} else {
-				logger.debug("no streak to update: " + rowIndex + ", " + p);
-			}
-			activitiesIndex++;
-		}
+		String url = DevelopersSharedModule.getMessage("streakRanking");
+		WorksheetEntry sheet = spreadsheetManager.getWorksheet(url);
 
-		for (int i = rowIndex; i < rows.size(); i++) {
-			ListEntry row = rows.get(i);
-			try {
-				logger.debug("deleting streak row: " + i);
-				row.delete();
-			} catch (InvalidEntryException ex) {
-				logger.warn("failed to delete streak row: " + i, ex);
-			}
-			/*
-			 * TODO batch
-			 */
-//				BatchUtils.setBatchId(row, i + "");
-//				BatchUtils.setBatchOperationType(row, BatchOperationType.DELETE);
-//				batchRequest.getEntries().add(row);
-		}
+		sheet.setRowCount(Math.min(activitiesWithStreak.size(), 2000000 / sheet.getColCount()));
+		sheet = sheet.update();
 
-		while (activitiesIndex < activities.size()) {
-			ParticipantStatistics p = activities.get(activitiesIndex);
-			ListEntry row = new ListEntry();
-			if (updateStreakRanking(p, row, rowIndex)) {
-				logger.debug("inserting streak: " + activitiesIndex + ", " + p);
-				// Send the new row to the API for insertion.
-				spreadsheetManager.getService().insert(listFeedUrl, row);
-				rowIndex++;
+		long startTime = System.currentTimeMillis();
+		final CellFeed batchRequest = new CellFeed();
+
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+
+			int activitiesIndex = 0;
+
+			Map<String, CellEntry> cellMap = new HashMap<>();
+
+			@Override
+			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
+					throws IOException, ServiceException {
+
+				ParticipantStatistics p = activitiesWithStreak.get(activitiesIndex);
+
 				/*
-				 * TODO batch
+				 * it's guaranteed not to be null
 				 */
-//				BatchUtils.setBatchId(row, p.toString());
-//				BatchUtils.setBatchOperationType(row, BatchOperationType.INSERT);
-//				batchRequest.getEntries().add(row);
-			} else {
-				logger.debug("no streak to insert: " + activitiesIndex + ", " + p);
+				Streak latestStreak = p.getLatestStreak();
+
+				/*
+				 * it's guaranteed not to be greater than zero
+				 */
+				int count = latestStreak.getCount();
+
+				List<CellEntry> entries = batchRequest.getEntries();
+
+				String nickname = p.getNickname();
+				if (nickname != null) {
+					entries.add(updateCell(cellMap.get("nickname"), nickname));
+				}
+
+				String gplusID = p.getGplusID();
+				if (gplusID != null) {
+					if (gplusID.startsWith("+")) {
+						gplusID = "'" + gplusID;
+					}
+					entries.add(updateCell(cellMap.get("gplusID"), gplusID));
+				}
+
+				entries.add(updateCell(cellMap.get("streak"), count + ""));
+				entries.add(updateCell(cellMap.get("fromDate"),
+						ContactManager.DATE_FORMAT.format(latestStreak.getFromDate())));
+				entries.add(updateCell(cellMap.get("toDate"),
+						ContactManager.DATE_FORMAT.format(latestStreak.getToDate())));
+
+				entries.add(updateCell(cellMap.get("id"), p.getContactID()));
+				entries.add(updateCell(cellMap.get("cardinal"), getRow() + ""));
+
+				entries.add(updateCell(cellMap.get("hasGplus"),
+						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")"));
+				entries.add(updateCell(cellMap.get("gplusCount"),
+						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)"));
+
+				logger.debug("updating streak: " + activitiesIndex + ", " + p);
+
+				activitiesIndex++;
+
+				cellMap = new HashMap<>();
+
+				return true;
 			}
-			activitiesIndex++;
-		}
+
+			@Override
+			protected boolean processDataColumn(CellEntry cell, String columnName) {
+				cellMap.put(columnName, cell);
+				return true;
+			}
+
+			private CellEntry updateCell(CellEntry cellEntry, String value) {
+
+				CellEntry batchEntry = new CellEntry(cellEntry);
+				batchEntry.changeInputValueLocal(value);
+
+				BatchUtils.setBatchId(batchEntry, batchEntry.getId());
+				BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
+
+				return batchEntry;
+			}
+		};
+		processor.process(sheet, columnNames);
 
 		/*
-		 * TODO batch
+		 * batchLink will be null for list feed
 		 */
-//		ListFeed batchResponse = spreadsheetManager.getService().batch(new URL(batchLink.getHref()), batchRequest);
-//
-//		// Check the results
-//		boolean isSuccess = true;
-//		for (ListEntry entry : batchResponse.getEntries()) {
-//			String batchId = BatchUtils.getBatchId(entry);
-//			if (!BatchUtils.isSuccess(entry)) {
-//				isSuccess = false;
-//				BatchStatus status = BatchUtils.getBatchStatus(entry);
-//				System.out.printf("%s failed (%s) %s", batchId, status.getReason(), status.getContent());
-//			}
-//		}
-//
-//		logger.debug(isSuccess ? "\nBatch operations successful." : "\nBatch operations failed");
-//		logger.debug(String.format("\n%s ms elapsed\n", System.currentTimeMillis() - startTime));
+		URL cellFeedUrl = sheet.getCellFeedUrl();
+		SpreadsheetService ssSvc = spreadsheetManager.getService();
+		CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
+		Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
+		CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
+
+		// Check the results
+		boolean isSuccess = true;
+		for (CellEntry entry : batchResponse.getEntries()) {
+			String batchId = BatchUtils.getBatchId(entry);
+			if (!BatchUtils.isSuccess(entry)) {
+				isSuccess = false;
+				BatchStatus status = BatchUtils.getBatchStatus(entry);
+				logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
+				break;
+			}
+		}
+
+		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
+		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
+
+		sheet.setRowCount(processor.getRow());
+		sheet.update();
 	}
 
-	public void updateCreditRanking(List<ParticipantStatistics> activities) throws IOException, ServiceException {
+	public void updateCreditRanking(List<ParticipantStatistics> activities)
+			throws IOException, ServiceException {
 
 		String url = DevelopersSharedModule.getMessage("creditRanking");
-		URL listFeedUrl = spreadsheetManager.getFeedURL(url, null, Namespaces.LIST_LINK_REL);
 
-		List<ListEntry> rows = spreadsheetManager.getListEntries(url, null);
+		List<ListEntry> rows = spreadsheetManager.getListEntries(url);
 		int rowIndex = 0;
 		int activitiesIndex = 0;
 		while (rowIndex < rows.size() && activitiesIndex < activities.size()) {
@@ -430,62 +501,19 @@ public class EventManager {
 			}
 		}
 
-		while (activitiesIndex < activities.size()) {
-			ParticipantStatistics p = activities.get(activitiesIndex);
-			ListEntry row = new ListEntry();
-			if (updateCreditRanking(p, row, rowIndex)) {
-				logger.debug("inserting credit: " + activitiesIndex + ", " + p);
-				// Send the new row to the API for insertion.
-				spreadsheetManager.getService().insert(listFeedUrl, row);
-				rowIndex++;
-			} else {
-				logger.debug("no credit to insert: " + activitiesIndex + ", " + p);
-			}
-			activitiesIndex++;
-		}
-	}
-
-	private boolean updateStreakRanking(ParticipantStatistics p, ListEntry row, int rowIndex)
-			throws IOException, ServiceException {
-
-		boolean dirty = false;
-
-		Streak latestStreak = p.getLatestStreak();
-		if (latestStreak != null) {
-			int count = latestStreak.getCount();
-			/*
-			 * it's just for distinguishing people attended at least one event from those who didn't at all,
-			 * in the last 90 days
-			 * TODO should handle single streak specially, at least on ui
-			 */
-			if (count > 0) {
-				String nickname = p.getNickname();
-				if (nickname != null) {
-					row.getCustomElements().setValueLocal("nickname", nickname);
-				}
-
-				String gplusID = p.getGplusID();
-				if (gplusID != null) {
-					if (gplusID.startsWith("+")) {
-						gplusID = "'" + gplusID;
-					}
-					row.getCustomElements().setValueLocal("gplusID", gplusID);
-				}
-
-				row.getCustomElements().setValueLocal("streak", count + "");
-				row.getCustomElements().setValueLocal("fromDate",
-						ContactManager.DATE_FORMAT.format(latestStreak.getFromDate()));
-				row.getCustomElements().setValueLocal("toDate",
-						ContactManager.DATE_FORMAT.format(latestStreak.getToDate()));
-
-				row.getCustomElements().setValueLocal("id", p.getContactID());
-				row.getCustomElements().setValueLocal("cardinal", rowIndex + 1 + "");
-
-				dirty = true;
-			}
-		}
-
-		return dirty;
+//		while (activitiesIndex < activities.size()) {
+//			ParticipantStatistics p = activities.get(activitiesIndex);
+//			ListEntry row = new ListEntry();
+//			if (updateCreditRanking(p, row, rowIndex)) {
+//				logger.debug("inserting credit: " + activitiesIndex + ", " + p);
+//				// Send the new row to the API for insertion.
+//				spreadsheetManager.getService().insert(listFeedUrl, row);
+//				rowIndex++;
+//			} else {
+//				logger.debug("no credit to insert: " + activitiesIndex + ", " + p);
+//			}
+//			activitiesIndex++;
+//		}
 	}
 
 	private boolean updateCreditRanking(ParticipantStatistics p, ListEntry row, int rowIndex)

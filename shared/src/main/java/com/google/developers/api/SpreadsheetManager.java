@@ -2,13 +2,14 @@ package com.google.developers.api;
 
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
+import com.google.developers.event.EventParticipant;
+import com.google.gdata.client.spreadsheet.FeedURLFactory;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.spreadsheet.*;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.google.developers.event.EventParticipant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +44,12 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 		return;
 	}
 
-	public List<EventParticipant> getGoogleGroupsMember(
-			String spreadsheet, String worksheet) throws IOException, ServiceException {
+	public List<EventParticipant> getGoogleGroupsMember(String spreadsheet)
+			throws IOException, ServiceException {
 
 		List<EventParticipant> participants = new ArrayList<>();
 
-		List<ListEntry> rows = getListEntries(spreadsheet, worksheet);
+		List<ListEntry> rows = getListEntries(spreadsheet);
 		for (ListEntry row : rows) {
 			CustomElementCollection elements = row.getCustomElements();
 			/*
@@ -91,14 +92,13 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 		return participants;
 	}
 
-	public List<ListEntry> getListEntries(String url, String worksheet)
-			throws IOException, ServiceException {
+	public List<ListEntry> getListEntries(String url) throws IOException, ServiceException {
 
-		URL listFeedURL = getFeedURL(url, worksheet, Namespaces.LIST_LINK_REL);
-		if (listFeedURL == null) {
-			throw new IllegalArgumentException(
-					"invalid Spreadsheet url: " + url + ", worksheet(optional): " + worksheet);
+		WorksheetEntry entry = getWorksheet(url);
+		if (entry == null) {
+			throw new IllegalArgumentException("invalid Spreadsheet url: " + url);
 		}
+		URL listFeedURL = entry.getListFeedUrl();
 
 		/*-
 		 * https://developers.google.com/google-apps/spreadsheets/#sheets_api_urls_visibilities_and_projections
@@ -109,22 +109,21 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 		return listFeed.getEntries();
 	}
 
-	public List<CellEntry> getCellEntries(String url, String worksheet)
-			throws IOException, ServiceException {
+	public List<CellEntry> getCellEntries(String url) throws IOException, ServiceException {
 
-		URL cellFeedURL = getFeedURL(url, worksheet, Namespaces.CELLS_LINK_REL);
-		if (cellFeedURL == null) {
-			throw new IllegalArgumentException(
-					"invalid Spreadsheet url: " + url + ", worksheet(optional): " + worksheet);
+		WorksheetEntry entry = getWorksheet(url);
+		if (entry == null) {
+			throw new IllegalArgumentException("invalid Spreadsheet url: " + url);
 		}
+		URL cellFeedURL = entry.getCellFeedUrl();
 
 		/*-
 		 * https://developers.google.com/google-apps/spreadsheets/#sheets_api_urls_visibilities_and_projections
 		 */
 		// Make a request to the API and get all spreadsheets.
-		CellFeed listFeed = getService().getFeed(cellFeedURL, CellFeed.class);
+		CellFeed cellFeed = getService().getFeed(cellFeedURL, CellFeed.class);
 
-		return listFeed.getEntries();
+		return cellFeed.getEntries();
 	}
 
 	public List<EventParticipant> getEventParticipants(
@@ -159,7 +158,7 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 			}
 			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(this) {
 				@Override
-				public boolean processDataRow(Map<String, String> valueMap, String rowNotation, URL cellFeedURL)
+				public boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
 					String timestamp = valueMap.get(timestampTag);
 					if (timestamp != null) {
@@ -182,20 +181,21 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 								participants.add(participant);
 							}
 						} catch (ParseException ex) {
-							logger.warn("error parsing date on row: " + rowNotation, ex);
+							logger.warn("error parsing date on row: " + getRow(), ex);
 						}
 					}
 					return true;
 				}
 			};
-			cellFeedProcessor.process(spreadsheet, timestampTag, nicknameTag, emailAddressTag, phoneNumberTag);
+			cellFeedProcessor.process(
+					getWorksheet(spreadsheet), timestampTag, nicknameTag, emailAddressTag, phoneNumberTag);
 		} else {
 			/*
 			 * cutoff date as event date
 			 */
 			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(this) {
 				@Override
-				public boolean processDataRow(Map<String, String> valueMap, String rowNotation, URL cellFeedURL)
+				public boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
 					String nickname = valueMap.get(nicknameTag);
 					String emailAddress = valueMap.get(emailAddressTag);
@@ -211,7 +211,8 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 					return true;
 				}
 			};
-			cellFeedProcessor.process(spreadsheet, timestampTag, nicknameTag, emailAddressTag, phoneNumberTag);
+			cellFeedProcessor.process(
+					getWorksheet(spreadsheet), timestampTag, nicknameTag, emailAddressTag, phoneNumberTag);
 		}
 
 		return participants;
@@ -219,16 +220,13 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 
 	/**
 	 * @param url
-	 * @param sheetName
-	 * @param linkRelKind accepts Namespaces.LIST_LINK_REL, and Namespaces.CELLS_LINK_REL
 	 * @return
 	 * @throws IOException
 	 * @throws ServiceException
 	 */
-	public URL getFeedURL(String url, String sheetName, String linkRelKind) throws IOException,
-			ServiceException {
+	public WorksheetEntry getWorksheet(String url) throws IOException, ServiceException {
 
-		URL listFeedURL;
+		WorksheetEntry entry;
 
 		/*-
 		 * https://docs.google.com/spreadsheets/d/1y6RNHHA8HDZEbJ1L8QsCiilwGChN8u6ZmeJ3bJi6EyQ/edit#gid=187918259
@@ -246,74 +244,57 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 		if (matcher.find()) {
 			String key = matcher.group(SPREADSHEET_GROUP);
 			String gridId = matcher.group(GRID_ID_GROUP);
-			listFeedURL = getFeedURL(key, gridId, sheetName, linkRelKind);
+			entry = getWorksheet(key, gridId);
 		} else {
-			listFeedURL = null;
+			entry = null;
 		}
 
-		return listFeedURL;
+		return entry;
 	}
 
-	private URL getFeedURL(String key, String gridId, String sheetName, String linkRelKind)
+	public WorksheetEntry getWorksheet(String key, String gridId)
 			throws IOException, ServiceException {
 
-		URL url = new URL("https://spreadsheets.google.com/feeds/worksheets/"
-				+ key + "/private/full");
+//		URL url = new URL("https://spreadsheets.google.com/feeds/worksheets/"
+//				+ key + "/private/full");
+		FeedURLFactory urlFactory = FeedURLFactory.getDefault();
+		URL url = urlFactory.getWorksheetFeedUrl(key, "private", "full");
 
 		// Make a request to the API and get all spreadsheets.
 		WorksheetFeed feed = getService().getFeed(url, WorksheetFeed.class);
 		List<WorksheetEntry> worksheets = feed.getEntries();
 
 		WorksheetEntry entry = null;
-		if (gridId == null && sheetName == null) {
-			/*
-			 * There is always a sheet.
-			 *
-			 * "You can't remove the last sheet is a document."
-			 */
-			entry = worksheets.get(0);
-		} else {
-			// Iterate through each worksheet in the spreadsheet.
-			if (gridId != null) {
-				for (WorksheetEntry worksheet : worksheets) {
-					Link link = worksheet
-							.getLink(
-									"http://schemas.google.com/visualization/2008#visualizationApi",
-									"application/atom+xml");
-					if (link.getHref().endsWith("gid=" + gridId)) {
-						entry = worksheet;
-						break;
-					}
+		// Iterate through each worksheet in the spreadsheet.
+		if (gridId != null) {
+			for (WorksheetEntry worksheet : worksheets) {
+				Link link = worksheet.getLink(
+						"http://schemas.google.com/visualization/2008#visualizationApi",
+						"application/atom+xml");
+				if (link.getHref().endsWith("gid=" + gridId)) {
+					entry = worksheet;
+					break;
 				}
-				if (entry == null) {
-					for (WorksheetEntry worksheet : worksheets) {
-						for (Link link : worksheet.getLinks()) {
-							if (link.getHref().endsWith("gid=" + gridId)) {
-								entry = worksheet;
-								break;
-							}
+			}
+			if (entry == null) {
+				for (WorksheetEntry worksheet : worksheets) {
+					for (Link link : worksheet.getLinks()) {
+						if (link.getHref().endsWith("gid=" + gridId)) {
+							entry = worksheet;
+							break;
 						}
 					}
 				}
 			}
-			if (entry == null && sheetName != null) {
-				for (WorksheetEntry worksheet : worksheets) {
-					if (worksheet.getTitle().getPlainText().equals(sheetName)) {
-						entry = worksheet;
-					}
-				}
-			}
 		}
-
-		URL result;
-		if (linkRelKind.equals(Namespaces.LIST_LINK_REL)) {
-			result = entry.getListFeedUrl();
-		} else if (linkRelKind.equals(Namespaces.CELLS_LINK_REL)) {
-			result = entry.getCellFeedUrl();
-		} else {
-			result = null;
-		}
-
-		return result;
+//		if (entry == null) {
+//			/*
+//			 * There is always a sheet.
+//			 *
+//			 * "You can't remove the last sheet is a document."
+//			 */
+//			entry = worksheets.get(0);
+//		}
+		return entry;
 	}
 }

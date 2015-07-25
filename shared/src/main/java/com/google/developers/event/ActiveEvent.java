@@ -1,10 +1,10 @@
 package com.google.developers.event;
 
-import com.google.gdata.util.ServiceException;
-import com.google.inject.Inject;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.ContactManager;
 import com.google.developers.api.SpreadsheetManager;
+import com.google.gdata.util.ServiceException;
+import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,7 @@ public class ActiveEvent {
 			private final Map<String, Map<String, String>> map = new HashMap<>();
 
 			@Override
-			protected boolean processDataRow(Map<String, String> valueMap, String rowNotation, URL cellFeedURL)
+			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
 
 				String event = valueMap.get("Group");
@@ -195,7 +195,8 @@ public class ActiveEvent {
 			}
 		};
 		cellFeedProcessor.process(
-				"https://docs.google.com/spreadsheets/d/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/edit#gid=0",
+				spreadsheetManager.getWorksheet(
+						"https://docs.google.com/spreadsheets/d/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/edit#gid=0"),
 				"Group", "Date", "Activity", "URL", "emailAddress", "nickname",
 				"timestamp", "timestamp.dateFormat", "timestamp.dateFormat.locale", "timestamp.timeZone",
 				"formResponse", "emailEntry", "clientIp", "Label", "Logo");

@@ -1,8 +1,12 @@
 package com.google.developers.api;
 
+import com.google.gdata.data.Link;
+import com.google.gdata.data.batch.BatchOperationType;
+import com.google.gdata.data.batch.BatchUtils;
+import com.google.gdata.data.spreadsheet.Cell;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
-import com.google.gdata.data.spreadsheet.Namespaces;
+import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.ServiceException;
 
 import java.io.IOException;
@@ -21,71 +25,102 @@ public abstract class CellFeedProcessor {
 
 	private final SpreadsheetManager spreadsheetManager;
 
+	private int row;
+
 	public CellFeedProcessor(SpreadsheetManager spreadsheetManager) {
 		this.spreadsheetManager = spreadsheetManager;
 	}
 
-	public void process(String url, String... columns) throws IOException, ServiceException {
+	public void process(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
 
-		boolean done = false;
+		boolean stoppedOnDemand = false;
+
+		URL cellFeedURL = sheet.getCellFeedUrl();
 
 		List<String> columnNames = new ArrayList<>(Arrays.asList(columns));
 
 		Map<String, String> columnNameMap = new HashMap<>();
 		Map<String, String> valueMap = null;
-		String lastRowNotation = "";
-		String rowNotation = null;
-		URL cellFeedURL = spreadsheetManager.getFeedURL(url, null, Namespaces.CELLS_LINK_REL);
-		if (cellFeedURL == null) {
-			throw new IllegalArgumentException("invalid Spreadsheet url: " + url);
+		String lastRow = null;
+
+		CellFeed batchRequest = new CellFeed();
+		int rowCount = sheet.getRowCount();
+		/*
+		 * TODO got problem when there was too many entities
+		 */
+//		int rowCount = 1954;
+//		int rowCount = 1954 / 2;
+//		rowCount = (rowCount + 1954) / 2;
+//		rowCount = (rowCount + 1954) / 2;
+		int colCount = sheet.getColCount();
+		for (int r = 1; r <= rowCount; r++) {
+			for (int c = 1; c <= colCount; c++) {
+				String idString = "R" + r + "C" + c;
+				CellEntry batchEntry = new CellEntry(r, c, "");
+				batchEntry.setId(cellFeedURL.toString() + "/" + idString);
+				BatchUtils.setBatchId(batchEntry, idString);
+				BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.QUERY);
+				batchRequest.getEntries().add(batchEntry);
+			}
 		}
 
-		CellFeed feed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
-		List<CellEntry> cells = feed.getEntries();
-		for (CellEntry cell : cells) {
-			Matcher matcher = cellIDPattern.matcher(cell.getId().substring(cell.getId().lastIndexOf('/') + 1));
+		CellFeed cellFeed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
+		CellFeed queryBatchResponse = spreadsheetManager.getService().batch(
+				new URL(cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM).getHref()),
+				batchRequest);
+		List<CellEntry> cells = queryBatchResponse.getEntries();
+		for (CellEntry cellEntry : cells) {
+			Matcher matcher = cellIDPattern.matcher(
+					cellEntry.getId().substring(cellEntry.getId().lastIndexOf('/') + 1));
 			if (matcher.matches()) {
-
-				String columnNotation = matcher.group(2);
-				rowNotation = matcher.group(1);
-				if ("1".equals(rowNotation)) {
+				String column = matcher.group(2);
+				String row = matcher.group(1);
+				if ("1".equals(row)) {
 					if (columnNames.size() == 0) {
 						continue;
 					}
-
-					String columnName = cell.getCell().getValue();
+					Cell cell = cellEntry.getCell();
+					if (cell == null) {
+						continue;
+					}
+					String columnName = cell.getValue();
 					if (columnNames.contains(columnName)) {
-						columnNameMap.put(columnNotation, columnName);
+						columnNameMap.put(column, columnName);
 						columnNames.remove(columnName);
 					}
 
-					processHeaderColumn(columnNotation, columnName);
+					processHeaderColumn(column, columnName);
 
 				} else {
-					if (!rowNotation.equals(lastRowNotation)) {
+					if (!row.equals(lastRow)) {
 						if (valueMap != null) {
+							this.row++;
 
 							/*
 							 * now I've read all the data I need in a row
 							 */
-							if (!processDataRow(valueMap, lastRowNotation, cellFeedURL)) {
-								done = true;
+							if (!processDataRow(valueMap, cellFeedURL)) {
+								stoppedOnDemand = true;
 								break;
 							}
 
 							valueMap = null;
 						}
 
-						lastRowNotation = rowNotation;
+						lastRow = row;
 					}
 
-					String columnName = columnNameMap.get(columnNotation);
+					String columnName = columnNameMap.get(column);
 					if (columnName != null) {
-						if (!processDataColumn(cell, columnName)) {
+						if (!processDataColumn(cellEntry, columnName)) {
 							break;
 						}
 
-						String value = cell.getCell().getValue();
+						Cell cell = cellEntry.getCell();
+						if (cell == null) {
+							continue;
+						}
+						String value = cell.getValue();
 
 						if (valueMap == null) {
 							valueMap = new HashMap<>();
@@ -100,18 +135,22 @@ public abstract class CellFeedProcessor {
 			}
 		}
 
-		if (!done && rowNotation != null && valueMap != null) {
-			processDataRow(valueMap, lastRowNotation, cellFeedURL);
+		if (!stoppedOnDemand && lastRow != null && valueMap != null) {
+			processDataRow(valueMap, cellFeedURL);
 		}
+	}
+
+	public int getRow() {
+		return row;
 	}
 
 	protected boolean processDataColumn(CellEntry cell, String columnName) {
 		return true;
 	}
 
-	protected void processHeaderColumn(String columnNotation, String columnName) {
+	protected void processHeaderColumn(String column, String columnName) {
 	}
 
-	protected abstract boolean processDataRow(Map<String, String> valueMap, String rowNotation, URL cellFeedURL)
+	protected abstract boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 			throws IOException, ServiceException;
 }
