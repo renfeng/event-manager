@@ -121,11 +121,12 @@ public abstract class CellFeedProcessor {
 							continue;
 						}
 						String value = cell.getValue();
-
-						if (valueMap == null) {
-							valueMap = new HashMap<>();
+						if (value != null) {
+							if (valueMap == null) {
+								valueMap = new HashMap<>();
+							}
+							valueMap.put(columnName, value);
 						}
-						valueMap.put(columnName, value);
 					}
 				}
 			} else {

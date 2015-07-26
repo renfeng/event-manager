@@ -36,9 +36,19 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 
 		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
 
-		SpreadsheetService service = new SpreadsheetService(
-				"GDG Event Management");
+		SpreadsheetService service = new SpreadsheetService("GDG Event Management");
 		service.setProtocolVersion(SpreadsheetService.Versions.V3);
+
+		/*
+		 * Unable to process batch request for spread sheet. - Google Groups
+		 * https://groups.google.com/d/msg/google-appengine/PVqNF8AumdY/gZNMJKpObowJ
+		 *
+		 * Timeouts and Errors | API Client Library for Java | Google Developers
+		 * https://developers.google.com/api-client-library/java/google-api-java-client/errors
+		 */
+		service.setConnectTimeout(3 * 60000);
+		service.setReadTimeout(3 * 60000);
+
 		setService(service);
 
 		return;

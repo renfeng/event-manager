@@ -15,7 +15,12 @@
 	<!-- Allows App Engine to send multiple requests to one instance in parallel: -->
 	<threadsafe>true</threadsafe>
 
-	<instance-class>B1</instance-class>
+	<!-- B1 yields out of heap -->
+	<instance-class>B2</instance-class>
+
+	<!-- it's not desired to have 60-second deadline for HTTP requests, 10-minute deadline for tasks -->
+	<!-- https://cloud.google.com/appengine/docs/java/modules/#scaling_types -->
+	<!-- https://cloud.google.com/appengine/docs/java/modules/#basic_scaling_1 -->
 	<basic-scaling>
 
 		<!-- https://code.google.com/p/googleappengine/issues/detail?id=10953 -->
@@ -30,11 +35,11 @@
 	<!-- Configure java.util.logging -->
 	<system-properties>
 		<!-- Unable to read the java.util.logging configuration file, WEB-INF/classes/logging.properties -->
-		<property name="java.util.logging.config.file" value="WEB-INF/logging.properties" />
+		<property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
 	</system-properties>
 
 	<admin-console>
-		<page name="Appstats" url="/appstats" />
+		<page name="Appstats" url="/appstats"/>
 	</admin-console>
 
 </appengine-web-app>

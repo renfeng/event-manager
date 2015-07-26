@@ -23,7 +23,7 @@ public class DevelopersSharedModule implements Module, MemcacheKey {
 	@Override
 	public void configure(Binder binder) {
 
-		// binder.bind(HttpTransport.class).toInstance(new UrlFetchTransport());
+//		binder.bind(HttpTransport.class).toInstance(new UrlFetchTransport());
 		binder.bind(HttpTransport.class).toInstance(new NetHttpTransport());
 
 		/*
