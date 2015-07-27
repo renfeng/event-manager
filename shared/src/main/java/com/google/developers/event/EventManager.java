@@ -133,20 +133,19 @@ public class EventManager {
 		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 
 			CellEntry statusCell = null;
-			String statusColumn = null;
+			int statusColumn;
 
 			@Override
-			public boolean processDataColumn(CellEntry cell, String columnName) {
+			public void processDataColumn(CellEntry cell, String columnName) {
 				if ("Status".equals(columnName)) {
 					statusCell = cell;
 				}
-				return true;
 			}
 
 			@Override
 			public void processHeaderColumn(String column, String columnName) {
 				if ("Status".equals(columnName)) {
-					statusColumn = column;
+					statusColumn = Integer.parseInt(column);
 				}
 			}
 
@@ -157,18 +156,20 @@ public class EventManager {
 				/*
 				 * now I've read all the data I need in a row
 				 */
-				if (importContactsFromSpreadsheet(valueMap)) {
-					String status = valueMap.get("Status");
+				String status = importContactsFromSpreadsheet(valueMap);
+				if (status != null) {
 					if (statusCell != null) {
-						statusCell.changeInputValueLocal(status);
-						statusCell.update();
+						if (!status.equals(statusCell.getCell().getValue())) {
+							statusCell.changeInputValueLocal(status);
+							statusCell.update();
+						}
 					} else {
 						/*
 						 * google.com#q=google spreadsheet +api insert cell
 						 * http://stackoverflow.com/a/12936664/333033
 						 * http://stackoverflow.com/a/30187245/333033
 						 */
-						statusCell = new CellEntry(getRow(), Integer.parseInt(statusColumn), status);
+						statusCell = new CellEntry(getRow(), statusColumn, status);
 						spreadsheetManager.getService().insert(cellFeedURL, statusCell);
 					}
 				}
@@ -185,18 +186,15 @@ public class EventManager {
 		return;
 	}
 
-	private boolean importContactsFromSpreadsheet(Map<String, String> valueMap)
+	private String importContactsFromSpreadsheet(Map<String, String> valueMap)
 			throws IOException, ServiceException {
-
-		boolean dirty = false;
 
 		String status = valueMap.get("Status");
 		if (status == null) {
 			String event = valueMap.get("Group");
 			String url = valueMap.get("URL");
 			if (url == null) {
-				valueMap.put("Status", "missing url");
-				dirty = true;
+				status = "missing url";
 			} else {
 				String date = valueMap.get("Date");
 				String activity = valueMap.get("Activity");
@@ -236,21 +234,19 @@ public class EventManager {
 					}
 
 					logger.debug("done: " + event);
-					valueMap.put("Status", "Done");
-					dirty = true;
+					status = "Done";
 				} catch (Exception ex) {
 					String message = ex.getMessage();
 					if (message == null) {
 						message = ex.getClass().getName();
 					}
 					logger.debug("error: " + message);
-					valueMap.put("Status", message);
-					dirty = true;
+					status = message;
 				}
 			}
 		}
 
-		return dirty;
+		return status;
 	}
 
 	public void updateRanking() throws IOException, ServiceException {
@@ -333,7 +329,7 @@ public class EventManager {
 			}
 		});
 
-		String[] columnNames = {"nickname", "gplusID", "streak", "fromDate", "toDate", "id", "cardinal",
+		final String[] columnNames = {"nickname", "gplusID", "streak", "fromDate", "toDate", "id", "cardinal",
 				"hasGplus", "gplusCount"};
 
 		/*
@@ -364,6 +360,7 @@ public class EventManager {
 			int activitiesIndex = 0;
 
 			Map<String, CellEntry> cellMap = new HashMap<>();
+			Map<String, String> columnMap = new HashMap<>();
 
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
@@ -403,13 +400,30 @@ public class EventManager {
 				updateCell(entries, cellMap.get("cardinal"), getRow() + "");
 
 				/*
+				 * the input value will be converted to the following
 				 * =if(R[0]C[-6]<>"","Yes","")
 				 * =R[-1]C[0]+if(R[0]C[-7]<>"",1,0)
+				 *
+				 * the API always returns cell addresses for formulas on cells in R1C1 notation,
+				 * even if the formula was set with A1 notation.
+				 * https://developers.google.com/google-apps/spreadsheets/data#work_with_cell-based_feeds
 				 */
-				updateCell(entries, cellMap.get("hasGplus"),
-						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
-				updateCell(entries, cellMap.get("gplusCount"),
-						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
+				{
+//				updateCell(entries, cellMap.get("hasGplus"),
+//						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
+					int columnOffset = Integer.parseInt(columnMap.get("gplusID")) -
+							Integer.parseInt(columnMap.get("hasGplus"));
+					updateCell(entries, cellMap.get("hasGplus"),
+							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
+				}
+				{
+//				updateCell(entries, cellMap.get("gplusCount"),
+//						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
+					int columnOffset = Integer.parseInt(columnMap.get("hasGplus")) -
+							Integer.parseInt(columnMap.get("gplusCount"));
+					updateCell(entries, cellMap.get("gplusCount"),
+							getRow() == 1 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
+				}
 
 				logger.debug("updating streak: " + activitiesIndex + ", " + p);
 
@@ -421,9 +435,13 @@ public class EventManager {
 			}
 
 			@Override
-			protected boolean processDataColumn(CellEntry cell, String columnName) {
+			protected void processDataColumn(CellEntry cell, String columnName) {
 				cellMap.put(columnName, cell);
-				return true;
+			}
+
+			@Override
+			protected void processHeaderColumn(String column, String columnName) {
+				columnMap.put(columnName, column);
 			}
 		};
 		processor.process(sheet, columnNames);
@@ -454,7 +472,7 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("streak ranking rows updated: " + processor.getRow());
+		logger.info("streak ranking rows updated: " + (processor.getRow() + 1));
 	}
 
 	public void updateCreditRanking(List<ParticipantStatistics> activities)
@@ -506,6 +524,7 @@ public class EventManager {
 			int activitiesIndex = 0;
 
 			Map<String, CellEntry> cellMap = new HashMap<>();
+			Map<String, String> columnMap = new HashMap<>();
 
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL) throws IOException, ServiceException {
@@ -515,6 +534,9 @@ public class EventManager {
 				int credit = p.getCredit();
 				String nickname = p.getNickname();
 				if (nickname != null) {
+					if (nickname.startsWith("+")) {
+						nickname = "'" + nickname;
+					}
 					updateCell(entries, cellMap.get("nickname"), nickname);
 				}
 
@@ -533,10 +555,31 @@ public class EventManager {
 				updateCell(entries, cellMap.get("id"), p.getContactID());
 				updateCell(entries, cellMap.get("cardinal"), getRow() + "");
 
-				updateCell(entries, cellMap.get("hasGplus"),
-						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
-				updateCell(entries, cellMap.get("gplusCount"),
-						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
+				/*
+				 * the input value will be converted to the following
+				 * =if(R[0]C[-6]<>"","Yes","")
+				 * =R[-1]C[0]+if(R[0]C[-7]<>"",1,0)
+				 *
+				 * the API always returns cell addresses for formulas on cells in R1C1 notation,
+				 * even if the formula was set with A1 notation.
+				 * https://developers.google.com/google-apps/spreadsheets/data#work_with_cell-based_feeds
+				 */
+				{
+//				updateCell(entries, cellMap.get("hasGplus"),
+//						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
+					int columnOffset = Integer.parseInt(columnMap.get("gplusID")) -
+							Integer.parseInt(columnMap.get("hasGplus"));
+					updateCell(entries, cellMap.get("hasGplus"),
+							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
+				}
+				{
+//				updateCell(entries, cellMap.get("gplusCount"),
+//						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
+					int columnOffset = Integer.parseInt(columnMap.get("hasGplus")) -
+							Integer.parseInt(columnMap.get("gplusCount"));
+					updateCell(entries, cellMap.get("gplusCount"),
+							getRow() == 1 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
+				}
 
 				logger.debug("updating credit: " + activitiesIndex + ", " + p);
 
@@ -548,9 +591,13 @@ public class EventManager {
 			}
 
 			@Override
-			protected boolean processDataColumn(CellEntry cell, String columnName) {
+			protected void processDataColumn(CellEntry cell, String columnName) {
 				cellMap.put(columnName, cell);
-				return true;
+			}
+
+			@Override
+			protected void processHeaderColumn(String column, String columnName) {
+				columnMap.put(columnName, column);
 			}
 		};
 		processor.process(sheet, columnNames);
@@ -581,13 +628,12 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("credit ranking rows updated: " + processor.getRow());
+		logger.info("credit ranking rows updated: " + (processor.getRow() + 1));
 	}
 
 	private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
 
-		Cell cell = cellEntry.getCell();
-		if (cell == null || !value.equals(cell.getInputValue())) {
+		if (!value.equals(cellEntry.getCell().getInputValue())) {
 			CellEntry batchEntry = new CellEntry(cellEntry);
 			batchEntry.changeInputValueLocal(value);
 

@@ -79,11 +79,7 @@ public abstract class CellFeedProcessor {
 					if (columnNames.size() == 0) {
 						continue;
 					}
-					Cell cell = cellEntry.getCell();
-					if (cell == null) {
-						continue;
-					}
-					String columnName = cell.getValue();
+					String columnName = cellEntry.getCell().getValue();
 					if (columnNames.contains(columnName)) {
 						columnNameMap.put(column, columnName);
 						columnNames.remove(columnName);
@@ -103,30 +99,22 @@ public abstract class CellFeedProcessor {
 								stoppedOnDemand = true;
 								break;
 							}
-
-							valueMap = null;
 						}
 
+						valueMap = new HashMap<>();
 						lastRow = row;
 					}
 
 					String columnName = columnNameMap.get(column);
 					if (columnName != null) {
-						if (!processDataColumn(cellEntry, columnName)) {
-							break;
-						}
+						processDataColumn(cellEntry, columnName);
 
-						Cell cell = cellEntry.getCell();
-						if (cell == null) {
+						String value = cellEntry.getCell().getValue();
+						if (value == null) {
 							continue;
 						}
-						String value = cell.getValue();
-						if (value != null) {
-							if (valueMap == null) {
-								valueMap = new HashMap<>();
-							}
-							valueMap.put(columnName, value);
-						}
+
+						valueMap.put(columnName, value);
 					}
 				}
 			} else {
@@ -145,8 +133,7 @@ public abstract class CellFeedProcessor {
 		return row;
 	}
 
-	protected boolean processDataColumn(CellEntry cell, String columnName) {
-		return true;
+	protected void processDataColumn(CellEntry cell, String columnName) {
 	}
 
 	protected void processHeaderColumn(String column, String columnName) {
