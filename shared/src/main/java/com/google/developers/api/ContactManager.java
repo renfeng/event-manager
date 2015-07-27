@@ -3,10 +3,7 @@ package com.google.developers.api;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.PropertiesContant;
-import com.google.developers.event.EventActivities;
-import com.google.developers.event.EventParticipant;
-import com.google.developers.event.ParticipantStatistics;
-import com.google.developers.event.Streak;
+import com.google.developers.event.*;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactQuery;
 import com.google.gdata.client.contacts.ContactsService;
@@ -29,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -912,7 +910,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		}
 
 		/*
-		 * TODO fetch all groups
+		 * fetch all groups
 		 */
 		Map<String, String> groupMap = new HashMap<>();
 		Query groupQuery = createAllContactsQuery(new URL(GROUPS_URL));
@@ -1032,10 +1030,10 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 				continue;
 			}
 
-			EventActivities eventActivities = eventMap.get(label);
+			EventActivities eventActivities = eventMap.get(dateString);
 			if (eventActivities == null) {
 				eventActivities = new EventActivities();
-				eventMap.put(label, eventActivities);
+				eventMap.put(dateString, eventActivities);
 			}
 			if ("Register".equals(activity)) {
 				credit++;
@@ -1165,5 +1163,112 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		participantStatistics.setContactID(id.substring(id.lastIndexOf("/") + "/".length()));
 
 		return participantStatistics;
+	}
+
+	/**
+	 * @return a score map for each event
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
+	public Map<String, EventScore> listEventScore(Date cutoff) throws IOException, ServiceException {
+
+		Map<String, EventScore> scoreMap = new HashMap<>();
+
+		/*
+		 * fetch all groups
+		 */
+		Query groupQuery = createAllContactsQuery(new URL(GROUPS_URL));
+		ContactGroupFeed groupFeed = getService().query(groupQuery, ContactGroupFeed.class);
+		for (ContactGroupEntry groupEntry : groupFeed.getEntries()) {
+			String groupName = groupEntry.getTitle().getPlainText();
+			Matcher matcher = GROUP_PATTERN.matcher(groupName);
+			if (matcher.matches()) {
+				String dateString = matcher.group(1);
+				scoreMap.put(dateString, new EventScore());
+			}
+		}
+
+		URL contactURL = new URL(CONTACTS_URL);
+		ContactQuery contactQuery = createAllContactsQuery(contactURL);
+		ContactFeed contactFeed = getService().query(contactQuery,
+				ContactFeed.class);
+		for (ContactEntry entry : contactFeed.getEntries()) {
+
+			Date from = new Date();
+			Date to = cutoff;
+			Map<String, EventActivities> eventMap = new HashMap<>();
+			for (Event event : entry.getEvents()) {
+				String eventLabel = event.getLabel();
+				if (eventLabel == null) {
+					continue;
+				}
+				Matcher matcher = ACTIVITY_PATTERN.matcher(eventLabel);
+				if (!matcher.matches()) {
+					continue;
+				}
+
+				String dateString = matcher.group(1);
+				String activity = matcher.group(2);
+
+				Date date;
+				try {
+					date = DATE_FORMAT.parse(dateString);
+				} catch (ParseException e) {
+					logger.debug("failed to parse activity date from event eventLabel", e);
+					date = new Date(event.getWhen().getStartTime().getValue());
+				}
+				if (date.before(cutoff)) {
+					continue;
+				}
+
+				EventActivities eventActivities = eventMap.get(dateString);
+				if (eventActivities == null) {
+					eventActivities = new EventActivities();
+					eventMap.put(dateString, eventActivities);
+				}
+				if ("Register".equals(activity)) {
+					EventScore score = scoreMap.get(dateString);
+					score.setValue(score.getValue() + 1);
+					eventActivities.setRegister(dateString);
+				} else if ("Check-in".equals(activity)) {
+					EventScore score = scoreMap.get(dateString);
+					score.setValue(score.getValue() + 1);
+					eventActivities.setCheckIn(dateString);
+				} else if ("Feedback".equals(activity)) {
+					EventScore score = scoreMap.get(dateString);
+					score.setValue(score.getValue() + 1);
+					eventActivities.setFeedback(dateString);
+//			} else if ("Sponsor".equals(activity)) {
+//				credit++;
+//				eventActivities.setSponsor(dateString);
+				} else {
+					continue;
+				}
+
+				if (from.after(date)) {
+					from = date;
+				}
+				if (to.before(date)) {
+					to = date;
+				}
+			}
+			for (Map.Entry<String, EventActivities> e : eventMap.entrySet()) {
+				String dateString = e.getKey();
+				EventActivities eventActivities = e.getValue();
+				if (eventActivities.getRegister() != null) {
+					if (eventActivities.getCheckIn() != null) {
+						if (eventActivities.getFeedback() != null) {
+							EventScore score = scoreMap.get(dateString);
+							score.setValue(score.getValue() + 1 + 2 + 4);
+						} else {
+							EventScore score = scoreMap.get(dateString);
+							score.setValue(score.getValue() + 1 + 2);
+						}
+					}
+				}
+			}
+		}
+
+		return scoreMap;
 	}
 }

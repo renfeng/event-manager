@@ -9,7 +9,6 @@ import com.google.gdata.data.batch.BatchOperationType;
 import com.google.gdata.data.batch.BatchStatus;
 import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.contacts.ContactGroupEntry;
-import com.google.gdata.data.spreadsheet.Cell;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
@@ -329,7 +328,7 @@ public class EventManager {
 			}
 		});
 
-		final String[] columnNames = {"nickname", "gplusID", "streak", "fromDate", "toDate", "id", "cardinal",
+		String[] columnNames = {"nickname", "gplusID", "streak", "fromDate", "toDate", "id", "cardinal",
 				"hasGplus", "gplusCount"};
 
 		/*
@@ -644,5 +643,101 @@ public class EventManager {
 		}
 
 		return;
+	}
+
+	public void updateEventScore() throws IOException, ServiceException {
+
+		/*
+		 * cutoff date: a year ago
+		 *
+		 * TODO what about 180 days ago? to match pulse
+		 */
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.YEAR, -1);
+		final Map<String, EventScore> scoreMap = contactManager.listEventScore(calendar.getTime());
+
+		final ArrayList<Map.Entry<String, EventScore>> scoreRanking = new ArrayList<>(scoreMap.entrySet());
+		Collections.sort(scoreRanking, new Comparator<Map.Entry<String, EventScore>>() {
+			@Override
+			public int compare(Map.Entry<String, EventScore> o1, Map.Entry<String, EventScore> o2) {
+				return -Integer.compare(o1.getValue().getValue(), o2.getValue().getValue());
+			}
+		});
+
+		String url = DevelopersSharedModule.getMessage("event");
+		WorksheetEntry sheet = spreadsheetManager.getWorksheet(url);
+
+		sheet.setRowCount(Math.min(scoreMap.size(), MAX_CELLS / sheet.getColCount()));
+		sheet = sheet.update();
+
+		long startTime = System.currentTimeMillis();
+		CellFeed batchRequest = new CellFeed();
+
+		final List<CellEntry> entries = batchRequest.getEntries();
+
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+
+			int eventIndex = 0;
+
+			Map<String, CellEntry> cellMap = new HashMap<>();
+			Map<String, String> columnMap = new HashMap<>();
+
+			@Override
+			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
+					throws IOException, ServiceException {
+
+				Map.Entry<String, EventScore> s = scoreRanking.get(eventIndex);
+
+				updateCell(entries, cellMap.get("Name"), s.getKey());
+				updateCell(entries, cellMap.get("Score"), s.getValue().getValue() + "");
+
+				logger.debug("updating event score: " + eventIndex + ", " + s);
+
+				eventIndex++;
+
+				cellMap = new HashMap<>();
+
+				return true;
+			}
+
+			@Override
+			protected void processDataColumn(CellEntry cell, String columnName) {
+				cellMap.put(columnName, cell);
+			}
+
+			@Override
+			protected void processHeaderColumn(String column, String columnName) {
+				columnMap.put(columnName, column);
+			}
+		};
+		processor.process(sheet, "Name", "Score", "Organizer");
+
+		/*
+		 * batchLink will be null for list feed
+		 */
+		URL cellFeedUrl = sheet.getCellFeedUrl();
+		SpreadsheetService ssSvc = spreadsheetManager.getService();
+		CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
+		Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
+		CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
+
+		// Check the results
+		boolean isSuccess = true;
+		for (CellEntry entry : batchResponse.getEntries()) {
+			String batchId = BatchUtils.getBatchId(entry);
+			if (!BatchUtils.isSuccess(entry)) {
+				isSuccess = false;
+				BatchStatus status = BatchUtils.getBatchStatus(entry);
+				logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
+				break;
+			}
+		}
+
+		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
+		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
+
+//		sheet.setRowCount(processor.getRow());
+//		sheet.update();
+		logger.info("event score rows updated: " + (processor.getRow() + 1));
 	}
 }

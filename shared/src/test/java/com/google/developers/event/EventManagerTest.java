@@ -24,15 +24,16 @@ public class EventManagerTest {
 		EventManager eventManager = injector.getInstance(EventManager.class);
 		eventManager.importContactsFromSpreadsheets();
 		eventManager.updateRanking();
+		eventManager.updateEventScore();
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy HH:mm:ss");
-		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+08"));
-		try {
-			Date date = dateFormat.parse("6/26/2015 20:00:00");
-			System.out.println(date);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+//		SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy HH:mm:ss");
+//		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+08"));
+//		try {
+//			Date date = dateFormat.parse("6/26/2015 20:00:00");
+//			System.out.println(date);
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
 
 	}
 }
