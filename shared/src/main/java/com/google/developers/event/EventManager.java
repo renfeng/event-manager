@@ -9,6 +9,7 @@ import com.google.gdata.data.batch.BatchOperationType;
 import com.google.gdata.data.batch.BatchStatus;
 import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.contacts.ContactGroupEntry;
+import com.google.gdata.data.spreadsheet.Cell;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
@@ -29,6 +30,21 @@ public class EventManager {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(EventManager.class);
+
+	/*
+	 * 2000000
+	 * Size: Up to 2 million cells.
+	 * https://support.google.com/docs/answer/37603?hl=en
+	 */
+	public static final int MAX_CELLS = 2000000;
+
+	/*
+	 * The literal value of the cell element is the calculated value of the cell,
+	 * without formatting applied. If the cell contains a formula, the calculated value is given here.
+	 * The Sheets API has no concept of formatting, and thus cannot manipulate formatting of cells.
+	 * https://developers.google.com/google-apps/spreadsheets/data#work_with_cell-based_feeds
+	 */
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("M/d/yyyy");
 
 	private final SpreadsheetManager spreadsheetManager;
 	private final ContactManager contactManager;
@@ -335,7 +351,7 @@ public class EventManager {
 		String url = DevelopersSharedModule.getMessage("streakRanking");
 		WorksheetEntry sheet = spreadsheetManager.getWorksheet(url);
 
-		sheet.setRowCount(Math.min(activitiesWithStreak.size(), 2000000 / sheet.getColCount()));
+		sheet.setRowCount(Math.min(activitiesWithStreak.size(), MAX_CELLS / sheet.getColCount()));
 		sheet = sheet.update();
 
 		long startTime = System.currentTimeMillis();
@@ -367,7 +383,7 @@ public class EventManager {
 
 				String nickname = p.getNickname();
 				if (nickname != null) {
-					entries.add(updateCell(cellMap.get("nickname"), nickname));
+					updateCell(entries, cellMap.get("nickname"), nickname);
 				}
 
 				String gplusID = p.getGplusID();
@@ -375,22 +391,25 @@ public class EventManager {
 					if (gplusID.startsWith("+")) {
 						gplusID = "'" + gplusID;
 					}
-					entries.add(updateCell(cellMap.get("gplusID"), gplusID));
+					updateCell(entries, cellMap.get("gplusID"), gplusID);
 				}
 
-				entries.add(updateCell(cellMap.get("streak"), count + ""));
-				entries.add(updateCell(cellMap.get("fromDate"),
-						ContactManager.DATE_FORMAT.format(latestStreak.getFromDate())));
-				entries.add(updateCell(cellMap.get("toDate"),
-						ContactManager.DATE_FORMAT.format(latestStreak.getToDate())));
+				updateCell(entries, cellMap.get("streak"), count + "");
 
-				entries.add(updateCell(cellMap.get("id"), p.getContactID()));
-				entries.add(updateCell(cellMap.get("cardinal"), getRow() + ""));
+				updateCell(entries, cellMap.get("fromDate"), DATE_FORMAT.format(latestStreak.getFromDate()));
+				updateCell(entries, cellMap.get("toDate"), DATE_FORMAT.format(latestStreak.getToDate()));
 
-				entries.add(updateCell(cellMap.get("hasGplus"),
-						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")"));
-				entries.add(updateCell(cellMap.get("gplusCount"),
-						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)"));
+				updateCell(entries, cellMap.get("id"), p.getContactID());
+				updateCell(entries, cellMap.get("cardinal"), getRow() + "");
+
+				/*
+				 * =if(R[0]C[-6]<>"","Yes","")
+				 * =R[-1]C[0]+if(R[0]C[-7]<>"",1,0)
+				 */
+				updateCell(entries, cellMap.get("hasGplus"),
+						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
+				updateCell(entries, cellMap.get("gplusCount"),
+						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 
 				logger.debug("updating streak: " + activitiesIndex + ", " + p);
 
@@ -405,17 +424,6 @@ public class EventManager {
 			protected boolean processDataColumn(CellEntry cell, String columnName) {
 				cellMap.put(columnName, cell);
 				return true;
-			}
-
-			private CellEntry updateCell(CellEntry cellEntry, String value) {
-
-				CellEntry batchEntry = new CellEntry(cellEntry);
-				batchEntry.changeInputValueLocal(value);
-
-				BatchUtils.setBatchId(batchEntry, batchEntry.getId());
-				BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
-
-				return batchEntry;
 			}
 		};
 		processor.process(sheet, columnNames);
@@ -444,8 +452,9 @@ public class EventManager {
 		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
 		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
 
-		sheet.setRowCount(processor.getRow());
-		sheet.update();
+//		sheet.setRowCount(processor.getRow());
+//		sheet.update();
+		logger.info("streak ranking rows updated: " + processor.getRow());
 	}
 
 	public void updateCreditRanking(List<ParticipantStatistics> activities)
@@ -484,7 +493,7 @@ public class EventManager {
 		String url = DevelopersSharedModule.getMessage("creditRanking");
 		WorksheetEntry sheet = spreadsheetManager.getWorksheet(url);
 
-		sheet.setRowCount(Math.min(activitiesWithCredit.size(), 2000000 / sheet.getColCount()));
+		sheet.setRowCount(Math.min(activitiesWithCredit.size(), MAX_CELLS / sheet.getColCount()));
 		sheet = sheet.update();
 
 		long startTime = System.currentTimeMillis();
@@ -506,7 +515,7 @@ public class EventManager {
 				int credit = p.getCredit();
 				String nickname = p.getNickname();
 				if (nickname != null) {
-					entries.add(updateCell(cellMap.get("nickname"), nickname));
+					updateCell(entries, cellMap.get("nickname"), nickname);
 				}
 
 				String gplusID = p.getGplusID();
@@ -514,22 +523,20 @@ public class EventManager {
 					if (gplusID.startsWith("+")) {
 						gplusID = "'" + gplusID;
 					}
-					entries.add(updateCell(cellMap.get("gplusID"), gplusID));
+					updateCell(entries, cellMap.get("gplusID"), gplusID);
 				}
 
-				entries.add(updateCell(cellMap.get("credit"), credit + ""));
-				entries.add(updateCell(cellMap.get("fromDate"),
-						ContactManager.DATE_FORMAT.format(p.getFromDate())));
-				entries.add(updateCell(cellMap.get("toDate"),
-						ContactManager.DATE_FORMAT.format(p.getToDate())));
+				updateCell(entries, cellMap.get("credit"), credit + "");
+				updateCell(entries, cellMap.get("fromDate"), DATE_FORMAT.format(p.getFromDate()));
+				updateCell(entries, cellMap.get("toDate"), DATE_FORMAT.format(p.getToDate()));
 
-				entries.add(updateCell(cellMap.get("id"), p.getContactID()));
-				entries.add(updateCell(cellMap.get("cardinal"), getRow() + ""));
+				updateCell(entries, cellMap.get("id"), p.getContactID());
+				updateCell(entries, cellMap.get("cardinal"), getRow() + "");
 
-				entries.add(updateCell(cellMap.get("hasGplus"),
-						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")"));
-				entries.add(updateCell(cellMap.get("gplusCount"),
-						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)"));
+				updateCell(entries, cellMap.get("hasGplus"),
+						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
+				updateCell(entries, cellMap.get("gplusCount"),
+						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 
 				logger.debug("updating credit: " + activitiesIndex + ", " + p);
 
@@ -544,17 +551,6 @@ public class EventManager {
 			protected boolean processDataColumn(CellEntry cell, String columnName) {
 				cellMap.put(columnName, cell);
 				return true;
-			}
-
-			private CellEntry updateCell(CellEntry cellEntry, String value) {
-
-				CellEntry batchEntry = new CellEntry(cellEntry);
-				batchEntry.changeInputValueLocal(value);
-
-				BatchUtils.setBatchId(batchEntry, batchEntry.getId());
-				BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
-
-				return batchEntry;
 			}
 		};
 		processor.process(sheet, columnNames);
@@ -583,7 +579,24 @@ public class EventManager {
 		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
 		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
 
-		sheet.setRowCount(processor.getRow());
-		sheet.update();
+//		sheet.setRowCount(processor.getRow());
+//		sheet.update();
+		logger.info("credit ranking rows updated: " + processor.getRow());
+	}
+
+	private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
+
+		Cell cell = cellEntry.getCell();
+		if (cell == null || !value.equals(cell.getInputValue())) {
+			CellEntry batchEntry = new CellEntry(cellEntry);
+			batchEntry.changeInputValueLocal(value);
+
+			BatchUtils.setBatchId(batchEntry, batchEntry.getId());
+			BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
+
+			entries.add(batchEntry);
+		}
+
+		return;
 	}
 }
