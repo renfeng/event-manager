@@ -54,12 +54,12 @@ public class Setup implements PropertiesContant {
 		Map<String, String> incoming = new HashMap<>();
 		extract(FileUtils.readFileToString(new File(PEOPLE_HTML)), incoming);
 		extract(FileUtils.readFileToString(new File(PEOPLE_HTML_2)), incoming);
-		incoming = filterCustomUrl(incoming);
+
+		Map<String, String> existing = new HashMap<>();
 
 		/*
 		 * merge incoming with existing
 		 */
-		Map<String, String> existing = new HashMap<>();
 		File file = new File(PEOPLE_PROPERTIES);
 		if (file.isFile()) {
 			List<String> lines = FileUtils.readLines(file);
@@ -73,19 +73,19 @@ public class Setup implements PropertiesContant {
 
 				String existingEmail = line.substring(index + KEY_VALUE_DELIMITER.length());
 
-					/*
-					 * merge and resolve conflicts (properties file, html)
-					 *
-					 * 0. #email, email = #email 1. id, #id = id 2. #id, id = id
-					 */
+				/*
+				 * merge and resolve conflicts (properties file, html)
+				 *
+				 * 0. #email, email = #email 1. id, #id = id 2. #id, id = id
+				 */
 
-					/*
-					 * email prefix, #, indicates manually removed user
-					 */
-					/*
-					 * a manually enabled row must start with an id different
-					 * from GPlus id
-					 */
+				/*
+				 * email prefix, #, indicates manually removed user
+				 */
+				/*
+				 * a manually enabled row must start with an id different
+				 * from GPlus id
+				 */
 				if (existingId.startsWith(COMMENT_LINE_START)) {
 					String incomingEmail = incoming.remove(existingId);
 					if (incomingEmail == null) {
@@ -109,8 +109,9 @@ public class Setup implements PropertiesContant {
 				existing.put(existingId, existingEmail);
 			}
 		}
-
 		existing.putAll(incoming);
+
+		existing = filterCustomUrl(existing);
 
 		/*
 		 * sort by email
@@ -247,8 +248,9 @@ public class Setup implements PropertiesContant {
 
 					try {
 						logger.trace("people: " + id + KEY_VALUE_DELIMITER + email);
-						GenericUrl url = new GenericUrl("https://plus.google.com/" + id);
+						filtered.put(id, email);
 
+						GenericUrl url = new GenericUrl("https://plus.google.com/" + id);
 						HttpRequest request = factory.buildGetRequest(url)
 								.setFollowRedirects(false)
 								.setThrowExceptionOnExecuteError(false);
@@ -260,9 +262,6 @@ public class Setup implements PropertiesContant {
 							/*
 							 * save both id and custom url (path)
 							 */
-
-							filtered.put(id, email);
-
 							String location = response.getHeaders().getLocation();
 							logger.trace("custom url: " + location);
 							if (location.startsWith("https://plus.google.com/+")) {
@@ -274,7 +273,6 @@ public class Setup implements PropertiesContant {
 								logger.warn("failed to parse g+ id: " + location);
 							}
 						} else {
-							filtered.put(id, email);
 							logger.trace("(no custom url)");
 						}
 					} catch (Exception ex) {

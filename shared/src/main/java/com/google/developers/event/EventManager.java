@@ -387,8 +387,8 @@ public class EventManager {
 					if (gplusID.startsWith("+")) {
 						gplusID = "'" + gplusID;
 					}
-					updateCell(entries, cellMap.get("gplusID"), gplusID);
 				}
+				updateCell(entries, cellMap.get("gplusID"), gplusID);
 
 				updateCell(entries, cellMap.get("streak"), count + "");
 
@@ -526,7 +526,8 @@ public class EventManager {
 			Map<String, String> columnMap = new HashMap<>();
 
 			@Override
-			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL) throws IOException, ServiceException {
+			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
+					throws IOException, ServiceException {
 
 				ParticipantStatistics p = activitiesWithCredit.get(activitiesIndex);
 
@@ -544,8 +545,8 @@ public class EventManager {
 					if (gplusID.startsWith("+")) {
 						gplusID = "'" + gplusID;
 					}
-					updateCell(entries, cellMap.get("gplusID"), gplusID);
 				}
+				updateCell(entries, cellMap.get("gplusID"), gplusID);
 
 				updateCell(entries, cellMap.get("credit"), credit + "");
 				updateCell(entries, cellMap.get("fromDate"), DATE_FORMAT.format(p.getFromDate()));
@@ -632,7 +633,8 @@ public class EventManager {
 
 	private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
 
-		if (!value.equals(cellEntry.getCell().getInputValue())) {
+		if ((value != null && !value.equals(cellEntry.getCell().getInputValue())) ||
+				cellEntry.getCell().getInputValue() != null) {
 			CellEntry batchEntry = new CellEntry(cellEntry);
 			batchEntry.changeInputValueLocal(value);
 

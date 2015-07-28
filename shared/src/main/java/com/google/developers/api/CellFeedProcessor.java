@@ -125,6 +125,7 @@ public abstract class CellFeedProcessor {
 		}
 
 		if (!stoppedOnDemand && lastRow != null && valueMap != null) {
+			this.row++;
 			processDataRow(valueMap, cellFeedURL);
 		}
 	}
