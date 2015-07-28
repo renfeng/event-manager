@@ -14,8 +14,13 @@
 	<cron>
 		<url>/cron/refresh-ranking</url>
 
-		<!--<schedule>every 24 hours</schedule>-->
-		<schedule>every 60 minutes</schedule>
+		<!-- With a schedule of every hour, it exceeded the free quota of 8 as shown on
+		https://cloud.google.com/appengine/docs/quotas#Instance
+		Since, this is a B2 class, the available hours are four. Counted as partial quarter hours.
+		-->
+		<!-- It shows 9 hours on https://appengine.google.com/dashboard/quotadetails?&app_id=s~effective-forge-706 -->
+		<schedule>every 2 hours</schedule>
+		<!--<schedule>every 60 minutes</schedule>-->
 
 		<!-- The target string is prepended to your app's hostname. It is usually the name of a module.
 		The cron job will be routed to the default version of the named module.
