@@ -1184,7 +1184,11 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 			Matcher matcher = GROUP_PATTERN.matcher(groupName);
 			if (matcher.matches()) {
 				String dateString = matcher.group(1);
-				scoreMap.put(dateString, new EventScore());
+
+				EventScore score = new EventScore();
+				score.setName(groupName);
+
+				scoreMap.put(dateString, score);
 			}
 		}
 

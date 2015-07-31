@@ -39,6 +39,11 @@ public class Setup implements PropertiesContant {
 
 	public static void main(String... args) throws IOException, InterruptedException, JSONException {
 		refreshPeopleHaveYou();
+		refreshChapters();
+	}
+
+	private static void refreshChapters() {
+
 	}
 
 	/**
@@ -48,8 +53,7 @@ public class Setup implements PropertiesContant {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	static void refreshPeopleHaveYou() throws IOException,
-			JSONException, InterruptedException {
+	static void refreshPeopleHaveYou() throws IOException, JSONException, InterruptedException {
 
 		Map<String, String> incoming = new HashMap<>();
 		extract(FileUtils.readFileToString(new File(PEOPLE_HTML)), incoming);

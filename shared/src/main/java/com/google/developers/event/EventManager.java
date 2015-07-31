@@ -663,7 +663,8 @@ public class EventManager {
 		Collections.sort(scoreRanking, new Comparator<Map.Entry<String, EventScore>>() {
 			@Override
 			public int compare(Map.Entry<String, EventScore> o1, Map.Entry<String, EventScore> o2) {
-				return -Integer.compare(o1.getValue().getValue(), o2.getValue().getValue());
+				return -o1.getKey().compareTo(o2.getKey());
+//				return -Integer.compare(o1.getValue().getValue(), o2.getValue().getValue());
 			}
 		});
 

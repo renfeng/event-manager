@@ -19,6 +19,9 @@ public class DefaultServletModule extends ServletModule implements Path {
 		serve("/api/events").with(EventsServlet.class);
 		serve("/api/activities").with(GPlusServlet.class);
 
+		serve(ADMIN_OAUTH2ENTRY).with(AdminOAuth2EntryServlet.class);
+		serve(ADMIN_OAUTH2CALLBACK).with(AdminOAuth2CallbackServlet.class);
+
 		serve(EVENTS_URL + "*").with(EventsServlet.class);
 	}
 
