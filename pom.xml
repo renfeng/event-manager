@@ -241,10 +241,10 @@
 							<!--<jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>-->
 							<jvmFlag>-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>
 
-							<!--<jvmFlag>-Dhttp.proxyHost=localhost</jvmFlag>-->
-							<!--<jvmFlag>-Dhttp.proxyPort=8118</jvmFlag>-->
-							<!--<jvmFlag>-Dhttps.proxyHost=localhost</jvmFlag>-->
-							<!--<jvmFlag>-Dhttps.proxyPort=8118</jvmFlag>-->
+							<jvmFlag>-Dhttp.proxyHost=localhost</jvmFlag>
+							<jvmFlag>-Dhttp.proxyPort=8118</jvmFlag>
+							<jvmFlag>-Dhttps.proxyHost=localhost</jvmFlag>
+							<jvmFlag>-Dhttps.proxyPort=8118</jvmFlag>
 
 							<!-- hrd -->
 							<jvmFlag>-Ddatastore.default_high_rep_job_policy_unapplied_job_pct=50</jvmFlag>
@@ -401,7 +401,7 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev239-1.20.0</version>
+				<version>v1-rev240-1.20.0</version>
 			</dependency>
 
 			<dependency>

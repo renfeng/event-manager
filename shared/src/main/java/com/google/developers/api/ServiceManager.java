@@ -18,11 +18,8 @@ public abstract class ServiceManager<T extends GoogleService> {
 	public ServiceManager(String refreshToken, String clientId,
 			String clientSecret, HttpTransport transport,
 			JsonFactory jsonFactory) {
-
 		tokenRequest = new GoogleRefreshTokenRequest(transport, jsonFactory,
 				refreshToken, clientId, clientSecret);
-
-		return;
 	}
 
 	public final T getService() throws IOException {

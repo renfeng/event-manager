@@ -41,6 +41,7 @@ public class DevelopersSharedModule implements Module, MemcacheKey {
 		 */
 		binder.bind(DataStoreFactory.class).toInstance(
 				AppEngineDataStoreFactory.getDefaultInstance());
+		binder.bind(DataStoreFactory.class).in(Singleton.class);
 
 		binder.bind(String.class)
 				.annotatedWith(Names.named("refreshToken"))

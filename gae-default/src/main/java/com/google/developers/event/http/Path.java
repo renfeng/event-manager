@@ -4,6 +4,6 @@ public interface Path {
 
 	String EVENTS_URL = "/api/devsite/events/";
 
-	String ADMIN_OAUTH2ENTRY = "/admin/oauth2entry";
-	String ADMIN_OAUTH2CALLBACK = "/admin/oauth2callback";
+	String OAUTH2ENTRY = "/authenticated/oauth2entry";
+	String OAUTH2CALLBACK = "/authenticated/oauth2callback";
 }

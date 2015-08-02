@@ -13,30 +13,18 @@ import java.io.IOException;
 /**
  * Created by frren on 2015-07-10.
  */
-public abstract class ClientManager <T extends AbstractGoogleJsonClient> {
+public abstract class ClientManager<T extends AbstractGoogleJsonClient> {
 
 	private final GoogleRefreshTokenRequest tokenRequest;
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
-	private final String clientId;
-	private final String clientSecret;
 
 	private T client;
 	private long expiration;
 
 	public ClientManager(String refreshToken, String clientId,
-	                      String clientSecret, HttpTransport transport,
-	                      JsonFactory jsonFactory) {
-
+						 String clientSecret, HttpTransport transport,
+						 JsonFactory jsonFactory) {
 		tokenRequest = new GoogleRefreshTokenRequest(transport, jsonFactory,
 				refreshToken, clientId, clientSecret);
-
-		this.transport = transport;
-		this.jsonFactory = jsonFactory;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
-
-		return;
 	}
 
 	public final T getClient() throws IOException {
@@ -45,18 +33,10 @@ public abstract class ClientManager <T extends AbstractGoogleJsonClient> {
 
 		if (now >= getExpiration()) {
 			GoogleTokenResponse tokenResponse = tokenRequest.execute();
-			String accessToken = tokenResponse.getAccessToken();
 			setExpiration(now + tokenResponse.getExpiresInSeconds());
 
-//			client.setHeader("Authorization", "Bearer " + accessToken);
 			// Build credential from stored token data.
-			GoogleCredential credential;
-			credential = new GoogleCredential.Builder()
-					.setJsonFactory(jsonFactory)
-					.setTransport(transport)
-					.setClientSecrets(clientId, clientSecret).build()
-					.setFromTokenResponse(tokenResponse);
-			updateCredential(credential);
+			updateCredential(new GoogleCredential().setFromTokenResponse(tokenResponse));
 		}
 
 		return client;

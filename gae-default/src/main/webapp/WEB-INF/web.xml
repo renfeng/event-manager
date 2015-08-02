@@ -61,20 +61,20 @@
 		</auth-constraint>
 	</security-constraint>
 
-<!--
 	<security-constraint>
 		<web-resource-collection>
-			<web-resource-name>calendar</web-resource-name>
-			<url-pattern>/calendar/*</url-pattern>
+			<web-resource-name>authenticated</web-resource-name>
+			<url-pattern>/authenticated/*</url-pattern>
 		</web-resource-collection>
+<!--
 		<web-resource-collection>
 			<web-resource-name>spreadsheet</web-resource-name>
 			<url-pattern>/spreadsheet/*</url-pattern>
 		</web-resource-collection>
+-->
 		<auth-constraint>
 			<role-name>*</role-name>
 		</auth-constraint>
 	</security-constraint>
--->
 
 </web-app>
