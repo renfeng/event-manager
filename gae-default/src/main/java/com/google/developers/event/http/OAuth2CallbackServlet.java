@@ -20,6 +20,7 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.appengine.auth.oauth2.AbstractAppEngineAuthorizationCodeCallbackServlet;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
+import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Person;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
@@ -57,25 +58,17 @@ public class OAuth2CallbackServlet
 
 	private final OAuth2Utils utils;
 	private final HttpTransport transport;
-	private final SpreadsheetManager spreadsheetManager;
-	private final String clientId;
-	private final String clientSecret;
 	private final JsonFactory jsonFactory;
+	private final SpreadsheetManager spreadsheetManager;
 
 	@Inject
 	public OAuth2CallbackServlet(
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret,
-			OAuth2Utils OAuth2Utils,
-			HttpTransport transport,
-			JsonFactory jsonFactory,
+			HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils OAuth2Utils,
 			SpreadsheetManager spreadsheetManager) {
 		this.utils = OAuth2Utils;
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.spreadsheetManager = spreadsheetManager;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
 	}
 
 	@Override
@@ -88,9 +81,11 @@ public class OAuth2CallbackServlet
 			 * get G+ ID
 			 * https://developers.google.com/+/web/api/rest/latest/people/get
 			 */
-			GPlusManager gplusManager = new GPlusManager(refreshToken, clientId, clientSecret, transport, jsonFactory);
-			Person mePerson = gplusManager.getClient().people().get("me").execute();
-			final String gplusId = mePerson.getId();
+			// Build the Plus object using the credentials
+			Plus plus = new Plus.Builder(transport, jsonFactory, credential).setApplicationName("").build();
+			// Make the API call
+			Person profile = plus.people().get("me").execute();
+			final String gplusId = profile.getId();
 			logger.trace("https://plus.google.com/" + gplusId);
 
 			/*

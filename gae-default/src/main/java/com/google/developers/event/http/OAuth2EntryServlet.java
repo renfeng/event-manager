@@ -30,13 +30,13 @@ public class OAuth2EntryServlet extends AbstractAppEngineAuthorizationCodeServle
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
-	private final OAuth2Utils OAuth2Utils;
+	private final OAuth2Utils oauth2Utils;
 
 	@Inject
-	public OAuth2EntryServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils OAuth2Utils) {
+	public OAuth2EntryServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
-		this.OAuth2Utils = OAuth2Utils;
+		this.oauth2Utils = oauth2Utils;
 	}
 
 	@Override
@@ -67,11 +67,11 @@ public class OAuth2EntryServlet extends AbstractAppEngineAuthorizationCodeServle
 
 	@Override
 	protected AuthorizationCodeFlow initializeFlow() throws ServletException, IOException {
-		return OAuth2Utils.initializeFlow();
+		return oauth2Utils.initializeFlow();
 	}
 
 	@Override
 	protected String getRedirectUri(HttpServletRequest req) throws ServletException, IOException {
-		return OAuth2Utils.getRedirectUri(req);
+		return oauth2Utils.getRedirectUri(req);
 	}
 }
