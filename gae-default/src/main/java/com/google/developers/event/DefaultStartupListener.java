@@ -1,11 +1,11 @@
 package com.google.developers.event;
 
 import com.google.developers.event.http.DefaultServletModule;
+import com.google.developers.event.http.DevelopersSharedServletModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.google.inject.servlet.GuiceServletContextListener;
-import com.google.developers.event.http.DevelopersSharedServletModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

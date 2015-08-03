@@ -27,6 +27,16 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 	private static final Logger logger = LoggerFactory
 			.getLogger(SpreadsheetManager.class);
 
+	public static boolean diff(String oldInputValue, String newInputValue) {
+
+		if ((newInputValue != null && !newInputValue.equals(oldInputValue)) ||
+				(newInputValue == null && oldInputValue != null && oldInputValue.length() > 0)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	@Inject
 	public SpreadsheetManager(
 			@Named("refreshToken") String refreshToken,

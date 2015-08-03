@@ -20,16 +20,13 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.services.plus.PlusScopes;
-import com.google.developers.event.DevelopersSharedModule;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 class OAuth2Utils implements Path {
 

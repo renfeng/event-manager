@@ -634,8 +634,7 @@ public class EventManager {
 	private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
 
 		String inputValue = cellEntry.getCell().getInputValue();
-		if ((value != null && !value.equals(inputValue)) ||
-				(value == null && inputValue != null && inputValue.length() > 0)) {
+		if (SpreadsheetManager.diff(inputValue, value)) {
 			CellEntry batchEntry = new CellEntry(cellEntry);
 			batchEntry.changeInputValueLocal(value);
 
