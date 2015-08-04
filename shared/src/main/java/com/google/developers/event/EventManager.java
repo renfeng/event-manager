@@ -131,7 +131,7 @@ public class EventManager {
 		 */
 		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 
-			CellEntry statusCell = null;
+			CellEntry statusCell;
 			int statusColumn;
 
 			@Override
@@ -142,9 +142,9 @@ public class EventManager {
 			}
 
 			@Override
-			public void processHeaderColumn(String column, String columnName) {
+			public void processHeaderColumn(int column, String columnName) {
 				if ("Status".equals(columnName)) {
-					statusColumn = Integer.parseInt(column);
+					statusColumn = column;
 				}
 			}
 
@@ -168,7 +168,7 @@ public class EventManager {
 						 * http://stackoverflow.com/a/12936664/333033
 						 * http://stackoverflow.com/a/30187245/333033
 						 */
-						statusCell = new CellEntry(getRow(), statusColumn, status);
+						statusCell = new CellEntry(getRow() + 1, statusColumn, status);
 						spreadsheetManager.getService().insert(cellFeedURL, statusCell);
 					}
 				}
@@ -228,17 +228,19 @@ public class EventManager {
 					 * this loop fixes e-tag exceptions
 					 */
 					while (participants.size() > 0) {
-						participants = contactManager.importContactsFromSpreadsheet(
+						List<EventParticipant> participants2 = contactManager.importContactsFromSpreadsheet(
 								participants, eventGroup, activity);
+						if (participants2.size() == participants.size()) {
+							throw new Exception("failed to update participants: " +
+									Arrays.toString(participants2.toArray()));
+						}
+						participants = participants2;
 					}
 
 					logger.debug("done: " + event);
 					status = "Done";
 				} catch (Exception ex) {
-					String message = ex.getMessage();
-					if (message == null) {
-						message = ex.getClass().getName();
-					}
+					String message = ex.toString();
 					logger.debug("error: " + message);
 					status = message;
 				}
@@ -359,7 +361,7 @@ public class EventManager {
 			int activitiesIndex = 0;
 
 			Map<String, CellEntry> cellMap = new HashMap<>();
-			Map<String, String> columnMap = new HashMap<>();
+			Map<String, Integer> columnMap = new HashMap<>();
 
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
@@ -410,16 +412,14 @@ public class EventManager {
 				{
 //				updateCell(entries, cellMap.get("hasGplus"),
 //						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
-					int columnOffset = Integer.parseInt(columnMap.get("gplusID")) -
-							Integer.parseInt(columnMap.get("hasGplus"));
+					int columnOffset = columnMap.get("gplusID") - columnMap.get("hasGplus");
 					updateCell(entries, cellMap.get("hasGplus"),
 							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
 				}
 				{
 //				updateCell(entries, cellMap.get("gplusCount"),
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
-					int columnOffset = Integer.parseInt(columnMap.get("hasGplus")) -
-							Integer.parseInt(columnMap.get("gplusCount"));
+					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
 					updateCell(entries, cellMap.get("gplusCount"),
 							getRow() == 1 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
@@ -439,7 +439,7 @@ public class EventManager {
 			}
 
 			@Override
-			protected void processHeaderColumn(String column, String columnName) {
+			protected void processHeaderColumn(int column, String columnName) {
 				columnMap.put(columnName, column);
 			}
 		};
@@ -471,7 +471,7 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("streak ranking rows updated: " + (processor.getRow() + 1));
+		logger.info("streak ranking rows updated: " + processor.getRow());
 	}
 
 	public void updateCreditRanking(List<ParticipantStatistics> activities)
@@ -523,7 +523,7 @@ public class EventManager {
 			int activitiesIndex = 0;
 
 			Map<String, CellEntry> cellMap = new HashMap<>();
-			Map<String, String> columnMap = new HashMap<>();
+			Map<String, Integer> columnMap = new HashMap<>();
 
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
@@ -567,16 +567,14 @@ public class EventManager {
 				{
 //				updateCell(entries, cellMap.get("hasGplus"),
 //						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
-					int columnOffset = Integer.parseInt(columnMap.get("gplusID")) -
-							Integer.parseInt(columnMap.get("hasGplus"));
+					int columnOffset = columnMap.get("gplusID") - columnMap.get("hasGplus");
 					updateCell(entries, cellMap.get("hasGplus"),
 							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
 				}
 				{
 //				updateCell(entries, cellMap.get("gplusCount"),
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
-					int columnOffset = Integer.parseInt(columnMap.get("hasGplus")) -
-							Integer.parseInt(columnMap.get("gplusCount"));
+					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
 					updateCell(entries, cellMap.get("gplusCount"),
 							getRow() == 1 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
@@ -596,7 +594,7 @@ public class EventManager {
 			}
 
 			@Override
-			protected void processHeaderColumn(String column, String columnName) {
+			protected void processHeaderColumn(int column, String columnName) {
 				columnMap.put(columnName, column);
 			}
 		};
@@ -628,7 +626,7 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("credit ranking rows updated: " + (processor.getRow() + 1));
+		logger.info("credit ranking rows updated: " + processor.getRow());
 	}
 
 	private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
@@ -683,7 +681,7 @@ public class EventManager {
 			int eventIndex = 0;
 
 			Map<String, CellEntry> cellMap = new HashMap<>();
-			Map<String, String> columnMap = new HashMap<>();
+			Map<String, Integer> columnMap = new HashMap<>();
 
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
@@ -709,7 +707,7 @@ public class EventManager {
 			}
 
 			@Override
-			protected void processHeaderColumn(String column, String columnName) {
+			protected void processHeaderColumn(int column, String columnName) {
 				columnMap.put(columnName, column);
 			}
 		};
@@ -741,6 +739,6 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("event score rows updated: " + (processor.getRow() + 1));
+		logger.info("event score rows updated: " + processor.getRow());
 	}
 }

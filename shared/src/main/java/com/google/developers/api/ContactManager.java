@@ -14,7 +14,6 @@ import com.google.gdata.data.batch.BatchStatus;
 import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.contacts.*;
 import com.google.gdata.data.extensions.Email;
-import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.data.extensions.When;
 import com.google.gdata.util.ServiceException;
@@ -502,29 +501,29 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 					 /*
 					 * backup and change nickname
 					 */
-					String propertyName = "nickname before "
-							+ eventGroup.getTitle().getPlainText();
-
-					ExtendedProperty extendedProperty = null;
-					for (ExtendedProperty p : contactEntry
-							.getExtendedProperties()) {
-						if (p.getName().equals(propertyName)) {
-							extendedProperty = p;
-							break;
-						}
-					}
-					if (extendedProperty == null) {
-						extendedProperty = new ExtendedProperty();
-						extendedProperty.setName(propertyName);
-						extendedProperty.setValue(nickname);
-
-						contactEntry
-								.addExtendedProperty(extendedProperty);
-
-					} else if (!extendedProperty.getValue().equals(
-							nickname)) {
-						extendedProperty.setValue(nickname);
-					}
+//					String propertyName = "nickname before "
+//							+ eventGroup.getTitle().getPlainText();
+//
+//					ExtendedProperty extendedProperty = null;
+//					for (ExtendedProperty p : contactEntry
+//							.getExtendedProperties()) {
+//						if (p.getName().equals(propertyName)) {
+//							extendedProperty = p;
+//							break;
+//						}
+//					}
+//					if (extendedProperty == null) {
+//						extendedProperty = new ExtendedProperty();
+//						extendedProperty.setName(propertyName);
+//						extendedProperty.setValue(nickname);
+//
+//						contactEntry
+//								.addExtendedProperty(extendedProperty);
+//
+//					} else if (!extendedProperty.getValue().equals(
+//							nickname)) {
+//						extendedProperty.setValue(nickname);
+//					}
 
 					n.setValue(nickname);
 					dirty = true;

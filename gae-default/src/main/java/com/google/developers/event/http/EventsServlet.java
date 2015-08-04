@@ -67,11 +67,14 @@ public class EventsServlet extends HttpServlet {
 		generator.writeStartObject();
 		generator.writeFieldName("attendees");
 		extractAttendees(document, generator);
-//			generator.writeFieldName("organizers");
-//			(extractOrganizers(document, generator);
 
-		Elements gplusEventLinkElement = document
-				.select("header:contains(Google+ Event URL:) + a");
+		/*
+		 * TODO retrieve organizer from associated Google+ event
+		 */
+//		generator.writeFieldName("organizers");
+//		extractOrganizers(document, generator);
+
+		Elements gplusEventLinkElement = document.select("header:contains(Event URL:) + a");
 		if (gplusEventLinkElement.size() > 0) {
 			String gplusEventLink = gplusEventLinkElement.attr("href");
 			generator.writeFieldName("gplusEvent");

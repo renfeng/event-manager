@@ -21,8 +21,8 @@ public class EventManagerTest {
 
 		EventManager eventManager = injector.getInstance(EventManager.class);
 		eventManager.importContactsFromSpreadsheets();
-		eventManager.updateRanking();
-		eventManager.updateEventScore();
+//		eventManager.updateRanking();
+//		eventManager.updateEventScore();
 
 //		SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy HH:mm:ss");
 //		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+08"));
