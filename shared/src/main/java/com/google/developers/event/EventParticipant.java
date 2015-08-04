@@ -36,8 +36,9 @@ public class EventParticipant {
 
 	@Override
 	public String toString() {
-		return getNickname() + " <" + getEmailAddress() + ">, "
-				+ getPhoneNumber();
+		return (getNickname() != null ? getNickname() : "(anonymous)") +
+				(getEmailAddress() != null ? " <" + getEmailAddress() + "> " : "(missing email)") +
+				(getPhoneNumber() != null ? getPhoneNumber() : "(missing phone number)");
 	}
 
 	public Date getTimestamp() {

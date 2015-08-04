@@ -12,8 +12,11 @@ import com.google.gdata.data.contacts.ContactGroupEntry;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
+import com.google.gdata.util.ContentType;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,6 +242,21 @@ public class EventManager {
 
 					logger.debug("done: " + event);
 					status = "Done";
+				} catch (ServiceException ex) {
+					String message;
+					if (ex.getResponseBody() != null &&
+							ex.getResponseContentType().match(new ContentType("text/html"))) {
+						Document document = Jsoup.parse(ex.getResponseBody());
+
+						String s = ex.getClass().getName();
+						String localizedMessage = ex.getLocalizedMessage();
+						message = (localizedMessage != null ? (s + ": " + localizedMessage) : s) + "\n" +
+								document.text();
+					} else {
+						message = ex.toString();
+					}
+					logger.debug("error: " + message);
+					status = message;
 				} catch (Exception ex) {
 					String message = ex.toString();
 					logger.debug("error: " + message);
