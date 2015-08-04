@@ -30,7 +30,7 @@ public abstract class CellFeedProcessor {
 		this.spreadsheetManager = spreadsheetManager;
 	}
 
-	public void process(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
+	public void processForBatchUpdate(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
 
 		boolean stoppedOnDemand = false;
 
@@ -152,15 +152,95 @@ public abstract class CellFeedProcessor {
 				}
 			}
 
-			if (!stoppedOnDemand && lastRow != null && valueMap != null) {
+			if (!stoppedOnDemand && valueMap != null) {
 				this.row++;
 				processDataRow(valueMap, cellFeedURL);
 			}
 		}
 	}
 
+	public void process(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
+
+		boolean stoppedOnDemand = false;
+
+		List<String> columnNames = new ArrayList<>(Arrays.asList(columns));
+
+		Map<Integer, String> columnNameMap = new HashMap<>();
+		Map<String, String> valueMap = null;
+		String lastRow = null;
+
+		URL cellFeedURL = sheet.getCellFeedUrl();
+		CellFeed feed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
+		List<CellEntry> cells = feed.getEntries();
+		for (CellEntry cell : cells) {
+			Matcher matcher = cellIDPattern.matcher(cell.getId().substring(cell.getId().lastIndexOf('/') + 1));
+			if (matcher.matches()) {
+
+				int column = Integer.parseInt(matcher.group(2));
+				String row = matcher.group(1);
+				if ("1".equals(row)) {
+					if (columnNames.size() == 0) {
+						continue;
+					}
+
+					String columnName = cell.getCell().getValue();
+					if (columnNames.contains(columnName)) {
+						columnNameMap.put(column, columnName);
+						columnNames.remove(columnName);
+					}
+
+					this.row = 0;
+					processHeaderColumn(column, columnName);
+
+				} else {
+					if (!row.equals(lastRow)) {
+						/*
+						 * now all the cells in a row is collected
+						 */
+
+						if (valueMap != null) {
+							/*
+							 * this is not the header row
+							 */
+
+							this.row++;
+
+							if (!processDataRow(valueMap, cellFeedURL)) {
+								stoppedOnDemand = true;
+								break;
+							}
+						}
+
+						valueMap = new HashMap<>();
+						lastRow = row;
+					}
+
+					String columnName = columnNameMap.get(column);
+					if (columnName != null) {
+						processDataColumn(cell, columnName);
+
+						String value = cell.getCell().getValue();
+						if (value == null) {
+							continue;
+						}
+
+						valueMap.put(columnName, value);
+					}
+				}
+			} else {
+				/*
+				 * won't be here
+				 */
+			}
+		}
+
+		if (!stoppedOnDemand && valueMap != null) {
+			this.row++;
+			processDataRow(valueMap, cellFeedURL);
+		}
+	}
+
 	/**
-	 *
 	 * @return zero-based row number
 	 */
 	public int getRow() {

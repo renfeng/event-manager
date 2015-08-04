@@ -598,7 +598,7 @@ public class EventManager {
 				columnMap.put(columnName, column);
 			}
 		};
-		processor.process(sheet, columnNames);
+		processor.processForBatchUpdate(sheet, columnNames);
 
 		/*
 		 * batchLink will be null for list feed
