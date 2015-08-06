@@ -171,7 +171,7 @@ public class EventManager {
 						 * http://stackoverflow.com/a/12936664/333033
 						 * http://stackoverflow.com/a/30187245/333033
 						 */
-						statusCell = new CellEntry(getRow() + 1, statusColumn, status);
+						statusCell = new CellEntry(getRow(), statusColumn, status);
 						spreadsheetManager.getService().insert(cellFeedURL, statusCell);
 					}
 				}
@@ -416,7 +416,7 @@ public class EventManager {
 				updateCell(entries, cellMap.get("toDate"), DATE_FORMAT.format(latestStreak.getToDate()));
 
 				updateCell(entries, cellMap.get("id"), p.getContactID());
-				updateCell(entries, cellMap.get("cardinal"), getRow() + "");
+				updateCell(entries, cellMap.get("cardinal"), (getRow() - 1) + "");
 
 				/*
 				 * the input value will be converted to the following
@@ -439,7 +439,7 @@ public class EventManager {
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
 					updateCell(entries, cellMap.get("gplusCount"),
-							getRow() == 1 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
+							getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
 
 				logger.debug("updating streak: " + activitiesIndex + ", " + p);
@@ -461,7 +461,7 @@ public class EventManager {
 				columnMap.put(columnName, column);
 			}
 		};
-		processor.process(sheet, columnNames);
+		processor.processForBatchUpdate(sheet, columnNames);
 
 		/*
 		 * batchLink will be null for list feed
@@ -489,7 +489,7 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("streak ranking rows updated: " + processor.getRow());
+		logger.info("streak ranking rows updated: " + (processor.getRow() - 1));
 	}
 
 	public void updateCreditRanking(List<ParticipantStatistics> activities)
@@ -571,7 +571,7 @@ public class EventManager {
 				updateCell(entries, cellMap.get("toDate"), DATE_FORMAT.format(p.getToDate()));
 
 				updateCell(entries, cellMap.get("id"), p.getContactID());
-				updateCell(entries, cellMap.get("cardinal"), getRow() + "");
+				updateCell(entries, cellMap.get("cardinal"), (getRow() - 1) + "");
 
 				/*
 				 * the input value will be converted to the following
@@ -594,7 +594,7 @@ public class EventManager {
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
 					updateCell(entries, cellMap.get("gplusCount"),
-							getRow() == 1 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
+							getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
 
 				logger.debug("updating credit: " + activitiesIndex + ", " + p);
@@ -644,7 +644,7 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("credit ranking rows updated: " + processor.getRow());
+		logger.info("credit ranking rows updated: " + (processor.getRow() - 1));
 	}
 
 	private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
@@ -729,7 +729,7 @@ public class EventManager {
 				columnMap.put(columnName, column);
 			}
 		};
-		processor.process(sheet, "Name", "Score", "Organizer");
+		processor.processForBatchUpdate(sheet, "Name", "Score", "Organizer");
 
 		/*
 		 * batchLink will be null for list feed
@@ -757,6 +757,6 @@ public class EventManager {
 
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
-		logger.info("event score rows updated: " + processor.getRow());
+		logger.info("event score rows updated: " + (processor.getRow() - 1));
 	}
 }

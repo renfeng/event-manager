@@ -49,13 +49,13 @@ public abstract class CellFeedProcessor {
 //		rowCount = (rowCount + 1954) / 2;
 //		rowCount = (rowCount + 1954) / 2;
 		if (rowCount > 1) {
-			CellFeed batchRequest = new CellFeed();
 			row = 1;
-			int r = 1;
+
+			CellFeed batchRequest = new CellFeed();
 			int colCount = sheet.getColCount();
 			for (int c = 1; c <= colCount; c++) {
-				String idString = "R" + r + "C" + c;
-				CellEntry batchEntry = new CellEntry(r, c, "");
+				String idString = "R" + row + "C" + c;
+				CellEntry batchEntry = new CellEntry(row, c, "");
 				batchEntry.setId(cellFeedURL.toString() + "/" + idString);
 				BatchUtils.setBatchId(batchEntry, idString);
 				BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.QUERY);
@@ -93,6 +93,9 @@ public abstract class CellFeedProcessor {
 		}
 
 		if (columnNameMap.size() > 0) {
+			row = 2;
+			Map<String, String> valueMap = new HashMap<>();
+
 			CellFeed batchRequest = new CellFeed();
 			for (int r = 2; r <= rowCount; r++) {
 				for (int c : columnNameMap.keySet()) {
@@ -105,9 +108,6 @@ public abstract class CellFeedProcessor {
 				}
 			}
 
-			Map<String, String> valueMap = new HashMap<>();
-			String lastRow = "1";
-
 			CellFeed cellFeed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
 			CellFeed queryBatchResponse = spreadsheetManager.getService().batch(
 					new URL(cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM).getHref()),
@@ -118,20 +118,18 @@ public abstract class CellFeedProcessor {
 						cellEntry.getId().substring(cellEntry.getId().lastIndexOf('/') + 1));
 				if (matcher.matches()) {
 					int column = Integer.parseInt(matcher.group(2));
-					String row = matcher.group(1);
-					if (!row.equals(lastRow)) {
-						this.row++;
-
-							/*
-							 * now I've read all the data I need in a row
-							 */
+					int row = Integer.parseInt(matcher.group(1));
+					if (row != this.row) {
+						/*
+						 * now I've read all the data I need in a row
+						 */
 						if (!processDataRow(valueMap, cellFeedURL)) {
 							stoppedOnDemand = true;
 							break;
 						}
 
 						valueMap = new HashMap<>();
-						lastRow = row;
+						this.row = row;
 					}
 
 					String columnName = columnNameMap.get(column);
@@ -166,71 +164,82 @@ public abstract class CellFeedProcessor {
 		List<String> columnNames = new ArrayList<>(Arrays.asList(columns));
 
 		Map<Integer, String> columnNameMap = new HashMap<>();
-		Map<String, String> valueMap = null;
-		String lastRow = null;
+		Map<String, String> valueMap = new HashMap<>();
 
 		URL cellFeedURL = sheet.getCellFeedUrl();
 		CellFeed feed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
 		List<CellEntry> cells = feed.getEntries();
-		for (CellEntry cell : cells) {
-			Matcher matcher = cellIDPattern.matcher(cell.getId().substring(cell.getId().lastIndexOf('/') + 1));
+		Iterator<CellEntry> iterator = cells.iterator();
+
+		this.row = 1;
+		while (iterator.hasNext()) {
+			CellEntry cell = iterator.next();
+			String cellId = cell.getId();
+			Matcher matcher = cellIDPattern.matcher(cellId.substring(cellId.lastIndexOf('/') + 1));
 			if (matcher.matches()) {
-
 				int column = Integer.parseInt(matcher.group(2));
-				String row = matcher.group(1);
-				if ("1".equals(row)) {
-					if (columnNames.size() == 0) {
-						continue;
-					}
+				int row = Integer.parseInt(matcher.group(1));
 
-					String columnName = cell.getCell().getValue();
-					if (columnNames.contains(columnName)) {
-						columnNameMap.put(column, columnName);
-						columnNames.remove(columnName);
-					}
+				if (row != 1) {
+					break;
+				}
+				if (columnNames.size() == 0) {
+					break;
+				}
 
-					this.row = 0;
+				String columnName = cell.getCell().getValue();
+				if (columnNames.contains(columnName)) {
+					columnNameMap.put(column, columnName);
+					columnNames.remove(columnName);
 					processHeaderColumn(column, columnName);
-
-				} else {
-					if (!row.equals(lastRow)) {
-						/*
-						 * now all the cells in a row is collected
-						 */
-
-						if (valueMap != null) {
-							/*
-							 * this is not the header row
-							 */
-
-							this.row++;
-
-							if (!processDataRow(valueMap, cellFeedURL)) {
-								stoppedOnDemand = true;
-								break;
-							}
-						}
-
-						valueMap = new HashMap<>();
-						lastRow = row;
-					}
-
-					String columnName = columnNameMap.get(column);
-					if (columnName != null) {
-						processDataColumn(cell, columnName);
-
-						String value = cell.getCell().getValue();
-						if (value == null) {
-							continue;
-						}
-
-						valueMap.put(columnName, value);
-					}
 				}
 			} else {
 				/*
 				 * won't be here
 				 */
+				throw new RuntimeException("invalid cell notation: " + cellId);
+			}
+		}
+
+		this.row = 2;
+		while (iterator.hasNext()) {
+			CellEntry cell = iterator.next();
+			String cellId = cell.getId();
+			Matcher matcher = cellIDPattern.matcher(cellId.substring(cellId.lastIndexOf('/') + 1));
+			if (matcher.matches()) {
+
+				int column = Integer.parseInt(matcher.group(2));
+				int row = Integer.parseInt(matcher.group(1));
+
+				if (row != this.row) {
+						/*
+						 * now all the cells in a row is collected
+						 */
+					if (!processDataRow(valueMap, cellFeedURL)) {
+						stoppedOnDemand = true;
+						break;
+					}
+
+					valueMap = new HashMap<>();
+					this.row = row;
+				}
+
+				String columnName = columnNameMap.get(column);
+				if (columnName != null) {
+					processDataColumn(cell, columnName);
+
+					String value = cell.getCell().getValue();
+					if (value == null) {
+						continue;
+					}
+
+					valueMap.put(columnName, value);
+				}
+			} else {
+				/*
+				 * won't be here
+				 */
+				throw new RuntimeException("invalid cell notation: " + cellId);
 			}
 		}
 
@@ -241,7 +250,7 @@ public abstract class CellFeedProcessor {
 	}
 
 	/**
-	 * @return zero-based row number
+	 * @return current row number, starting from one
 	 */
 	public int getRow() {
 		return row;
