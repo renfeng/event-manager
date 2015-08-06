@@ -18,6 +18,6 @@
     "json-p": "*"
   },
   "resolutions": {
-    "webcomponentsjs": "0.7.6"
+    "webcomponentsjs": "0.7.10"
   }
 }
