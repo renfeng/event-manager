@@ -100,7 +100,7 @@ public class EventManager {
 		}
 
 		while (participants.size() > 0) {
-			participants = contactManager.importContactsFromSpreadsheet(participants, eventGroup, activity);
+			participants = contactManager.importContacts(participants, eventGroup, activity);
 		}
 
 		return;
@@ -119,7 +119,7 @@ public class EventManager {
 		}
 
 		while (participants.size() > 0) {
-			participants = contactManager.importContactsFromSpreadsheet(participants, eventGroup, "Google Groups");
+			participants = contactManager.importContacts(participants, eventGroup, "Google Groups");
 		}
 
 		return;
@@ -231,7 +231,7 @@ public class EventManager {
 					 * this loop fixes e-tag exceptions
 					 */
 					while (participants.size() > 0) {
-						List<EventParticipant> participants2 = contactManager.importContactsFromSpreadsheet(
+						List<EventParticipant> participants2 = contactManager.importContacts(
 								participants, eventGroup, activity);
 						if (participants2.size() == participants.size()) {
 							throw new Exception("failed to update participants: " +

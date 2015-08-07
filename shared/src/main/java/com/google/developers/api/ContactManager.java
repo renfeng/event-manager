@@ -33,6 +33,15 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The maximum number of contacts you can have is 25,000.
+ * The total storage limit for all your contacts is 20 MB. Contact photos do not count towards this limit.
+ * Each contact entry can be up to 128 KB.
+ * Each contact entry can have up to 500 fields.
+ * Each field can have up to 1,024 characters (except for the "Notes" field).
+ * If you take an action that would put you beyond this limit, we'll show you an error message.
+ * https://support.google.com/mail/answer/148779
+ */
 public class ContactManager extends ServiceManager<ContactsService> implements PropertiesContant {
 
 	private static final Logger logger = LoggerFactory
@@ -114,7 +123,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		return entry;
 	}
 
-	public List<EventParticipant> importContactsFromSpreadsheet(
+	public List<EventParticipant> importContacts(
 			List<EventParticipant> participants, ContactGroupEntry eventGroup, String eventName)
 			throws IOException, ServiceException {
 
@@ -193,11 +202,11 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		String groupAtomId = eventGroup.getId();
 
 		for (EventParticipant participant : participants) {
+			logger.debug("row: " + participant);
 			String nickname = participant.getNickname();
-			String emailAddress = participant.getEmailAddress();
+			String emailAddress = normalizeEmailAddress(participant.getEmailAddress());
 			String phoneNumber = participant.getPhoneNumber();
 			Date timestamp = participant.getTimestamp();
-			logger.debug("row: " + participant);
 			if (emailAddress == null && phoneNumber == null) {
 				logger.debug("skipped attendee who left no email nor phone number");
 				continue;
@@ -957,13 +966,12 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		String gplusId = null;
 		for (Email email : entry.getEmailAddresses()) {
 			String emailAddress = email.getAddress();
-			if (emailAddress.endsWith("@gmail.com")) {
-				/*
-				 * nomalize gmail address, e.g. change renfeng.cn@gmail.com to renfengcn@gmail.com
-				 */
-				emailAddress = emailAddress.substring(0, emailAddress.indexOf("@gmail.com")).replaceAll("[.]", "") +
-						"@gmail.com";
-			}
+
+			/*
+			 * in case of manual input
+			 */
+			emailAddress = normalizeEmailAddress(emailAddress);
+
 			gplusId = peopleHaveyouGplusIdMap.get(emailAddress);
 			if (gplusId != null) {
 				break;
@@ -1162,6 +1170,20 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		participantStatistics.setContactID(id.substring(id.lastIndexOf("/") + "/".length()));
 
 		return participantStatistics;
+	}
+
+	public static String normalizeEmailAddress(String emailAddress) {
+		if (emailAddress != null) {
+			emailAddress = emailAddress.toLowerCase();
+			if (emailAddress.endsWith("@gmail.com")) {
+				/*
+				 * nomalize gmail address, e.g. change renfeng.cn@gmail.com to renfengcn@gmail.com
+				 */
+				String googleId = emailAddress.substring(0, emailAddress.indexOf("@gmail.com"));
+				emailAddress = googleId.replaceAll("[.]", "") + "@gmail.com";
+			}
+		}
+		return emailAddress;
 	}
 
 	/**

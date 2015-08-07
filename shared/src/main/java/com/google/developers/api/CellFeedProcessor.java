@@ -151,7 +151,6 @@ public abstract class CellFeedProcessor {
 			}
 
 			if (!stoppedOnDemand && valueMap != null) {
-				this.row++;
 				processDataRow(valueMap, cellFeedURL);
 			}
 		}
@@ -244,7 +243,6 @@ public abstract class CellFeedProcessor {
 		}
 
 		if (!stoppedOnDemand && valueMap != null) {
-			this.row++;
 			processDataRow(valueMap, cellFeedURL);
 		}
 	}
