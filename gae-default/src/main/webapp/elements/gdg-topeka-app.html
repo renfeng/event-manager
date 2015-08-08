@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="gdg-topeka-categories.html">
 <link rel="import" href="gdg-topeka-category.html">
 <link rel="import" href="gdg-topeka-leaderboard.html">
-<link rel="import" href="../components/topeka-elements/topeka-profile.html">
+<link rel="import" href="gdg-topeka-profile.html">
 <link rel="import" href="../components/core-drawer-panel/core-drawer-panel.html">
 <link rel="import" href="../components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../components/core-animated-pages/transitions/slide-up.html">
@@ -37,7 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <gdg-topeka-leaderboard name="leaderboard" user="{{user}}" wide="{{wide}}" disabled="{{disableLeaderboard}}"></gdg-topeka-leaderboard>
 
-    <topeka-profile id="profile" name="profile" user="{{user}}" wide="{{wide}}"></topeka-profile>
+    <gdg-topeka-profile id="profile" name="profile" user="{{user}}" wide="{{wide}}"></gdg-topeka-profile>
 
   </core-animated-pages>
 
@@ -55,7 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   setTopekaTransitionSpeed(350);
 
-  Polymer('gdg-topeka-app', {
+  Polymer({
     
     selected: 'splash',
 

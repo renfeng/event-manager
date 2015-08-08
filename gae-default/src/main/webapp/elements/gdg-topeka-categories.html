@@ -13,18 +13,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../components/core-toolbar/core-toolbar.html">
 <link rel="import" href="../components/core-selector/core-selector.html">
 <link rel="import" href="../components/core-icon/core-icon.html">
-<link rel="import" href="../components/core-ajax/core-ajax.html">
 
 <polymer-element name="gdg-topeka-categories" attributes="user categories category wide allScores" vertical layout>
 	<template>
 
-  <link rel="stylesheet" href="../components/topeka-elements/topeka-categories.css">
+  <link rel="stylesheet" href="gdg-topeka-categories.css">
   <link rel="stylesheet" href="../components/topeka-elements/topeka-category-themes.css">
-
-<!--
-		<core-ajax auto url="/api/activities" handleAs="json"
-				   on-core-response="{{onActivitiesReady}}" response="{{activities}}"></core-ajax>
--->
 
   <div class="categories-panel" flex auto>
 
@@ -50,7 +44,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
           </div>
           <div class="cat-name" horizontal center layout>
-            <div flex>Leaderboard</div>
+            <div flex>排行榜</div>
             <core-icon class="category-icon" icon="arrow-forward"></core-icon>
           </div>
         </div>
@@ -59,7 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <template repeat="{{cat, i in categories}}">
 
         <template bind="{{allScores[cat.name] as scores}}">
-          <div class="category-item {{cat.theme}}-theme {{ {completed: scores.length == cat.quizzes.length} | tokenList }}" vertical layout needZ?="{{category.name === cat.name}}">
+          <div class="category-item {{theme[i]}}-theme {{ {completed: scores.length == cat.quizzes.length} | tokenList }}" vertical layout needZ?="{{category.name === cat.name}}">
             <div class="tile theme-bg-a" dummy fit hero-id="{{category.name === cat.name ? 'punch' : ''}}" hero?="{{category.name === cat.name}}"></div>
             <div class="tile" flex auto vertical layout>
               <div flex auto relative>
@@ -94,17 +88,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
           </div>
           <div class="cat-name" horizontal center layout>
-            <div flex>Profile</div>
+            <div flex>GDG 全球社区</div>
             <core-icon class="category-icon" icon="arrow-forward"></core-icon>
           </div>
         </div>
       </div>
 
+<!--
       <div class="category-item polymer-logo" hidden?="{{wide}}" vertical layout>
         <div class="tile" fit>
           <core-icon icon="category-icons:polymer"></core-icon>
         </div>
       </div>
+-->
 
     </core-selector>
 
@@ -113,10 +109,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </template>
 <script>
 
-  Polymer('gdg-topeka-categories', {
+  Polymer({
 
     wide: false,
     activities: null,
+    theme: ["red", "purple", "red", "green", "yellow", "blue", "green", "purple", "blue"],
 
     created: function() {
       this.categories = [];

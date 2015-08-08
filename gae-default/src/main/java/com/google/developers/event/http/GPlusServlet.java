@@ -49,7 +49,14 @@ public class GPlusServlet extends HttpServlet {
 		// Unwrap the request and extract the pieces we want
 		List<Activity> activities = activityFeed.getItems();
 
-		resp.setContentType("text/javascript");
+		/*
+		 * headers must be set before body
+		 *
+		 * java - Response encoding of Google App Engine (can not change response encoding) - Stack Overflow
+		 * http://stackoverflow.com/a/9447068/333033
+		 */
+		resp.setContentType("text/javascript; charset=utf-8");
+
 		JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(resp.getWriter());
 		jsonGenerator.writeStartArray();
 		// Loop through until we arrive at an empty page

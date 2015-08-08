@@ -77,4 +77,7 @@
 		</auth-constraint>
 	</security-constraint>
 
+	<welcome-file-list>
+		<welcome-file>gdg-index.html</welcome-file>
+	</welcome-file-list>
 </web-app>

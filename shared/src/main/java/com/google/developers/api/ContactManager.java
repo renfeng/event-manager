@@ -379,17 +379,17 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		for (ContactEntry entry : responseFeed.getEntries()) {
 			String batchId = BatchUtils.getBatchId(entry);
 			BatchStatus status = BatchUtils.getBatchStatus(entry);
-			logger.debug(batchId + ": " + status.getCode() + " (" + status.getReason() + ")");
 			if (status.getCode() != HttpURLConnection.HTTP_OK) {
 				/*
-				 * map participant
+				 * TODO save error to spreadsheet status cell
 				 */
-				logger.error("failed to update: " + participantMap.get(batchId));
+				logger.error("failed to update: " + participantMap.get(batchId) + ": " +
+						status.getCode() + " (" + status.getReason() + ")");
 				failedParticipants.add(participantMap.get(batchId));
 			}
 		}
 
-		requestFeed.getEntries().clear();
+//		requestFeed.getEntries().clear();
 
 		return failedParticipants;
 	}
