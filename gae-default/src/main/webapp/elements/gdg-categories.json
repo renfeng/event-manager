@@ -1,7 +1,7 @@
 [
     {
         "name": "积分",
-        "id": "entertainment",
+        "id": "profile",
         "theme": "red",
         "quizzes": [
             {
@@ -86,7 +86,7 @@
     },
     {
         "name": "幕后英雄",
-        "id": "sports",
+        "id": "entertainment",
         "theme": "purple",
         "quizzes": [
             {
@@ -199,7 +199,7 @@
     },
     {
         "name": "最近的活动",
-        "id": "geography",
+        "id": "tvmovies",
         "theme": "red",
         "quizzes": [
             {
@@ -410,7 +410,7 @@
     },
     {
         "name": "精彩瞬间",
-        "id": "knowledge",
+        "id": "history",
         "theme": "yellow",
         "quizzes": [
             {
@@ -520,9 +520,14 @@
     },
     {
         "name": "新闻",
-        "id": "history",
+        "id": "music",
         "theme": "blue",
         "quizzes": [
+            {
+                "type": "gplus-post",
+                "question": "A new +Udacity course just launched: Android Ubiquitous Computing with Google instructors +Timothy Jordan...",
+                "answer": "<b>A new +Udacity course just launched:</b> Android Ubiquitous Computing with Google instructors <span class=\"proflinkWrapper\"><span class=\"proflinkPrefix\">+</span><a class=\"proflink\" href=\"https://plus.google.com/113751353481962008916\" oid=\"113751353481962008916\">Timothy Jordan</a></span>, <span class=\"proflinkWrapper\"><span class=\"proflinkPrefix\">+</span><a class=\"proflink\" href=\"https://plus.google.com/114844270757025925192\" oid=\"114844270757025925192\">Wayne Piekarski</a></span>, and <span class=\"proflinkWrapper\"><span class=\"proflinkPrefix\">+</span><a class=\"proflink\" href=\"https://plus.google.com/101059494947772151859\" oid=\"101059494947772151859\">Joshua Gordon</a></span>.<br /><br />Take this course to learn the design paradigms and technical essentials of bringing your app to your user wherever and whenever they want or need it. The material in this course will give you the conceptual knowledge and expertise to extend your app with Android Wear, Google Cast, Android TV, and Android Auto.<br /><br /><a href=\"https://goo.gl/h4prAi\">https://goo.gl/h4prAi</a>\ufeff"
+            },
             {
                 "type": "fill-blank",
                 "question": "The first words spoken on the moon by Buzz Aldrin were these:",
@@ -618,7 +623,7 @@
     },
     {
         "name": "热点",
-        "id": "science",
+        "id": "sports",
         "theme": "green",
         "quizzes": [
             {
@@ -742,7 +747,7 @@
     },
     {
         "name": "Solve for X",
-        "id": "tvmovies",
+        "id": "science",
         "theme": "purple",
         "quizzes": [
             {
@@ -830,7 +835,7 @@
     },
     {
         "name": "Study Jams",
-        "id": "music",
+        "id": "knowledge",
         "theme": "blue",
         "quizzes": [
             {

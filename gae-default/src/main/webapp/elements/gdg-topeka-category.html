@@ -8,7 +8,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../components/topeka-elements/topeka-category-front-page.html">
-<link rel="import" href="../components/topeka-elements/topeka-quizzes.html">
+<link rel="import" href="gdg-topeka-quizzes.html">
 <link rel="import" href="../components/topeka-elements/topeka-quiz-score.html">
 <link rel="import" href="../components/topeka-elements/topeka-results.html">
 <link rel="import" href="../components/topeka-elements/topeka-user-score.html">
@@ -36,7 +36,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <topeka-category-front-page name="front" category="{{category}}" wide="{{wide}}" on-previous="{{mainAction}}" on-next="{{showQuizzes}}"></topeka-category-front-page>
     
-      <topeka-quizzes id="quizzes" name="quizzes" selectedPage="{{selected}}" scores="{{scores}}" category="{{category}}" avatar="{{user.avatar}}" wide="{{wide}}" on-quiz-done="{{quizDone}}"></topeka-quizzes>
+      <gdg-topeka-quizzes id="quizzes" name="quizzes" selectedPage="{{selected}}" scores="{{scores}}" category="{{category}}" avatar="{{user.avatar}}" wide="{{wide}}" on-quiz-done="{{quizDone}}"></gdg-topeka-quizzes>
       
       <topeka-quiz-score name="quizScore" selectedPage="{{selected}}" scores="{{scores}}" category="{{category}}" avatar="{{user.avatar}}" wide="{{wide}}" quizScore="{{quizScore}}"></topeka-quiz-score>
       
@@ -92,11 +92,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.quizzes.next();
 
         this.async(function() {
-          if (this.scores.length === this.category.quizzes.length) {
-            this.selected = 'results';
-          } else {
-            this.showQuizzes();
-          }
+//          if (this.scores.length === this.category.quizzes.length) {
+//            this.selected = 'results';
+//          } else {
+//            this.showQuizzes();
+//          }
+          this.showQuizzes();
         }, null, parseInt(CoreStyle.g.transitions.duration));
 
       } else if (this.selected === 'empty') {

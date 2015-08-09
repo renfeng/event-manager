@@ -75,7 +75,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 .category-item.completed {
-  pointer-events: none;
+  /*pointer-events: none;*/
 }
 
 .category-item:nth-of-type(1) {

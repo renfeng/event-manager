@@ -1,0 +1,81 @@
+{
+	"kind": "plus#activity",
+	"etag": "\"OcgLdf8I7N85Id_ZlVqRX1tAg3o/kV5S_D_m6fy-oZux5TaUEBTQNZ0\"",
+	"title": "A new +Udacity course just launched: Android Ubiquitous Computing with Google instructors +Timothy Jordan...",
+	"published": "2015-08-02T10:29:41.173Z",
+	"updated": "2015-08-02T10:29:41.173Z",
+	"id": "z12vcjoaryf4yjrtn22bwl0zmlfgwvhyu04",
+	"url": "https://plus.google.com/+GDGSuzhou/posts/9f2UKjtrnFX",
+	"actor": {
+		"id": "100160462017014431473",
+		"displayName": "GDG Suzhou",
+		"url": "https://plus.google.com/100160462017014431473",
+		"image": {
+			"url": "https://lh3.googleusercontent.com/-T2CSRZiHbSs/AAAAAAAAAAI/AAAAAAAAABo/dHFVe2xZEwQ/photo.jpg?sz=50"
+		},
+		"verification": {
+			"adHocVerified": "UNKNOWN_VERIFICATION_STATUS"
+		}
+	},
+	"verb": "share",
+	"object": {
+		"objectType": "activity",
+		"id": "z12qv50wuyrrj13bo04cdjdxnuaxw32hodw",
+		"actor": {
+			"id": "108967384991768947849",
+			"displayName": "Android Developers",
+			"url": "https://plus.google.com/108967384991768947849",
+			"image": {
+				"url": "https://lh3.googleusercontent.com/-mGTYed3Uh-E/AAAAAAAAAAI/AAAAAAAAGns/aRQJNvCZiOY/photo.jpg?sz=50"
+			},
+			"verification": {
+				"adHocVerified": "UNKNOWN_VERIFICATION_STATUS"
+			}
+		},
+		"content": "<b>A new +Udacity course just launched:</b> Android Ubiquitous Computing with Google instructors <span class=\"proflinkWrapper\"><span class=\"proflinkPrefix\">+</span><a class=\"proflink\" href=\"https://plus.google.com/113751353481962008916\" oid=\"113751353481962008916\">Timothy Jordan</a></span>, <span class=\"proflinkWrapper\"><span class=\"proflinkPrefix\">+</span><a class=\"proflink\" href=\"https://plus.google.com/114844270757025925192\" oid=\"114844270757025925192\">Wayne Piekarski</a></span>, and <span class=\"proflinkWrapper\"><span class=\"proflinkPrefix\">+</span><a class=\"proflink\" href=\"https://plus.google.com/101059494947772151859\" oid=\"101059494947772151859\">Joshua Gordon</a></span>.<br /><br />Take this course to learn the design paradigms and technical essentials of bringing your app to your user wherever and whenever they want or need it. The material in this course will give you the conceptual knowledge and expertise to extend your app with Android Wear, Google Cast, Android TV, and Android Auto.<br /><br /><a href=\"https://goo.gl/h4prAi\">https://goo.gl/h4prAi</a>\ufeff",
+		"url": "https://plus.google.com/+AndroidDevelopers/posts/hq5kkEVninG",
+		"replies": {
+			"totalItems": 0,
+			"selfLink": "https://content.googleapis.com/plus/v1/activities/z12vcjoaryf4yjrtn22bwl0zmlfgwvhyu04/comments"
+		},
+		"plusoners": {
+			"totalItems": 1,
+			"selfLink": "https://content.googleapis.com/plus/v1/activities/z12vcjoaryf4yjrtn22bwl0zmlfgwvhyu04/people/plusoners"
+		},
+		"resharers": {
+			"totalItems": 0,
+			"selfLink": "https://content.googleapis.com/plus/v1/activities/z12vcjoaryf4yjrtn22bwl0zmlfgwvhyu04/people/resharers"
+		},
+		"attachments": [
+			{
+				"objectType": "photo",
+				"displayName": "A new +Udacity course just launched: Android Ubiquitous Computing with Google instructors +Timothy Jordan, +Wayne Piekarski, and +Joshua Gordon.\n\nTake this course to learn the design paradigms and technical essentials of bringing your app to your user wherever and whenever they want or need it. The material in this course will give you the conceptual knowledge and expertise to extend your app with Android Wear, Google Cast, Android TV, and",
+				"id": "108967384991768947849.6176636241391102978",
+				"content": "ubicomp poster frame.png",
+				"url": "https://plus.google.com/photos/108967384991768947849/albums/6176636238941693825/6176636241391102978",
+				"image": {
+					"url": "https://lh3.googleusercontent.com/-2abaAt6UPEY/VbfR77LrrAI/AAAAAAAAG1o/V1XAYimpmRI/w506-h750/ubicomp%2Bposter%2Bframe.png",
+					"type": "image/jpeg"
+				},
+				"fullImage": {
+					"url": "https://lh3.googleusercontent.com/-2abaAt6UPEY/VbfR77LrrAI/AAAAAAAAG1o/V1XAYimpmRI/w630-h318/ubicomp%2Bposter%2Bframe.png",
+					"type": "image/jpeg",
+					"height": 318,
+					"width": 630
+				}
+			}
+		]
+	},
+	"provider": {
+		"title": "Reshared Post"
+	},
+	"access": {
+		"kind": "plus#acl",
+		"description": "Public",
+		"items": [
+			{
+				"type": "public"
+			}
+		]
+	}
+}

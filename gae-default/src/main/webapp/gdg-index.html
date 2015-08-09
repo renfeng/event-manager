@@ -61,7 +61,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <body>
 
   <template is="auto-binding">
-    <gdg-topeka-datasource url="elements/gdg-categories.json" user="{{user}}" categories="{{categories}}" connected="{{connected}}"></gdg-topeka-datasource>
+    <gdg-topeka-datasource url="/api/activities" user="{{user}}" categories="{{categories}}" connected="{{connected}}"></gdg-topeka-datasource>
     <gdg-topeka-app fit user="{{user}}" categories="{{categories}}" connected="{{connected}}" touch-action="auto"></gdg-topeka-app>
   </template>
 

@@ -30,6 +30,9 @@ import java.util.List;
 
 class OAuth2Utils implements Path {
 
+	/*
+	 * TODO add gmail api, and port the appscript for sending qr code
+	 */
 	private static final List<String> SCOPES = Arrays.asList(
 			PlusScopes.PLUS_ME,
 			"https://www.google.com/m8/feeds/",
