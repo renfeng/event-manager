@@ -3,6 +3,64 @@ title=hello
 loading=loading...
 appengine.app.version=${appengine.app.version}
 appengine.module.ranking=${appengine.module.ranking}
+
+# http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
+# 1. actor.id
+# 2. actor.displayName
+# 3. object.url
+# 4. object.content
+# 5. object.attachments[0].url
+# 6. object.attachments[0].image.url
+# sample:
+#<div class="ZG Sk">
+#	<div class="oB">
+#		<a href="./%1$s" class="ob tv Ub Hf" rel="nofollow" oid="%1$s">%2$s</a>
+#		<a class="xAhNqd qg" href="+AndroidDevelopers/posts/hq5kkEVninG">originally shared</a>:
+#	</div>
+#	<div class="Xx xJ">
+#		<div class="Ig At dn">
+#			<div class="Bt Pm" style="max-height: none;">
+#				<div class="tG QF">&nbsp;</div>
+#				<div class="Ct">
+#					<b>A new +Udacity course just launched:</b> Android Ubiquitous Computing with Google instructors <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/113751353481962008916" oid="113751353481962008916">Timothy Jordan</a></span>, <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/114844270757025925192" oid="114844270757025925192">Wayne Piekarski</a></span>, and <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/101059494947772151859" oid="101059494947772151859">Joshua Gordon</a></span>.<br><br>Take this course to learn the design paradigms and technical essentials of bringing your app to your user wherever and whenever they want or need it. The material in this course will give you the conceptual knowledge and expertise to extend your app with Android Wear, Google Cast, Android TV, and Android Auto.<br><br><a rel="nofollow" target="_blank" href="https://goo.gl/h4prAi" class="ot-anchor aaTEdf" jslog="10929; track:click" dir="ltr">https://goo.gl/h4prAi</a>
+#				</div>
+#			</div>
+#			<span role="button" class="d-s Yv on  gj" tabindex="0" style="display: none;">Read more</span>
+#			<span role="button" class="d-s Xv zt gj" tabindex="0">Show less</span>
+#		</div>
+#	</div>
+#	<div class="yx Nf">
+#		<div class="q9 yg">
+#			<div class="sp ej xI Zo" style="width:506px;height:256px;max-height:281px;">
+#				<a href="photos/108967384991768947849/albums/6176636238941693825/6176636241391102978" target="_top" class="d-s ob Ks" tabindex="0">
+#					<img src="//lh3.googleusercontent.com/-2abaAt6UPEY/VbfR77LrrAI/AAAAAAAAG1o/V1XAYimpmRI/w506-h281/ubicomp%2Bposter%2Bframe.png" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">
+#					<meta name="twitter:image:src" content="//lh3.googleusercontent.com/-2abaAt6UPEY/VbfR77LrrAI/AAAAAAAAG1o/V1XAYimpmRI/w506-h281/ubicomp%2Bposter%2Bframe.png">
+#				</a>
+#			</div>
+#			<a href="photos/108967384991768947849" target="_top" class="d-s ob HQhzCd" tabindex="0">Android Developers's photos</a>
+#			<div class="lr"></div>
+#			<div class="ko"></div>
+#			<div class="kr"></div>
+#			<div class="jo"></div>
+#		</div>
+#	</div>
+#	<a href="+AndroidDevelopers/posts/hq5kkEVninG" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">9 comments on original post</a>
+#</div>
+gplusActivityTemplate=\
+<div>\
+	<div>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="%3$s">originally shared</a>:\
+	</div>\
+	<div>%4$s</div>\
+	<div style="width:506px;height:256px;max-height:281px;">\
+		<a href="%5$s" target="_top" tabindex="0">\
+			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">\
+			<meta name="twitter:image:src" content="%6$s">\
+		</a>\
+	</div>\
+</div>
+
 # How to get the following values? See https://docs.google.com/presentation/d/1D_nGz3iRO593CQKBTHWbnKaADiv1mtESytF4HC3sz04/edit
 clientId=<put your client id here>
 clientSecret=<put your client secret here>

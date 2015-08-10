@@ -6,6 +6,7 @@ import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Activity;
 import com.google.api.services.plus.model.ActivityFeed;
 import com.google.developers.api.GPlusManager;
+import com.google.developers.event.DevelopersSharedModule;
 import com.google.developers.event.model.TopekaCategory;
 import com.google.developers.event.model.TopekaQuizz;
 import com.google.inject.Inject;
@@ -136,7 +137,60 @@ public class ActivitiesServlet extends HttpServlet {
 					/*
 					 * TODO assemble G+ like post
 					 */
-					quizz.setAnswer(content);
+					String answer;
+					{
+						Activity.PlusObject.Attachments attachments = activity.getObject().getAttachments().get(0);
+						String objectType = attachments.getObjectType();
+						if ("photo".equals(objectType)) {
+							String template = DevelopersSharedModule.getMessage("gplus.photo");
+							answer = String.format(template,
+									activity.getActor().getId(),
+									activity.getActor().getDisplayName(),
+									activity.getObject().getUrl(),
+									content,
+									attachments.getUrl(),
+									attachments.getImage().getUrl()
+							);
+						} else if ("article".equals(objectType)) {
+							String template = DevelopersSharedModule.getMessage("gplus.article");
+							answer = String.format(template,
+									activity.getActor().getId(),
+									activity.getActor().getDisplayName(),
+									activity.getObject().getUrl(),
+									content,
+									attachments.getUrl(),
+									attachments.getImage().getUrl(),
+									attachments.getDisplayName()
+							);
+						} else if ("event".equals(objectType)) {
+							String template = DevelopersSharedModule.getMessage("gplus.event");
+							answer = String.format(template,
+									activity.getActor().getId(),
+									activity.getActor().getDisplayName(),
+									activity.getObject().getUrl(),
+									content,
+									attachments.getUrl(),
+									attachments.getDisplayName()
+							);
+						} else if ("album".equals(objectType)) {
+							/*
+							 * TODO thumbnail layout
+							 */
+							String template = DevelopersSharedModule.getMessage("gplus.album");
+							answer = String.format(template,
+									activity.getActor().getId(),
+									activity.getActor().getDisplayName(),
+									activity.getObject().getUrl(),
+									content,
+									attachments.getUrl(),
+									attachments.getThumbnails().get(0).getImage().getUrl(),
+									attachments.getDisplayName()
+							);
+						} else {
+							answer = content;
+						}
+					}
+					quizz.setAnswer(answer);
 
 //					{
 //					/*

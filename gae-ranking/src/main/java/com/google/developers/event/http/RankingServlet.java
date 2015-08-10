@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
+ * this is a batch process entry point
+ *
  * Created by renfeng on 7/5/15.
  */
 @Singleton
