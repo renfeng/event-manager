@@ -11,10 +11,9 @@ appengine.module.ranking=${appengine.module.ranking}
 # 4. object.content
 # 5. object.attachments[0].url
 # 6. object.attachments[0].image.url
-# sample:
 #<div class="ZG Sk">
 #	<div class="oB">
-#		<a href="./%1$s" class="ob tv Ub Hf" rel="nofollow" oid="%1$s">%2$s</a>
+#		<a href="./108967384991768947849" class="ob tv Ub Hf" rel="nofollow" oid="108967384991768947849">Android Developers</a>
 #		<a class="xAhNqd qg" href="+AndroidDevelopers/posts/hq5kkEVninG">originally shared</a>:
 #	</div>
 #	<div class="Xx xJ">
@@ -46,7 +45,7 @@ appengine.module.ranking=${appengine.module.ranking}
 #	</div>
 #	<a href="+AndroidDevelopers/posts/hq5kkEVninG" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">9 comments on original post</a>
 #</div>
-gplusActivityTemplate=\
+gplus.photo=\
 <div>\
 	<div>\
 		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
@@ -58,6 +57,289 @@ gplusActivityTemplate=\
 			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">\
 			<meta name="twitter:image:src" content="%6$s">\
 		</a>\
+	</div>\
+  	<a href="%3$s" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>\
+</div>
+
+# object.attachments[0].objectType: article
+# http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
+# 1. actor.id
+# 2. actor.displayName
+# 3. object.url
+# 4. object.content
+# 5. object.attachments[0].url
+# 6. object.attachments[0].image.url
+# 7. object.attachments[0].displayName
+#<div class="ZG Sk">
+#	<div class="oB">
+#		<a href="./108967384991768947849" class="ob tv Ub Hf" rel="nofollow" oid="108967384991768947849">Android Developers</a>
+#		<a class="xAhNqd qg" href="+AndroidDevelopers/posts/EWxS3juHTfb">originally shared</a>:
+#	</div>
+#	<div class="Xx xJ">
+#		<div class="Ig At dn">
+#			<div class="Bt Pm" style="max-height: none;">
+#				<div class="tG QF">&nbsp;</div>
+#				<div class="Ct">
+#					<b>Android Studio 1.3 is ready to download in the stable channel!</b><br><br>Our biggest feature release for the year so far, it includes a new memory profiler, improved testing support, and full editing and debugging support for C++.<br><br><a rel="nofollow" class="ot-hashtag aaTEdf" href="/s/%23AndroidDev">#AndroidDev</a>
+#				</div>
+#			</div>
+#			<span role="button" class="d-s Yv on  gj" tabindex="0" style="display: none;">Read more</span>
+#			<span role="button" class="d-s Xv zt gj" tabindex="0">Show less</span>
+#		</div>
+#	</div>
+#	<div class="yx Nf">
+#		<div class="q9 yg">
+#			<div class="s9Oc9">
+#				<div class="sp ej xI A8Hhid" style="width:506px;height:215px;max-height:281px;">
+#					<a href="http://goo.gl/VyeQPG" target="_blank" class="d-s ot-anchor Ks" tabindex="0" rel="nofollow">
+#						<img src="//lh3.googleusercontent.com/proxy/On0xb5hog_PxEK_y1pK5dU1Wfzc-daFWcy2a3S5yHBEqydox7Apb-FacP4ODEB2F5i9BeT5y2wl5RCxfQop1LG7Y82Z-Yua6ZcaXt0VGPK2FoES0BuGElW2LbW-QIY5ji3oGmZCq-xoc9WWoGQHy=w506-h281" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">
+#						<meta name="twitter:image:src" content="//lh3.googleusercontent.com/proxy/On0xb5hog_PxEK_y1pK5dU1Wfzc-daFWcy2a3S5yHBEqydox7Apb-FacP4ODEB2F5i9BeT5y2wl5RCxfQop1LG7Y82Z-Yua6ZcaXt0VGPK2FoES0BuGElW2LbW-QIY5ji3oGmZCq-xoc9WWoGQHy=w506-h281">
+#					</a>
+#				</div>
+#				<div class="VwVwbf">
+#					<div class="rCauNb">
+#						<a href="http://goo.gl/VyeQPG" target="_blank" class="d-s ot-anchor" title="Get your hands on Android Studio 1.3 | Android Developers Blog" tabindex="0" rel="nofollow">Get your hands on Android Studio 1.3 | Android Developers Blog</a>
+#					</div>
+#					<div class="YPIndd">
+#						<a href="http://goo.gl/VyeQPG" target="_blank" class="d-s ot-anchor" tabindex="0" rel="nofollow">goo.gl</a>
+#					</div>
+#				</div>
+#			</div>
+#			<div class="lr"></div>
+#			<div class="ko"></div>
+#			<div class="kr"></div>
+#			<div class="jo"></div>
+#		</div>
+#	</div>
+#	<a href="+AndroidDevelopers/posts/EWxS3juHTfb" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">37 comments on original post</a>
+#</div>
+gplus.article=\
+<div>\
+	<div>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="%3$s">originally shared</a>:\
+	</div>\
+	<div>%4$s</div>\
+	<div style="width:506px;height:256px;max-height:281px;">\
+		<a href="%5$s" target="_top" tabindex="0">\
+			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">\
+			<meta name="twitter:image:src" content="%6$s">\
+		</a>\
+	</div>\
+	<div>\
+		<div>\
+			<a href="%5$s" target="_blank" title="%7$s" tabindex="0" rel="nofollow">%7$s</a>\
+		</div>\
+		<div>\
+			<a href="%5$s" target="_blank" tabindex="0" rel="nofollow">goo.gl</a>\
+		</div>\
+	</div>\
+	<a href="%3$s" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>\
+</div>
+
+# object.attachments[0].objectType: event
+# http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
+# 1. actor.id
+# 2. actor.displayName
+# 3. object.url
+# 4. object.content
+# 5. object.attachments[0].url
+# 6. object.attachments[0].displayName
+#<div class="ZG Sk">
+#	<div class="oB">
+#		<a href="./110074507636021361692" class="ob tv Ub Hf" rel="nofollow" oid="110074507636021361692">Derek Grant</a>
+#		<a class="xAhNqd qg" href="+DerekGrant44/posts/gp857yLnugV">originally shared</a>:
+#	</div>
+#	<div class="Xx xJ">
+#		<div class="Ig At dn">
+#			<div class="Bt Pm" style="max-height: none;">
+#				<div class="tG QF">&nbsp;</div>
+#				<div class="Ct">
+#					GDG Suzhou成员在实际的社区工作中长期坚持使用Google Apps进行协同：我们的活动方案及其他文档用Google Docs进行分享，我们使用Google Form来进行报名，我们使用Google Sheet来进行登记，我们用Google Drive来进行文件共享...。使用全套的Google产品，体现了GDG的特色，也实现了高效的协同工作。<br>这次活动，我们将请GDG Suzhou的组织者，Google Apps的资深使用者，Frank来为大家介绍如何使用Google Apps进行协作，也将介绍GDG Suzhou的使用经验。<br><br>为保证活动体验，参加人数限制限制为15人，我们将优先考虑各个社区的成员，具有协作需求的团队。<br><br>报名链接：<a rel="nofollow" target="_blank" href="http://t.cn/RL0ZN56" class="ot-anchor aaTEdf" jslog="10929; track:click" dir="ltr">http://t.cn/RL0ZN56</a><br><br>请在8月4日12:00前提交报名，我们将在12:00以后确定参与者人员名单。<br>我们将在8月4日通知成功报名的参与者。<br><br>时间：8月5日 19:00-21:30<br>地点：林泉街377号公共学院三号楼1楼，NUSRI 创业空间<br>公交：<br>&nbsp;* 独墅湖高教区首末站，115, 142, 178, 218, 228<br>&nbsp;* 公共学院站，166, 218<br>&nbsp;* 创苑路学堂街，146, 218<br>&nbsp;* 文萃广场站
+#				</div>
+#			</div>
+#			<span role="button" class="d-s Yv on  gj" tabindex="0" style="display: none;">Read more (23 lines)</span>
+#			<span role="button" class="d-s Xv zt gj" tabindex="0">Show less</span>
+#			<span class="bH il"> &nbsp;·&nbsp; </span>
+#			<span role="button" class="d-s PM uh" tabindex="0" jscontroller="BFjoqb" jsaction="click:XdPVYe; focus:npT2md; mouseover:npT2md">Translate</span>
+#		</div>
+#	</div>
+#	<div class="Nf">
+#		<div class="If Ee">
+#			<div class="JN yg">
+#				<a href="events/cbd2nbj0v2fbnc4mrjd6sfja748" target="_blank" class="d-s ob" tabindex="0">
+#					<div class="ux Fu">
+#						<img src="https://lh3.googleusercontent.com/_tcY7QLx6X_8/UV9_Yq_F2jI/AAAAAAAAB-U/mAnu2Jkc05M/w440-h110-p/13_nature.jpg" class="Ym" style="display: none;">
+#						<div class="UH">
+#							<img src="https://lh3.googleusercontent.com/_tcY7QLx6X_8/UV9zZZqIznI/AAAAAAAAB5s/TKCumzpS3dc/w440-h110-p/13_nature.gif" class="Xq">
+#						</div>
+#					</div>
+#				</a>
+#			</div>
+#			<div class="ow">
+#				<a href="events/cbd2nbj0v2fbnc4mrjd6sfja748" target="_blank" class="d-s ob pw" data-tooltip="View event" tabindex="0">GDG Suzhou活动：如何使用Google Apps进行高效协同工作</a>
+#				<div class="pD">
+#					<div class="qW">
+#						<span class="l4"></span>
+#						Wed, August 5, 7:00 PM
+#					</div>
+#					<div class="aM k4">
+#						<span class="j4"></span>
+#						林泉街377号公共学院三号楼1楼，NUSRI 创业空间
+#					</div>
+#				</div>
+#				<div class="VH rW">
+#					<div class="Qea"></div>
+#					9 people went
+#				</div>
+#			</div>
+#			<hr class="nw">
+#			<div class="tq">
+#				<div class="d2">
+#					<div class="d-k-l b-c b-c-ca Jma" role="listbox" aria-hidden="true" aria-activedescendant=":gg" aria-expanded="false" aria-haspopup="true" style="-webkit-user-select: none; display: none;">
+#						<div class="d-k-l b-c-ha" id=":gg" role="option" aria-setsize="10" aria-posinset="1">
+#							+0 guests
+#						</div>
+#						<div class="d-k-l b-c-Qa d-y-r-c-Qa" aria-hidden="true">&nbsp;</div>
+#					</div>
+#				</div>
+#			</div>
+#		</div>
+#	</div>
+#	<a href="+DerekGrant44/posts/gp857yLnugV" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>
+#</div>
+gplus.event=\
+<div>\
+	<div>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="%3$s">originally shared</a>:\
+	</div>\
+	<div>%4$s</div>\
+	<div>\
+		<a href="%5$s" target="_blank" class="d-s ob pw" data-tooltip="View event" tabindex="0">%6$s</a>\
+	</div>\
+  	<a href="%3$s" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>\
+</div>
+
+# object.attachments[0].objectType: album
+# http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
+# 1. actor.id
+# 2. actor.displayName
+# 3. object.url
+# 4. object.content
+# 5. object.attachments[0].url
+# 6. object.attachments[0].displayName
+#<div class="ZG Sk">
+#	<div class="oB">
+#		<a href="./105000722069687538475" class="ob tv Ub Hf" rel="nofollow" oid="105000722069687538475">Jin Jian</a>
+#		<a class="xAhNqd qg" href="+JinJian/posts/PnNntnbE4Sk">originally shared</a>:
+#	</div>
+#	<div class="Xx xJ">
+#		<div class="Ig At dn">
+#			<div class="Bt Pm" style="max-height: 72px;">
+#				<div class="tG QF">&nbsp;</div>
+#				<div class="Ct">
+#					<span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/100160462017014431473" oid="100160462017014431473">GDG Suzhou</a></span>​  Redux, Google I/O 15 Extended - Suzhou<br><a rel="nofollow" class="ot-hashtag aaTEdf" href="/s/%23io15">#io15</a>    <a rel="nofollow" class="ot-hashtag aaTEdf" href="/s/%23io15extended">#io15extended</a>﻿  <a rel="nofollow" class="ot-hashtag aaTEdf" href="/s/%23ioredux">#ioredux</a>      ​<span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/100457710470099718551" oid="100457710470099718551">Monica Bagagem</a></span>​   <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/118309337850655603796" oid="118309337850655603796">Bill Luan</a></span>​  <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/111192718276625642303" oid="111192718276625642303">Adriana Cerundolo</a></span>​ <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/109986325382240152197" oid="109986325382240152197">Sarah Tsui</a></span>​ <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/116155312904314109883" oid="116155312904314109883">Frank R.</a></span>​<br>
+#				</div>
+#			</div>
+#			<span role="button" class="d-s Yv on  gj" style="display:none;" tabindex="0">Read more</span>
+#			<span role="button" class="d-s Xv zt gj" style="display:none;" tabindex="0">Show less</span>
+#		</div>
+#	</div>
+#	<div class="yx Nf">
+#		<div class="q9 yg Qaa Paa">
+#			<div class="Oaa">
+#				<div class="PE">
+#					<div class="yh Rl oU">
+#						<div class="yh Sl pU"></div>
+#						<div class="yh Du">
+#							<a class="kq" href="/photos/105000722069687538475/albums/6165286771858879889?authkey=CIPPsLS32fSwsAE">6/28/15</a>
+#						</div>
+#						<div class="yh Yi">
+#							<span class="Qt">10 photos</span>
+#						</div>
+#					</div>
+#					<div class="sp ej" style="width:379px;height:379px;">
+#						<img src="//lh3.googleusercontent.com/-uZyRoe0SPuY/VY9_pyVmL0I/AAAAAAAANT4/Y9lqvE7kd_s/s379-p/IMG_20150628_125025.jpg" class="ar Mc RE" style="max-height:379px; max-width:379px;" itemprop="image">
+#						<meta name="twitter:image:src" content="//lh3.googleusercontent.com/-uZyRoe0SPuY/VY9_pyVmL0I/AAAAAAAANT4/Y9lqvE7kd_s/s379-p/IMG_20150628_125025.jpg">
+#					</div>
+#					<a href="photos/105000722069687538475" target="_top" class="d-s ob HQhzCd" tabindex="0">Jin Jian's photos</a>
+#				</div>
+#				<div class="QE">
+#					<div class="sp ej rU" style="width:126px;height:126px;">
+#						<img src="//lh3.googleusercontent.com/-P8Qm-c3lPmU/VY9_p9sli-I/AAAAAAAANT4/fto355i1jtk/s126-p/IMG_20150628_124956.jpg" class="ar Mc RE" style="max-height:126px; max-width:126px;" itemprop="image">
+#					</div>
+#					<div class="sp ej rU" style="width:126px;height:126px;">
+#						<img src="//lh3.googleusercontent.com/-ta1RT7OHqsA/VY9_px-5gHI/AAAAAAAANT4/0Eguyascdyk/s126-p/IMG_20150628_124911.jpg" class="ar Mc RE" style="max-height:126px; max-width:126px;" itemprop="image">
+#					</div>
+#					<div class="sp ej rU qU" style="width:126px;height:125px;">
+#						<img src="//lh3.googleusercontent.com/-iPjD-JvTgSk/VY9_pzsFHUI/AAAAAAAANT4/U_e0cLSMkS4/w126-h125-p/IMG_20150628_124856.jpg" class="ar Mc RE" style="max-height:125px; max-width:126px;" itemprop="image">
+#					</div>
+#				</div>
+#			</div>
+#			<div class="lr"></div>
+#			<div class="ko"></div>
+#			<div class="kr"></div>
+#			<div class="jo"></div>
+#		</div>
+#	</div>
+#	<a href="+JinJian/posts/PnNntnbE4Sk" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>
+#</div>
+gplus.album=\
+<div>\
+	<div>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="%3$s">originally shared</a>:\
+	</div>\
+	<div>%4$s</div>\
+	<div style="width:506px;height:256px;max-height:281px;">\
+		<a href="%5$s" target="_top" tabindex="0">\
+			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">\
+			<meta name="twitter:image:src" content="%6$s">\
+		</a>\
+	</div>\
+  	<a href="%3$s" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>\
+</div>
+
+# object.attachments[0].objectType: video
+# http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
+# 1. actor.id
+# 2. actor.displayName
+# 3. object.url
+# 4. object.content
+# 5. object.attachments[0].url
+# 6. object.attachments[0].image.url
+# 7. object.attachments[0].displayName
+#<div class="yx Nf">
+#	<div itemscope="" itemtype="http://schema.org/VideoObject" class="j9">
+#		<div class="q9 yg">
+#			<div class="sp ej bc Ai" style="width:506px;height:285px;">
+#				<img src="//lh3.googleusercontent.com/proxy/LMynLGts-WGu2RfwFWqs5bjubRfvH3z2aLM434M6CE6IxqA3WdrZgNT-1_167_2Iz5G4HPCnh_ljMqusDR26lw=w506-h285-n" class="ar Mc bc kf" style="max-height:285px; max-width:506px;" itemprop="image">
+#				<meta name="twitter:image:src" content="//lh3.googleusercontent.com/proxy/LMynLGts-WGu2RfwFWqs5bjubRfvH3z2aLM434M6CE6IxqA3WdrZgNT-1_167_2Iz5G4HPCnh_ljMqusDR26lw=w506-h285-n">
+#				<div class="bc vf" role="button" tabindex="0" aria-label="Play"></div>
+#				<div class="yh Rl RJ">
+#					<div class="yh Sl SJ"></div>
+#					<div class="yh Du">
+#						<a class="kq ot-anchor" href="https://www.youtube.com/attribution_link?a=0tNrpNo0jLM&amp;u=/watch?v%3DT8rZ5E2LFhM%26feature%3Dshare" target="_blank">Google I/O: It ain't over 'til we say it's over</a>
+#					</div>
+#				</div>
+#			</div>
+#			<div class="lr"></div>
+#			<div class="ko"></div>
+#			<div class="kr"></div>
+#			<div class="jo"></div>
+#		</div>
+#	</div>
+#</div>
+gplus.video=\
+<div itemscope="" itemtype="http://schema.org/VideoObject">\
+	<div style="width:506px;height:285px;">\
+		<img src="%6$s" style="max-height:285px; max-width:506px;" itemprop="image">\
+		<meta name="twitter:image:src" content="%6$s">\
+		<div role="button" tabindex="0" aria-label="Play"></div>\
+		<div>\
+			<a href="%5$s" target="_blank">%7$s</a>\
+		</div>\
 	</div>\
 </div>
 
