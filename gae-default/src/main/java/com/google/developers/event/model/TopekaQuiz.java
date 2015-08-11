@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by renfeng on 8/9/15.
  */
-public class TopekaQuizz {
+public class TopekaQuiz {
 
 	/**
 	 * alpha-picker

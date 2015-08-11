@@ -1,7 +1,9 @@
 package com.google.developers.event.model;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.client.util.Key;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +32,9 @@ public class TopekaCategory {
 	private String theme;
 
 	@Key
-	private List<TopekaQuizz> quizzes;
+	private List<TopekaQuiz> quizzes = new ArrayList<>();
+
+	private DateTime updated;
 
 	public String getName() {
 		return name;
@@ -56,11 +60,19 @@ public class TopekaCategory {
 		this.theme = theme;
 	}
 
-	public List<TopekaQuizz> getQuizzes() {
+	public List<TopekaQuiz> getQuizzes() {
 		return quizzes;
 	}
 
-	public void setQuizzes(List<TopekaQuizz> quizzes) {
+	public void setQuizzes(List<TopekaQuiz> quizzes) {
 		this.quizzes = quizzes;
+	}
+
+	public DateTime getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(DateTime updated) {
+		this.updated = updated;
 	}
 }
