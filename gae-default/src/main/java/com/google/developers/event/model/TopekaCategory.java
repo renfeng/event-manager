@@ -5,6 +5,8 @@ import com.google.api.client.util.Key;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created by renfeng on 8/9/15.
@@ -32,7 +34,7 @@ public class TopekaCategory {
 	private String theme;
 
 	@Key
-	private List<TopekaQuiz> quizzes = new ArrayList<>();
+	private SortedSet<TopekaQuiz> quizzes = new TreeSet<>();
 
 	private DateTime updated;
 
@@ -60,11 +62,11 @@ public class TopekaCategory {
 		this.theme = theme;
 	}
 
-	public List<TopekaQuiz> getQuizzes() {
+	public SortedSet<TopekaQuiz> getQuizzes() {
 		return quizzes;
 	}
 
-	public void setQuizzes(List<TopekaQuiz> quizzes) {
+	public void setQuizzes(SortedSet<TopekaQuiz> quizzes) {
 		this.quizzes = quizzes;
 	}
 

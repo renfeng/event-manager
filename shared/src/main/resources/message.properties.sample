@@ -4,6 +4,7 @@ loading=loading...
 appengine.app.version=${appengine.app.version}
 appengine.module.ranking=${appengine.module.ranking}
 
+# object.attachments[0].objectType: photo
 # http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
 # 1. actor.id
 # 2. actor.displayName
@@ -48,13 +49,13 @@ appengine.module.ranking=${appengine.module.ranking}
 gplus.photo=\
 <div>\
 	<div>\
-		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a> \
 		<a href="%3$s">originally shared</a>:\
 	</div>\
 	<div>%4$s</div>\
 	<div style="width:506px;height:256px;max-height:281px;">\
 		<a href="%5$s" target="_top" tabindex="0">\
-			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">\
+			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:464px;" itemprop="image">\
 			<meta name="twitter:image:src" content="%6$s">\
 		</a>\
 	</div>\
@@ -116,13 +117,13 @@ gplus.photo=\
 gplus.article=\
 <div>\
 	<div>\
-		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a> \
 		<a href="%3$s">originally shared</a>:\
 	</div>\
 	<div>%4$s</div>\
 	<div style="width:506px;height:256px;max-height:281px;">\
 		<a href="%5$s" target="_top" tabindex="0">\
-			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">\
+			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:464px;" itemprop="image">\
 			<meta name="twitter:image:src" content="%6$s">\
 		</a>\
 	</div>\
@@ -135,6 +136,73 @@ gplus.article=\
 		</div>\
 	</div>\
 	<a href="%3$s" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>\
+</div>
+
+# object.attachments[0].objectType: article
+# http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
+# 1. actor.id
+# 2. actor.displayName
+# 3. object.url
+# 4. object.content
+# 5. object.attachments[0].url
+# 6. object.attachments[0].content
+# 7. object.attachments[0].displayName
+# 8. hostname
+#<div class="ZG Sk">
+#	<div class="oB">
+#		<a href="./116155312904314109883" class="ob tv Ub Hf" rel="nofollow" oid="116155312904314109883">Frank R.</a>
+#		<a class="xAhNqd qg" href="+FrankR/posts/KB7L25xcroa">originally shared</a>:
+#	</div>
+#	<div class="Xx xJ">
+#		<div class="Ig At dn">
+#			<div class="Bt Pm">
+#				<div class="tG QF">&nbsp;</div>
+#				<div class="Ct">
+#					11/29 苏州谷歌开发者的活动不容错过﻿
+#				</div>
+#			</div>
+#			<span role="button" class="d-s Yv on  gj" style="display:none;" tabindex="0">Read more</span>
+#			<span role="button" class="d-s Xv zt gj" style="display:none;" tabindex="0">Show less</span>
+#			<span class="bH il" style="display: none;"> &nbsp;·&nbsp; </span>
+#			<span role="button" class="d-s PM uh" tabindex="0" jscontroller="BFjoqb" jsaction="click:XdPVYe; focus:npT2md; mouseover:npT2md">Translate</span>
+#		</div>
+#	</div>
+#	<div class="yx Nf">
+#		<div class="q9 yg">
+#			<div class="s9Oc9">
+#				<div class="VwVwbf">
+#					<div class="rCauNb">
+#						<a href="https://devfest2014.dushu.hu/" target="_blank" class="d-s ot-anchor" title="DevFest 2014 - Suzhou" tabindex="0" rel="nofollow">DevFest 2014 - Suzhou</a>
+#					</div>
+#					<div class="YPIndd">
+#						<a href="https://devfest2014.dushu.hu/" target="_blank" class="d-s ot-anchor" tabindex="0" rel="nofollow">devfest2014.dushu.hu</a>
+#					</div>
+#					<div class="f34nqb">2014 DevFest Suzhou.</div>
+#				</div>
+#			</div>
+#			<div class="lr"></div>
+#			<div class="ko"></div>
+#			<div class="kr"></div>
+#			<div class="jo"></div>
+#		</div>
+#	</div>
+#</div>
+gplus.article.noimage=\
+<div>\
+	<div>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a> \
+		<a href="%3$s">originally shared</a>:\
+	</div>\
+	<div>%4$s</div>\
+	<div>\
+		<div>\
+			<a href="%5$s" target="_blank" title="%7$s" tabindex="0" rel="nofollow">%7$s</a>\
+		</div>\
+		<div>\
+			<a href="%5$s" target="_blank" tabindex="0" rel="nofollow">%8$s</a>\
+		</div>\
+	</div>\
+	<div>%6$s</div>\
 </div>
 
 # object.attachments[0].objectType: event
@@ -211,7 +279,7 @@ gplus.article=\
 gplus.event=\
 <div>\
 	<div>\
-		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a> \
 		<a href="%3$s">originally shared</a>:\
 	</div>\
 	<div>%4$s</div>\
@@ -288,13 +356,13 @@ gplus.event=\
 gplus.album=\
 <div>\
 	<div>\
-		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a> \
 		<a href="%3$s">originally shared</a>:\
 	</div>\
 	<div>%4$s</div>\
 	<div style="width:506px;height:256px;max-height:281px;">\
 		<a href="%5$s" target="_top" tabindex="0">\
-			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:506px;" itemprop="image">\
+			<img src="%6$s" class="ar Mc" style="max-height:281px; max-width:464px;" itemprop="image">\
 			<meta name="twitter:image:src" content="%6$s">\
 		</a>\
 	</div>\
@@ -334,13 +402,50 @@ gplus.album=\
 gplus.video=\
 <div itemscope="" itemtype="http://schema.org/VideoObject">\
 	<div style="width:506px;height:285px;">\
-		<img src="%6$s" style="max-height:285px; max-width:506px;" itemprop="image">\
+		<img src="%6$s" style="max-height:285px; max-width:464px;" itemprop="image">\
 		<meta name="twitter:image:src" content="%6$s">\
 		<div role="button" tabindex="0" aria-label="Play"></div>\
 		<div>\
 			<a href="%5$s" target="_blank">%7$s</a>\
 		</div>\
 	</div>\
+</div>
+
+# object.attachments: none
+# http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
+# 1. actor.id
+# 2. actor.displayName
+# 3. object.url
+# 4. object.content
+#<div class="YG Wm">
+#	<div class="oB">
+#		<a href="./116155312904314109883" class="ob tv Ub Hf" rel="nofollow" oid="116155312904314109883">Frank R.</a>
+#		<a class="xAhNqd qg" href="+FrankR/posts/cd7HBJovr2f">originally shared</a>:
+#	</div>
+#	<div class="Xx xJ">
+#		<div class="Ig At dn">
+#			<div class="Bt Pm" style="max-height: 72px;">
+#				<div class="tG QF">&nbsp;</div>
+#				<div class="Ct">
+#					1140 接到电话 <span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/100160462017014431473" oid="100160462017014431473">GDG Suzhou</a></span>&nbsp;的代表团正在登机，前往 GDG 全球峰会和Google I/O 2015!<br><br><span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/113662271548849465706" oid="113662271548849465706">Simon Li</a></span>&nbsp;<span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/110459328081799493422" oid="110459328081799493422">胡定宇 Snow</a></span>&nbsp;<span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/110074507636021361692" oid="110074507636021361692">Derek Grant</a></span>&nbsp;<span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/105000722069687538475" oid="105000722069687538475">Jin Jian</a></span>&nbsp;<span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/117193781103517082588" oid="117193781103517082588">William Sang</a></span>&nbsp;祝你们一路平安！<br><br><span class="proflinkWrapper"><span class="proflinkPrefix">+</span><a class="proflink aaTEdf" href="/104576453617011070521" oid="104576453617011070521">Cici Tsai</a></span>&nbsp;签证还有一线希望……不论什么样的结果，什么样的选择，都不要轻易放弃。这是为什么我们能够聚到一起！<br><br>请关注我们的实时报道。﻿
+#				</div>
+#			</div>
+#			<span role="button" class="d-s Yv on  gj" style="" tabindex="0">Read more</span>
+#			<span role="button" class="d-s Xv zt gj" style="display:none;" tabindex="0">Show less</span>
+#			<span class="bH il"> &nbsp;·&nbsp; </span>
+#			<span role="button" class="d-s PM uh" tabindex="0" jscontroller="BFjoqb" jsaction="click:XdPVYe; focus:npT2md; mouseover:npT2md">Translate</span>
+#		</div>
+#	</div>
+#	<a href="+FrankR/posts/cd7HBJovr2f" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">2 comments on original post</a>
+#</div>
+gplus.none=\
+<div>\
+	<div>\
+		<a href="./%1$s" rel="nofollow" oid="%1$s">%2$s</a> \
+		<a href="%3$s">originally shared</a>:\
+	</div>\
+	<div>%4$s</div>\
+  	<a href="%3$s" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>\
 </div>
 
 # How to get the following values? See https://docs.google.com/presentation/d/1D_nGz3iRO593CQKBTHWbnKaADiv1mtESytF4HC3sz04/edit

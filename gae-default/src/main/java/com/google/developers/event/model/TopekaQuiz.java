@@ -1,5 +1,6 @@
 package com.google.developers.event.model;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.client.util.Key;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 /**
  * Created by renfeng on 8/9/15.
  */
-public class TopekaQuiz {
+public class TopekaQuiz implements Comparable<TopekaQuiz> {
 
 	/**
 	 * alpha-picker
@@ -50,6 +51,8 @@ public class TopekaQuiz {
 
 	@Key
 	private int points = 1;
+
+	private DateTime updated;
 
 	public String getType() {
 		return type;
@@ -121,5 +124,18 @@ public class TopekaQuiz {
 
 	public void setPoints(int points) {
 		this.points = points;
+	}
+
+	public DateTime getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(DateTime updated) {
+		this.updated = updated;
+	}
+
+	@Override
+	public int compareTo(TopekaQuiz o) {
+		return -Long.compare(getUpdated().getValue(), o.getUpdated().getValue());
 	}
 }

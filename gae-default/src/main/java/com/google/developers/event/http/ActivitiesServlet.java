@@ -2,6 +2,7 @@ package com.google.developers.event.http;
 
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Activity;
 import com.google.api.services.plus.model.ActivityFeed;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,16 +80,15 @@ public class ActivitiesServlet extends HttpServlet {
 				 * TODO parse hash tags from content
 				 *
 				 * TODO replace +xxx (g+ id), and hash tag with links
-				 *
-				 * "<b>Launching Google beacon platform</b><br /><br />Helping your apps work smarter: Introducing the <a rel=\"nofollow\" class=\"ot-hashtag\" href=\"https://plus.google.com/s/%23GoogleBeaconPlatform\">#GoogleBeaconPlatform</a> and the <a rel=\"nofollow\" class=\"ot-hashtag\" href=\"https://plus.google.com/s/%23Eddystone\">#Eddystone</a> BLE beacon format.\ufeff"
 				 */
 
 				/*
 				 * assemble G+ like post
 				 */
 				String answer;
-				{
+				if (object.getAttachments() != null) {
 					Activity.PlusObject.Attachments attachments = object.getAttachments().get(0);
+					Activity.PlusObject.Attachments.Image image = attachments.getImage();
 					String objectType = attachments.getObjectType();
 					if ("photo".equals(objectType)) {
 						String template = DevelopersSharedModule.getMessage("gplus.photo");
@@ -97,19 +98,33 @@ public class ActivitiesServlet extends HttpServlet {
 								objectUrl,
 								objectContent,
 								attachments.getUrl(),
-								attachments.getImage().getUrl()
+								image.getUrl()
 						);
 					} else if ("article".equals(objectType)) {
-						String template = DevelopersSharedModule.getMessage("gplus.article");
-						answer = String.format(template,
-								objectActorId,
-								objectActorDisplayName,
-								objectUrl,
-								objectContent,
-								attachments.getUrl(),
-								attachments.getImage().getUrl(),
-								attachments.getDisplayName()
-						);
+						if (image != null) {
+							String template = DevelopersSharedModule.getMessage("gplus.article");
+							answer = String.format(template,
+									objectActorId,
+									objectActorDisplayName,
+									objectUrl,
+									objectContent,
+									attachments.getUrl(),
+									image.getUrl(),
+									attachments.getDisplayName()
+							);
+						} else {
+							String template = DevelopersSharedModule.getMessage("gplus.article.noimage");
+							answer = String.format(template,
+									objectActorId,
+									objectActorDisplayName,
+									objectUrl,
+									objectContent,
+									attachments.getUrl(),
+									attachments.getContent(),
+									attachments.getDisplayName(),
+									new URL(attachments.getUrl()).getHost()
+							);
+						}
 					} else if ("event".equals(objectType)) {
 						String template = DevelopersSharedModule.getMessage("gplus.event");
 						answer = String.format(template,
@@ -137,29 +152,37 @@ public class ActivitiesServlet extends HttpServlet {
 					} else {
 						answer = objectContent;
 					}
+				} else {
+					String template = DevelopersSharedModule.getMessage("gplus.none");
+					answer = String.format(template,
+							objectActorId,
+							objectActorDisplayName,
+							objectUrl,
+							objectContent
+					);
 				}
+
+				DateTime updated = activity.getUpdated();
 
 				TopekaQuiz quiz = new TopekaQuiz();
 				quiz.setType("gplus-post");
 				quiz.setQuestion(activity.getTitle());
 				quiz.setAnswer(answer);
+				quiz.setUpdated(updated);
 
 				/*
 				 * extract hash tags
 				 */
 				Document document = Jsoup.parse(objectContent);
 				Elements hashTagAnchor = document.select("a[class=ot-hashtag]");
-				for (Element t : hashTagAnchor) {
-					String hashTag = t.text();
-					TopekaCategory category = categoryMap.get(hashTag);
-					if (category == null) {
-						category = new TopekaCategory();
-						categoryMap.put(hashTag, category);
+				if (hashTagAnchor.size() > 0) {
+					for (Element t : hashTagAnchor) {
+						String hashTag = t.text();
+						updateCategoryMap(categoryMap, updated, quiz, hashTag);
 					}
-					category.getQuizzes().add(quiz);
-					if (category.getUpdated() == null || category.getUpdated().getValue() < activity.getUpdated().getValue()) {
-						category.setUpdated(activity.getUpdated());
-					}
+				} else {
+					String hashTag = "";
+					updateCategoryMap(categoryMap, updated, quiz, hashTag);
 				}
 			}
 
@@ -172,13 +195,12 @@ public class ActivitiesServlet extends HttpServlet {
 			/*
 			 * TODO uncomment to load all activities
 			 */
-//			// Prepare to request the next page of activities
-//			listActivities.setPageToken(activityFeed.getNextPageToken());
-//
-//			// Execute and process the next page request
-//			activityFeed = listActivities.execute();
-//			activities = activityFeed.getItems();
-			activities = null;
+			// Prepare to request the next page of activities
+			listActivities.setPageToken(activityFeed.getNextPageToken());
+
+			// Execute and process the next page request
+			activityFeed = listActivities.execute();
+			activities = activityFeed.getItems();
 		}
 
 		TopekaCategory hottest = new TopekaCategory();
@@ -249,15 +271,15 @@ public class ActivitiesServlet extends HttpServlet {
 			categories.add(category);
 		}
 		{
-			TopekaCategory category = new TopekaCategory();
-			category.setName("Solve for X");
+			TopekaCategory category = other;
+			category.setName("其他");
 			category.setId("science");
 			category.setTheme("purple");
 			categories.add(category);
 		}
 		{
-			TopekaCategory category = other;
-			category.setName("Study Jams");
+			TopekaCategory category = new TopekaCategory();
+			category.setName("知识库");
 			category.setId("knowledge");
 			category.setTheme("blue");
 			categories.add(category);
@@ -274,5 +296,17 @@ public class ActivitiesServlet extends HttpServlet {
 		JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(resp.getWriter());
 		jsonGenerator.serialize(categories);
 		jsonGenerator.flush();
+	}
+
+	private void updateCategoryMap(Map<String, TopekaCategory> categoryMap, DateTime updated, TopekaQuiz quiz, String hashTag) {
+		TopekaCategory category = categoryMap.get(hashTag);
+		if (category == null) {
+			category = new TopekaCategory();
+			categoryMap.put(hashTag, category);
+		}
+		category.getQuizzes().add(quiz);
+		if (category.getUpdated() == null || category.getUpdated().getValue() < updated.getValue()) {
+			category.setUpdated(updated);
+		}
 	}
 }
