@@ -126,15 +126,19 @@ public class ActivitiesServlet extends HttpServlet {
 							);
 						}
 					} else if ("event".equals(objectType)) {
-						String template = DevelopersSharedModule.getMessage("gplus.event");
-						answer = String.format(template,
-								objectActorId,
-								objectActorDisplayName,
-								objectUrl,
-								objectContent,
-								attachments.getUrl(),
-								attachments.getDisplayName()
-						);
+						/*
+						 * skips events published on G+, TODO read from Calendar API instead
+						 */
+//						String template = DevelopersSharedModule.getMessage("gplus.event");
+//						answer = String.format(template,
+//								objectActorId,
+//								objectActorDisplayName,
+//								objectUrl,
+//								objectContent,
+//								attachments.getUrl(),
+//								attachments.getDisplayName()
+//						);
+						continue;
 					} else if ("album".equals(objectType)) {
 						/*
 						 * TODO thumbnail layout
@@ -192,9 +196,6 @@ public class ActivitiesServlet extends HttpServlet {
 				break;
 			}
 
-			/*
-			 * TODO uncomment to load all activities
-			 */
 			// Prepare to request the next page of activities
 			listActivities.setPageToken(activityFeed.getNextPageToken());
 
@@ -212,8 +213,12 @@ public class ActivitiesServlet extends HttpServlet {
 			} else if (category.getQuizzes().size() == hottest.getQuizzes().size()) {
 				hottest.getQuizzes().addAll(category.getQuizzes());
 			}
-			if (latest.getUpdated() == null || latest.getUpdated().getValue() < category.getUpdated().getValue()) {
+			if (latest.getUpdated() == null) {
 				latest = category;
+			} else if (latest.getUpdated().getValue() < category.getUpdated().getValue()) {
+				latest = category;
+			} else if (latest.getUpdated().getValue() == category.getUpdated().getValue()) {
+				latest.getQuizzes().addAll(category.getQuizzes());
 			}
 			other.getQuizzes().addAll(category.getQuizzes());
 		}
