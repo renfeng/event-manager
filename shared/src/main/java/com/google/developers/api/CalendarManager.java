@@ -52,6 +52,10 @@ public class CalendarManager extends ClientManager<Calendar> {
 		// Iterate over the events in the specified calendar
 		String pageToken = null;
 		do {
+			/*
+			 * event start/end time cannot be in the year 10000, or later, i.e. 9999-12-31 11:59pm is the last
+			  * valid end time for an event.
+			 */
 			Events events = getClient().events().list("primary").setPageToken(pageToken).execute();
 			List<Event> items = events.getItems();
 			for (Event event : items) {

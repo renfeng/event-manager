@@ -4,10 +4,9 @@ loading=loading...
 appengine.app.version=${appengine.app.version}
 appengine.module.ranking=${appengine.module.ranking}
 
-# object.attachments[0].objectType: photo
 # http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
-# 1. actor.id
-# 2. actor.displayName
+# 1. object.actor.id
+# 2. object.actor.displayName
 # 3. object.url
 # 4. object.content
 # 5. object.attachments[0].url
@@ -213,6 +212,8 @@ gplus.article.noimage=\
 # 4. object.content
 # 5. object.attachments[0].url
 # 6. object.attachments[0].displayName
+# 7. start time
+# 8. location
 #<div class="ZG Sk">
 #	<div class="oB">
 #		<a href="./110074507636021361692" class="ob tv Ub Hf" rel="nofollow" oid="110074507636021361692">Derek Grant</a>
@@ -285,6 +286,8 @@ gplus.event=\
 	<div>%4$s</div>\
 	<div>\
 		<a href="%5$s" target="_blank" class="d-s ob pw" data-tooltip="View event" tabindex="0">%6$s</a>\
+			<div>%7$s</div>\
+			<div>%8$s</div>\
 	</div>\
   	<a href="%3$s" target="_blank" class="d-s u9W0n ZtGLwd" tabindex="0">View original post</a>\
 </div>

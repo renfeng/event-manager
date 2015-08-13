@@ -146,10 +146,13 @@ public class ActivitiesServlet extends HttpServlet {
 							 * TODO read from Calendar API start/end dates and location
 							 */
 						Event event = eventMap.get(url);
-						String template = DevelopersSharedModule.getMessage("gplus.event");
+						if (event == null) {
+							continue;
+						}
 
 						Date date = new Date(event.getStart().getDateTime().getValue());
 
+						String template = DevelopersSharedModule.getMessage("gplus.event");
 						answer = String.format(template,
 								objectActorId,
 								objectActorDisplayName,
