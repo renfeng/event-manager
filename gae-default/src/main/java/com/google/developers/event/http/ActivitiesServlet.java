@@ -3,9 +3,11 @@ package com.google.developers.event.http;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.Event;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Activity;
 import com.google.api.services.plus.model.ActivityFeed;
+import com.google.developers.api.CalendarManager;
 import com.google.developers.api.GPlusManager;
 import com.google.developers.event.DevelopersSharedModule;
 import com.google.developers.event.model.TopekaCategory;
@@ -23,10 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by renfeng on 7/20/15.
@@ -34,12 +34,21 @@ import java.util.Map;
 @Singleton
 public class ActivitiesServlet extends HttpServlet {
 
+	/*
+	 * e.g. Wed, August 5, 8:00 PM
+	 *
+	 * http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
+	 */
+	private static final SimpleDateFormat GPLUS_EVENT_DATE_TIME_FORMAT = new SimpleDateFormat("EEE, MMMMM d, h:mm a");
+
 	private final GPlusManager gplusManager;
+	private final CalendarManager calendarManager;
 	private final JsonFactory jsonFactory;
 
 	@Inject
-	public ActivitiesServlet(GPlusManager gplusManager, JsonFactory jsonFactory) {
+	public ActivitiesServlet(GPlusManager gplusManager, CalendarManager calendarManager, JsonFactory jsonFactory) {
 		this.gplusManager = gplusManager;
+		this.calendarManager = calendarManager;
 		this.jsonFactory = jsonFactory;
 	}
 
@@ -48,9 +57,9 @@ public class ActivitiesServlet extends HttpServlet {
 
 		Map<String, TopekaCategory> categoryMap = new HashMap<>();
 
-		Plus plus = gplusManager.getClient();
+		Map<String, Event> eventMap = calendarManager.listEvents();
 
-		Plus.Activities.List listActivities = plus.activities().list("me", "public");
+		Plus.Activities.List listActivities = gplusManager.getClient().activities().list("me", "public");
 //		listActivities.setMaxResults(5L);
 
 		// Execute the request for the first page
@@ -89,7 +98,10 @@ public class ActivitiesServlet extends HttpServlet {
 				if (object.getAttachments() != null) {
 					Activity.PlusObject.Attachments attachments = object.getAttachments().get(0);
 					Activity.PlusObject.Attachments.Image image = attachments.getImage();
+					String url = attachments.getUrl();
 					String objectType = attachments.getObjectType();
+					String displayName = attachments.getDisplayName();
+
 					if ("photo".equals(objectType)) {
 						String template = DevelopersSharedModule.getMessage("gplus.photo");
 						answer = String.format(template,
@@ -97,7 +109,7 @@ public class ActivitiesServlet extends HttpServlet {
 								objectActorDisplayName,
 								objectUrl,
 								objectContent,
-								attachments.getUrl(),
+								url,
 								image.getUrl()
 						);
 					} else if ("article".equals(objectType)) {
@@ -108,9 +120,9 @@ public class ActivitiesServlet extends HttpServlet {
 									objectActorDisplayName,
 									objectUrl,
 									objectContent,
-									attachments.getUrl(),
+									url,
 									image.getUrl(),
-									attachments.getDisplayName()
+									displayName
 							);
 						} else {
 							String template = DevelopersSharedModule.getMessage("gplus.article.noimage");
@@ -119,39 +131,48 @@ public class ActivitiesServlet extends HttpServlet {
 									objectActorDisplayName,
 									objectUrl,
 									objectContent,
-									attachments.getUrl(),
+									url,
 									attachments.getContent(),
-									attachments.getDisplayName(),
-									new URL(attachments.getUrl()).getHost()
+									displayName,
+									new URL(url).getHost()
 							);
 						}
 					} else if ("event".equals(objectType)) {
-						/*
-						 * skips events published on G+, TODO read from Calendar API instead
-						 */
-//						String template = DevelopersSharedModule.getMessage("gplus.event");
-//						answer = String.format(template,
-//								objectActorId,
-//								objectActorDisplayName,
-//								objectUrl,
-//								objectContent,
-//								attachments.getUrl(),
-//								attachments.getDisplayName()
-//						);
-						continue;
+							/*
+							 * G+ alone doesn't provide start/end date and location of an event.
+							 * While Calendar doesn't distinguish G+ events from other non-G+ events quite well,
+							 * except for the url. Combined together, a closer look to G+ web page can be assembled.
+							 *
+							 * TODO read from Calendar API start/end dates and location
+							 */
+						Event event = eventMap.get(url);
+						String template = DevelopersSharedModule.getMessage("gplus.event");
+
+						Date date = new Date(event.getStart().getDateTime().getValue());
+
+						answer = String.format(template,
+								objectActorId,
+								objectActorDisplayName,
+								objectUrl,
+								objectContent,
+								url,
+								displayName,
+								GPLUS_EVENT_DATE_TIME_FORMAT.format(date),
+								event.getLocation()
+						);
 					} else if ("album".equals(objectType)) {
-						/*
-						 * TODO thumbnail layout
-						 */
+							/*
+							 * TODO thumbnail layout
+							 */
 						String template = DevelopersSharedModule.getMessage("gplus.album");
 						answer = String.format(template,
 								objectActorId,
 								objectActorDisplayName,
 								objectUrl,
 								objectContent,
-								attachments.getUrl(),
+								url,
 								attachments.getThumbnails().get(0).getImage().getUrl(),
-								attachments.getDisplayName()
+								displayName
 						);
 					} else {
 						answer = objectContent;
