@@ -70,7 +70,6 @@ public class ActivitiesServlet extends HttpServlet {
 		List<Event> publishedEvents = new ArrayList<>();
 		List<String> eventsNotOnCalendar = new ArrayList<>();
 
-
 		Map<String, TopekaCategory> categoryMap = new HashMap<>();
 
 		/*
@@ -306,6 +305,8 @@ public class ActivitiesServlet extends HttpServlet {
 		 */
 		TopekaCategory futureEvent = new TopekaCategory();
 
+		List<String> eventsNotOnSpreadsheet = new ArrayList<>();
+
 		final Map<String, EventActivities> eventGplusMap = new HashMap<>();
 		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
 
@@ -387,27 +388,46 @@ public class ActivitiesServlet extends HttpServlet {
 			/*
 			 * Calendar event creator is GDG event organizer, c.f. others are contributor
 			 */
-			String creatorId = e.getCreator().getId();
-			String gplusEvent = e.getHtmlLink();
-
+//			String creatorId = e.getCreator().getId();
 			//String displayName = plus.people().get(creatorId).execute().getDisplayName();
 
-			EventActivities eventActivities = eventGplusMap.get(gplusEvent);
+			String gplusEvent = e.getHtmlLink();
 			TopekaQuiz quiz = quizMap.get(gplusEvent);
-			if (eventActivities.getFeedback() != null && eventActivities.getFeedback().before(now)) {
-				pastEvent.getQuizzes().add(quiz);
-			} else if (eventActivities.getCheckIn() != null && eventActivities.getCheckIn().before(now)) {
-				pastEvent.getQuizzes().add(quiz);
-			} else if (eventActivities.getRegister() != null && eventActivities.getRegister().before(now)) {
-				pastEvent.getQuizzes().add(quiz);
+
+			EventActivities eventActivities = eventGplusMap.get(gplusEvent);
+			if (eventActivities != null) {
+				if (eventActivities.getFeedback() != null && eventActivities.getFeedback().before(now)) {
+					pastEvent.getQuizzes().add(quiz);
+				} else if (eventActivities.getCheckIn() != null && eventActivities.getCheckIn().before(now)) {
+					pastEvent.getQuizzes().add(quiz);
+				} else if (eventActivities.getRegister() != null && eventActivities.getRegister().before(now)) {
+					pastEvent.getQuizzes().add(quiz);
+				} else {
+					futureEvent.getQuizzes().add(quiz);
+				}
 			} else {
-				futureEvent.getQuizzes().add(quiz);
+				eventsNotOnSpreadsheet.add(gplusEvent);
 			}
 		}
 
-		TopekaQuiz last = futureEvent.getQuizzes().last();
-		activeEvent.getQuizzes().add(last);
-		futureEvent.getQuizzes().remove(last);
+		for (String e : eventsNotOnSpreadsheet) {
+			logger.info("not found on Spreadsheet: " + e);
+			/*
+			 * x https://plus.google.com/events/cqui1i677tauhvuipovfvavfc0s
+			 * x https://plus.google.com/events/cmr0k2kdiihgvt2uoboollh8av0
+			 * https://plus.google.com/events/cq0r3kjadlm2eep5v1qip26i9t8
+			 * https://plus.google.com/events/c1lk51knk3pvso4hl677jihrbh0
+			 * x https://plus.google.com/events/ctruh5edssc1nouplpje05b9e94
+			 * x https://plus.google.com/events/cj07jkvt34go4ckjtcktqvmc6fg
+			 * x https://plus.google.com/events/c56lv64cm013epeiu3as6m69rlc
+			 */
+		}
+
+		if (futureEvent.getQuizzes().size() > 0) {
+			TopekaQuiz last = futureEvent.getQuizzes().last();
+			activeEvent.getQuizzes().add(last);
+			futureEvent.getQuizzes().remove(last);
+		}
 
 		TopekaCategory hottest = new TopekaCategory();
 		TopekaCategory latest = new TopekaCategory();

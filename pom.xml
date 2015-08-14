@@ -247,8 +247,8 @@
 							<jvmFlag>-Dhttps.proxyPort=${env.PROXY_PORT}</jvmFlag>
 
 							<!-- https://github.com/HotswapProjects/HotswapAgent -->
-							<jvmFlag>-XXaltjvm=dcevm</jvmFlag>
-							<jvmFlag>-javaagent:C:\HotswapAgent-0.2\hotswap-agent.jar</jvmFlag>
+							<!--<jvmFlag>-XXaltjvm=dcevm</jvmFlag>-->
+							<!--<jvmFlag>-javaagent:/opt/hotswap-agent.jar</jvmFlag>-->
 
 							<!-- hrd -->
 							<jvmFlag>-Ddatastore.default_high_rep_job_policy_unapplied_job_pct=50</jvmFlag>
@@ -390,12 +390,12 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-calendar</artifactId>
-				<version>v3-rev134-1.20.0</version>
+				<version>v3-rev135-1.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-drive</artifactId>
-				<version>v2-rev180-1.20.0</version>
+				<version>v2-rev181-1.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.api.client</groupId>
@@ -405,7 +405,7 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev247-1.20.0</version>
+				<version>v1-rev248-1.20.0</version>
 			</dependency>
 
 			<dependency>
