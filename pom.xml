@@ -386,7 +386,7 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-calendar</artifactId>
-				<version>v3-rev133-1.20.0</version>
+				<version>v3-rev134-1.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
@@ -401,7 +401,7 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev245-1.20.0</version>
+				<version>v1-rev247-1.20.0</version>
 			</dependency>
 
 			<dependency>

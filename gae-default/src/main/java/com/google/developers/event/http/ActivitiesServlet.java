@@ -9,6 +9,7 @@ import com.google.api.services.plus.model.Activity;
 import com.google.api.services.plus.model.ActivityFeed;
 import com.google.developers.api.CalendarManager;
 import com.google.developers.api.GPlusManager;
+import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.DevelopersSharedModule;
 import com.google.developers.event.model.TopekaCategory;
 import com.google.developers.event.model.TopekaQuiz;
@@ -18,6 +19,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -34,6 +37,9 @@ import java.util.*;
 @Singleton
 public class ActivitiesServlet extends HttpServlet {
 
+	private static final Logger logger = LoggerFactory
+			.getLogger(ActivitiesServlet.class);
+
 	/*
 	 * e.g. Wed, August 5, 8:00 PM
 	 *
@@ -43,23 +49,32 @@ public class ActivitiesServlet extends HttpServlet {
 
 	private final GPlusManager gplusManager;
 	private final CalendarManager calendarManager;
+	private final SpreadsheetManager spreadsheetManager;
 	private final JsonFactory jsonFactory;
 
 	@Inject
-	public ActivitiesServlet(GPlusManager gplusManager, CalendarManager calendarManager, JsonFactory jsonFactory) {
+	public ActivitiesServlet(GPlusManager gplusManager, CalendarManager calendarManager,
+							 SpreadsheetManager spreadsheetManager, JsonFactory jsonFactory) {
 		this.gplusManager = gplusManager;
 		this.calendarManager = calendarManager;
+		this.spreadsheetManager = spreadsheetManager;
 		this.jsonFactory = jsonFactory;
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
+		List<Event> publishedEvents = new ArrayList<>();
+		List<String> eventsNotOnCalendar = new ArrayList<>();
+
+		TopekaCategory eventCategory = new TopekaCategory();
+
 		Map<String, TopekaCategory> categoryMap = new HashMap<>();
 
 		Map<String, Event> eventMap = calendarManager.listEvents();
 
-		Plus.Activities.List listActivities = gplusManager.getClient().activities().list("me", "public");
+		Plus plus = gplusManager.getClient();
+		Plus.Activities.List listActivities = plus.activities().list("me", "public");
 //		listActivities.setMaxResults(5L);
 
 		// Execute the request for the first page
@@ -78,6 +93,8 @@ public class ActivitiesServlet extends HttpServlet {
 				if (!"share".equals(activity.getVerb())) {
 					continue;
 				}
+
+				DateTime updated = activity.getUpdated();
 
 				Activity.PlusObject object = activity.getObject();
 				String objectUrl = object.getUrl();
@@ -138,17 +155,20 @@ public class ActivitiesServlet extends HttpServlet {
 							);
 						}
 					} else if ("event".equals(objectType)) {
-							/*
-							 * G+ alone doesn't provide start/end date and location of an event.
-							 * While Calendar doesn't distinguish G+ events from other non-G+ events quite well,
-							 * except for the url. Combined together, a closer look to G+ web page can be assembled.
-							 *
-							 * TODO read from Calendar API start/end dates and location
-							 */
+						/*
+						 * G+ alone doesn't provide start/end date and location of an event.
+						 * While Calendar doesn't distinguish G+ events from other non-G+ events quite well,
+						 * except for the url. Combined together, a closer look to G+ web page can be assembled.
+						 *
+						 * TODO read from Calendar API start/end dates and location
+						 */
 						Event event = eventMap.get(url);
 						if (event == null) {
+							eventsNotOnCalendar.add(url);
 							continue;
 						}
+
+						publishedEvents.add(event);
 
 						Date date = new Date(event.getStart().getDateTime().getValue());
 
@@ -163,6 +183,16 @@ public class ActivitiesServlet extends HttpServlet {
 								GPLUS_EVENT_DATE_TIME_FORMAT.format(date),
 								event.getLocation()
 						);
+
+						TopekaQuiz quiz = new TopekaQuiz();
+						quiz.setType("gplus-post");
+						quiz.setQuestion(activity.getTitle());
+						quiz.setAnswer(answer);
+						quiz.setUpdated(updated);
+
+						eventCategory.getQuizzes().add(quiz);
+
+						continue;
 					} else if ("album".equals(objectType)) {
 							/*
 							 * TODO thumbnail layout
@@ -189,8 +219,6 @@ public class ActivitiesServlet extends HttpServlet {
 							objectContent
 					);
 				}
-
-				DateTime updated = activity.getUpdated();
 
 				TopekaQuiz quiz = new TopekaQuiz();
 				quiz.setType("gplus-post");
@@ -228,21 +256,66 @@ public class ActivitiesServlet extends HttpServlet {
 			activities = activityFeed.getItems();
 		}
 
+		for (String e : eventsNotOnCalendar) {
+			logger.info("not found on Calendar: " + e);
+			/*
+			 * https://plus.google.com/+GDGSuzhou/posts/VjNdgbvdCov
+			 * https://plus.google.com/+GDGSuzhou/posts/EpfV8jXBwL6
+			 * https://plus.google.com/+GDGSuzhou/posts/5ceHFSNpcnE
+			 * https://plus.google.com/+GDGSuzhou/posts/GR8fjLu4GHA
+			 * https://plus.google.com/+GDGSuzhou/posts/JFtB12eHFPC
+			 * https://plus.google.com/+GDGSuzhou/posts/DNkULAjaKcK
+			 */
+		}
+
+		for (Event event : publishedEvents) {
+			/*
+			 * Calendar event creator is GDG event organizer, c.f. others are contributor
+			 */
+			String creatorId = event.getCreator().getId();
+			String gplusEvent = event.getHtmlLink();
+
+
+		}
+
+		/*
+		 * TODO update Activities.index with events and organizers
+		 *
+		 * TODO determine start/end time for the active event, and events in the past and in the future
+		 */
+		TopekaCategory activeEvent = new TopekaCategory();
+
+		/*
+		 * TODO reverse order
+		 */
+		TopekaCategory futureEvent = new TopekaCategory();
+
+		TopekaCategory pastEvent = new TopekaCategory();
+
+		for (Event e : publishedEvents) {
+			/*
+			 * Calendar event creator is GDG event organizer, c.f. others are contributor
+			 */
+			String creatorId = e.getCreator().getId();
+			String gplusEvent = e.getHtmlLink();
+
+			String displayName = plus.people().get(creatorId).execute().getDisplayName();
+		}
+
 		TopekaCategory hottest = new TopekaCategory();
 		TopekaCategory latest = new TopekaCategory();
 		TopekaCategory other = new TopekaCategory();
 		for (TopekaCategory category : categoryMap.values()) {
-			if (category.getQuizzes().size() > hottest.getQuizzes().size()) {
-				hottest = category;
-			} else if (category.getQuizzes().size() == hottest.getQuizzes().size()) {
-				hottest.getQuizzes().addAll(category.getQuizzes());
-			}
 			if (latest.getUpdated() == null) {
 				latest = category;
 			} else if (latest.getUpdated().getValue() < category.getUpdated().getValue()) {
 				latest = category;
 			} else if (latest.getUpdated().getValue() == category.getUpdated().getValue()) {
 				latest.getQuizzes().addAll(category.getQuizzes());
+			} else if (category.getQuizzes().size() > hottest.getQuizzes().size()) {
+				hottest = category;
+			} else if (category.getQuizzes().size() == hottest.getQuizzes().size()) {
+				hottest.getQuizzes().addAll(category.getQuizzes());
 			}
 			other.getQuizzes().addAll(category.getQuizzes());
 		}
