@@ -51,7 +51,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 	private static final String CONTACTS_URL = "https://www.google.com/m8/feeds/contacts/default/full";
 	private static final String CONTACT_BATCH_URL = "https://www.google.com/m8/feeds/contacts/default/full/batch";
 
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
 	public static final Pattern ACTIVITY_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2}) (Register|Check-in|Feedback)");
 	public static final Pattern GROUP_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(?: .+)?");
@@ -1044,13 +1044,13 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 			}
 			if ("Register".equals(activity)) {
 				credit++;
-				eventActivities.setRegister(dateString);
+				eventActivities.setRegister(date);
 			} else if ("Check-in".equals(activity)) {
 				credit++;
-				eventActivities.setCheckIn(dateString);
+				eventActivities.setCheckIn(date);
 			} else if ("Feedback".equals(activity)) {
 				credit++;
-				eventActivities.setFeedback(dateString);
+				eventActivities.setFeedback(date);
 //			} else if ("Sponsor".equals(activity)) {
 //				credit++;
 //				eventActivities.setSponsor(dateString);
@@ -1254,15 +1254,15 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 				if ("Register".equals(activity)) {
 					EventScore score = scoreMap.get(dateString);
 					score.setValue(score.getValue() + 1);
-					eventActivities.setRegister(dateString);
+					eventActivities.setRegister(date);
 				} else if ("Check-in".equals(activity)) {
 					EventScore score = scoreMap.get(dateString);
 					score.setValue(score.getValue() + 1);
-					eventActivities.setCheckIn(dateString);
+					eventActivities.setCheckIn(date);
 				} else if ("Feedback".equals(activity)) {
 					EventScore score = scoreMap.get(dateString);
 					score.setValue(score.getValue() + 1);
-					eventActivities.setFeedback(dateString);
+					eventActivities.setFeedback(date);
 //			} else if ("Sponsor".equals(activity)) {
 //				credit++;
 //				eventActivities.setSponsor(dateString);

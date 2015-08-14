@@ -7,12 +7,12 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Activity;
 import com.google.api.services.plus.model.ActivityFeed;
-import com.google.developers.api.CalendarManager;
-import com.google.developers.api.GPlusManager;
-import com.google.developers.api.SpreadsheetManager;
+import com.google.developers.api.*;
 import com.google.developers.event.DevelopersSharedModule;
+import com.google.developers.event.EventActivities;
 import com.google.developers.event.model.TopekaCategory;
 import com.google.developers.event.model.TopekaQuiz;
+import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.jsoup.Jsoup;
@@ -28,8 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
 
 /**
  * Created by renfeng on 7/20/15.
@@ -67,10 +70,13 @@ public class ActivitiesServlet extends HttpServlet {
 		List<Event> publishedEvents = new ArrayList<>();
 		List<String> eventsNotOnCalendar = new ArrayList<>();
 
-		TopekaCategory eventCategory = new TopekaCategory();
 
 		Map<String, TopekaCategory> categoryMap = new HashMap<>();
 
+		/*
+		 * maps G+ event url to objects
+		 */
+		Map<String, TopekaQuiz> quizMap = new HashMap<>();
 		Map<String, Event> eventMap = calendarManager.listEvents();
 
 		Plus plus = gplusManager.getClient();
@@ -190,7 +196,7 @@ public class ActivitiesServlet extends HttpServlet {
 						quiz.setAnswer(answer);
 						quiz.setUpdated(updated);
 
-						eventCategory.getQuizzes().add(quiz);
+						quizMap.put(url, quiz);
 
 						continue;
 					} else if ("album".equals(objectType)) {
@@ -282,16 +288,101 @@ public class ActivitiesServlet extends HttpServlet {
 		 * TODO update Activities.index with events and organizers
 		 *
 		 * TODO determine start/end time for the active event, and events in the past and in the future
+		 *
+		 * an event is a past event if the time is after its feedback cutoff, or after check-in cutoff when
+		 * there is no feedback cutoff, or after register cutoff when there is neither feedback or check-in cutoff
+		 */
+		TopekaCategory pastEvent = new TopekaCategory();
+
+		/*
+		 * the event that follows the last past event is active event, or the first event before
+		 * it becomes a past event. there may be no active event.
 		 */
 		TopekaCategory activeEvent = new TopekaCategory();
 
 		/*
+		 * the next event after the active event. there may be no future event.
 		 * TODO reverse order
 		 */
 		TopekaCategory futureEvent = new TopekaCategory();
 
-		TopekaCategory pastEvent = new TopekaCategory();
+		final Map<String, EventActivities> eventGplusMap = new HashMap<>();
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
 
+			Map<String, EventActivities> eventLabelMap = new HashMap<>();
+
+			@Override
+			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL) throws IOException, ServiceException {
+
+				String gplusEvent = valueMap.get("Google+ Event");
+				String activityLabel = valueMap.get("Activity");
+				String date = valueMap.get("Date");
+				String timestampDateFormat = valueMap.get("timestamp.dateFormat");
+				String timestampDateFormatLocale = valueMap.get("timestamp.dateFormat.locale");
+
+				if (activityLabel == null) {
+					return true;
+				}
+
+				Matcher matcher = ContactManager.ACTIVITY_PATTERN.matcher(activityLabel);
+				if (!matcher.matches()) {
+					return true;
+				}
+
+				String dateString = matcher.group(1);
+				String activity = matcher.group(2);
+
+				Date cutoffDate;
+				try {
+					if (date != null) {
+						DateFormat dateFormat;
+						if (timestampDateFormatLocale != null) {
+							dateFormat = new SimpleDateFormat(timestampDateFormat,
+									Locale.forLanguageTag(timestampDateFormatLocale));
+						} else {
+							dateFormat = new SimpleDateFormat(timestampDateFormat);
+						}
+
+						cutoffDate = dateFormat.parse(date);
+					} else {
+						cutoffDate = ContactManager.DATE_FORMAT.parse(dateString);
+					}
+				} catch (ParseException e) {
+					logger.debug("failed to parse activity date from event label", e);
+					cutoffDate = null;
+				}
+
+				EventActivities eventActivities = eventLabelMap.get(dateString);
+				if (eventActivities == null) {
+					eventActivities = new EventActivities();
+					eventLabelMap.put(gplusEvent, eventActivities);
+				}
+				if ("Register".equals(activity)) {
+					eventActivities.setRegister(cutoffDate);
+				} else if ("Check-in".equals(activity)) {
+					eventActivities.setCheckIn(cutoffDate);
+				} else if ("Feedback".equals(activity)) {
+					eventActivities.setFeedback(cutoffDate);
+//			} else if ("Sponsor".equals(activity)) {
+//				eventActivities.setSponsor(dateString);
+				}
+
+				if (gplusEvent != null && eventGplusMap.get(gplusEvent) == null) {
+					eventGplusMap.put(gplusEvent, eventActivities);
+				}
+
+				return true;
+			}
+		};
+		try {
+			processor.process(spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
+					"Google+ Event", "Activity", "Date",
+					"timestamp.dateFormat", "timestamp.dateFormat.locale");
+		} catch (ServiceException e) {
+			throw new ServletException(e);
+		}
+
+		Date now = new Date();
 		for (Event e : publishedEvents) {
 			/*
 			 * Calendar event creator is GDG event organizer, c.f. others are contributor
@@ -299,8 +390,24 @@ public class ActivitiesServlet extends HttpServlet {
 			String creatorId = e.getCreator().getId();
 			String gplusEvent = e.getHtmlLink();
 
-			String displayName = plus.people().get(creatorId).execute().getDisplayName();
+			//String displayName = plus.people().get(creatorId).execute().getDisplayName();
+
+			EventActivities eventActivities = eventGplusMap.get(gplusEvent);
+			TopekaQuiz quiz = quizMap.get(gplusEvent);
+			if (eventActivities.getFeedback() != null && eventActivities.getFeedback().before(now)) {
+				pastEvent.getQuizzes().add(quiz);
+			} else if (eventActivities.getCheckIn() != null && eventActivities.getCheckIn().before(now)) {
+				pastEvent.getQuizzes().add(quiz);
+			} else if (eventActivities.getRegister() != null && eventActivities.getRegister().before(now)) {
+				pastEvent.getQuizzes().add(quiz);
+			} else {
+				futureEvent.getQuizzes().add(quiz);
+			}
 		}
+
+		TopekaQuiz last = futureEvent.getQuizzes().last();
+		activeEvent.getQuizzes().add(last);
+		futureEvent.getQuizzes().remove(last);
 
 		TopekaCategory hottest = new TopekaCategory();
 		TopekaCategory latest = new TopekaCategory();
@@ -338,21 +445,21 @@ public class ActivitiesServlet extends HttpServlet {
 			categories.add(category);
 		}
 		{
-			TopekaCategory category = new TopekaCategory();
+			TopekaCategory category = activeEvent;
 			category.setName("最近的活动");
 			category.setId("tvmovies");
 			category.setTheme("red");
 			categories.add(category);
 		}
 		{
-			TopekaCategory category = new TopekaCategory();
+			TopekaCategory category = futureEvent;
 			category.setName("活动预告");
 			category.setId("food");
 			category.setTheme("green");
 			categories.add(category);
 		}
 		{
-			TopekaCategory category = new TopekaCategory();
+			TopekaCategory category = pastEvent;
 			category.setName("精彩瞬间");
 			category.setId("history");
 			category.setTheme("yellow");

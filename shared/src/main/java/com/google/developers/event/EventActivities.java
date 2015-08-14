@@ -1,13 +1,15 @@
 package com.google.developers.event;
 
+import java.util.Date;
+
 /**
  * Created by renfeng on 5/22/15.
  */
 public class EventActivities {
 
-	String register;
-	String checkIn;
-	String feedback;
+	Date register;
+	Date checkIn;
+	Date feedback;
 
 	String sponsor;
 
@@ -19,27 +21,27 @@ public class EventActivities {
 		this.sponsor = sponsor;
 	}
 
-	public String getFeedback() {
+	public Date getFeedback() {
 		return feedback;
 	}
 
-	public void setFeedback(String feedback) {
+	public void setFeedback(Date feedback) {
 		this.feedback = feedback;
 	}
 
-	public String getCheckIn() {
+	public Date getCheckIn() {
 		return checkIn;
 	}
 
-	public void setCheckIn(String checkIn) {
+	public void setCheckIn(Date checkIn) {
 		this.checkIn = checkIn;
 	}
 
-	public String getRegister() {
+	public Date getRegister() {
 		return register;
 	}
 
-	public void setRegister(String register) {
+	public void setRegister(Date register) {
 		this.register = register;
 	}
 }

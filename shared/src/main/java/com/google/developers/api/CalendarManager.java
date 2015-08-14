@@ -45,6 +45,11 @@ public class CalendarManager extends ClientManager<Calendar> {
 		setClient(calendar);
 	}
 
+	/**
+	 *
+	 * @return maps G+ event url to its object
+	 * @throws IOException
+	 */
 	public Map<String, Event> listEvents() throws IOException {
 
 		Map<String, Event> result = new HashMap<>();
