@@ -16,7 +16,7 @@
 	<url>http://developers.dushu.hu/</url>
 
 	<prerequisites>
-		<maven>null</maven>
+		<maven>2.2.1</maven>
 	</prerequisites>
 
 	<build>
@@ -36,9 +36,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
 			</plugin>
 
 			<!-- phase: n/a - manual -->
