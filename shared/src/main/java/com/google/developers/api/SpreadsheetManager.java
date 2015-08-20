@@ -275,18 +275,10 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 	public WorksheetEntry getWorksheet(String key, String gridId)
 			throws IOException, ServiceException {
 
-//		URL url = new URL("https://spreadsheets.google.com/feeds/worksheets/"
-//				+ key + "/private/full");
-		FeedURLFactory urlFactory = FeedURLFactory.getDefault();
-		URL url = urlFactory.getWorksheetFeedUrl(key, "private", "full");
-
-		// Make a request to the API and get all spreadsheets.
-		WorksheetFeed feed = getService().getFeed(url, WorksheetFeed.class);
-		List<WorksheetEntry> worksheets = feed.getEntries();
-
 		WorksheetEntry entry = null;
 		// Iterate through each worksheet in the spreadsheet.
 		if (gridId != null) {
+			List<WorksheetEntry> worksheets = listWorksheets(key);
 			for (WorksheetEntry worksheet : worksheets) {
 				Link link = worksheet.getLink(
 						"http://schemas.google.com/visualization/2008#visualizationApi",
@@ -316,5 +308,16 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 //			entry = worksheets.get(0);
 //		}
 		return entry;
+	}
+
+	public List<WorksheetEntry> listWorksheets(String key) throws IOException, ServiceException {
+		//		URL url = new URL("https://spreadsheets.google.com/feeds/worksheets/"
+//				+ key + "/private/full");
+		FeedURLFactory urlFactory = FeedURLFactory.getDefault();
+		URL url = urlFactory.getWorksheetFeedUrl(key, "private", "full");
+
+		// Make a request to the API and get all spreadsheets.
+		WorksheetFeed feed = getService().getFeed(url, WorksheetFeed.class);
+		return feed.getEntries();
 	}
 }
