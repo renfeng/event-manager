@@ -1,14 +1,16 @@
 package com.google.developers.event;
 
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.ContactManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.gdata.util.ServiceException;
-import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -19,13 +21,10 @@ import java.util.regex.Matcher;
 /**
  * Created by +FrankR on 6/22/15.
  */
-//@Singleton
-public class ActiveEvent {
+public class ActiveEvent implements Serializable {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ActiveEvent.class);
-
-	private final SpreadsheetManager spreadsheetManager;
 
 	/*
 	 * retrieve the urls of register and check-in for the latest event
@@ -55,22 +54,24 @@ public class ActiveEvent {
 
 	private String event;
 
-	@Inject
-	public ActiveEvent(SpreadsheetManager spreadsheetManager) {
-		this.spreadsheetManager = spreadsheetManager;
-	}
+	public static ActiveEvent get(String gplusEventUrl, SpreadsheetManager spreadsheetManager)
+			throws IOException, ServiceException {
 
-	public void refresh(final Date eventDate) throws IOException, ServiceException {
-
-		if (eventDate == null) {
-			throw new IllegalArgumentException("missing eventDate");
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+		ActiveEvent activeEvent = (ActiveEvent) syncCache.get(gplusEventUrl);
+		if (activeEvent == null) {
+			activeEvent = new ActiveEvent(gplusEventUrl, spreadsheetManager);
+			syncCache.put(gplusEventUrl, activeEvent);
 		}
 
-		if (getRegisterCutoffDate() != null &&
-				getCheckInCutoffDate() != null &&
-				getRegisterCutoffDate().before(eventDate) &&
-				getCheckInCutoffDate().after(eventDate)) {
-			return;
+		return activeEvent;
+	}
+
+	public ActiveEvent(final String gplusEventUrl, SpreadsheetManager spreadsheetManager)
+			throws IOException, ServiceException {
+
+		if (gplusEventUrl == null) {
+			throw new IllegalArgumentException("missing gplusEventUrl");
 		}
 
 		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
@@ -84,11 +85,11 @@ public class ActiveEvent {
 				String event = valueMap.get("Group");
 				Map<String, String> lastValueMap = map.get(event);
 				if (lastValueMap != null) {
-					if (isRegisterClosed(valueMap) && isCheckinOpen(lastValueMap)) {
+					if (isRegister(valueMap) && isCheckin(lastValueMap)) {
 						logger.info("Event: " + event);
 						setEvent(event);
 						return false;
-					} else if (isRegisterClosed(lastValueMap) && isCheckinOpen(valueMap)) {
+					} else if (isRegister(lastValueMap) && isCheckin(valueMap)) {
 						logger.info("Event: " + event);
 						setEvent(event);
 						return false;
@@ -100,7 +101,7 @@ public class ActiveEvent {
 				return true;
 			}
 
-			private boolean isRegisterClosed(Map<String, String> valueMap) {
+			private boolean isRegister(Map<String, String> valueMap) {
 
 				boolean result = false;
 
@@ -109,16 +110,16 @@ public class ActiveEvent {
 					Matcher matcher = ContactManager.ACTIVITY_PATTERN.matcher(activity);
 					if (matcher.matches()) {
 						String activityType = matcher.group(2);
-						if ("Register".equals(activityType)) {
+						if ("Register".equals(activityType) &&
+								gplusEventUrl.equals(valueMap.get("Google+ Event"))) {
 							Date date = getDate(valueMap);
-							if (date != null && date.before(eventDate)) {
-								setRegisterResponsesURL(valueMap.get("URL"));
-								setRegisterEmailColumn(valueMap.get("emailAddress"));
-								setRegisterNameColumn(valueMap.get("nickname"));
 
-								setRegisterCutoffDate(date);
-								result = true;
-							}
+							setRegisterResponsesURL(valueMap.get("URL"));
+							setRegisterEmailColumn(valueMap.get("emailAddress"));
+							setRegisterNameColumn(valueMap.get("nickname"));
+
+							setRegisterCutoffDate(date);
+							result = true;
 						}
 					}
 				}
@@ -126,7 +127,7 @@ public class ActiveEvent {
 				return result;
 			}
 
-			private boolean isCheckinOpen(Map<String, String> valueMap) {
+			private boolean isCheckin(Map<String, String> valueMap) {
 
 				boolean result = false;
 
@@ -137,21 +138,19 @@ public class ActiveEvent {
 						String activityType = matcher.group(2);
 						if ("Check-in".equals(activityType)) {
 							Date date = getDate(valueMap);
-							if (date != null && date.after(eventDate)) {
-								setCheckInResponsesURL(valueMap.get("URL"));
-								setCheckInEmailColumn(valueMap.get("emailAddress"));
-								setCheckInTimestampColumn(valueMap.get("timestamp"));
+							setCheckInResponsesURL(valueMap.get("URL"));
+							setCheckInEmailColumn(valueMap.get("emailAddress"));
+							setCheckInTimestampColumn(valueMap.get("timestamp"));
 
-								setCheckInFormURL(valueMap.get("formResponse"));
-								setCheckInEmailEntry(valueMap.get("emailEntry"));
-								setCheckInClientIp(valueMap.get("clientIp"));
+							setCheckInFormURL(valueMap.get("formResponse"));
+							setCheckInEmailEntry(valueMap.get("emailEntry"));
+							setCheckInClientIp(valueMap.get("clientIp"));
 
-								setLabel(valueMap.get("Label"));
-								setLogo(valueMap.get("Logo"));
+							setLabel(valueMap.get("Label"));
+							setLogo(valueMap.get("Logo"));
 
-								setCheckInCutoffDate(date);
-								result = true;
-							}
+							setCheckInCutoffDate(date);
+							result = true;
 						}
 					}
 				}
@@ -199,7 +198,7 @@ public class ActiveEvent {
 						"https://docs.google.com/spreadsheets/d/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/edit#gid=0"),
 				"Group", "Date", "Activity", "URL", "emailAddress", "nickname",
 				"timestamp", "timestamp.dateFormat", "timestamp.dateFormat.locale", "timestamp.timeZone",
-				"formResponse", "emailEntry", "clientIp", "Label", "Logo");
+				"formResponse", "emailEntry", "clientIp", "Label", "Logo", "Google+ Event");
 	}
 
 	public String getRegisterResponsesURL() {

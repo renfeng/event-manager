@@ -3,14 +3,11 @@ package com.google.developers.event.http;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.developers.MemcacheKey;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +25,7 @@ import java.util.Map;
  * Created by renfeng on 6/17/15.
  */
 @Singleton
-public class CheckInServlet extends HttpServlet implements MemcacheKey {
+public class CheckInServlet extends HttpServlet implements Path {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(CheckInServlet.class);
@@ -39,15 +35,18 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final SpreadsheetManager spreadsheetManager;
-	private final Provider<ActiveEvent> activeEventProvider;
 
 	@Inject
 	public CheckInServlet(HttpTransport transport, JsonFactory jsonFactory,
-						  SpreadsheetManager spreadsheetManager, Provider<ActiveEvent> activeEventProvider) {
+						  SpreadsheetManager spreadsheetManager) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.spreadsheetManager = spreadsheetManager;
-		this.activeEventProvider = activeEventProvider;
+	}
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		req.getRequestDispatcher("/check-in/index.html").forward(req, resp);
 	}
 
 	@Override
@@ -63,12 +62,33 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
 		 * retrieve the urls of register and check-in for the latest event
 		 */
 
-		ActiveEvent activeEvent = activeEventProvider.get();
+		/*
+		 * retrieve event id from http header, referer
+		 * e.g.
+		 * https://plus.google.com/events/c2vl1u3p3pbglde0gqhs7snv098
+		 * https://developers.google.com/events/6031536915218432/
+		 * https://hub.gdgx.io/events/6031536915218432
+		 */
+		String referer = req.getHeader("Referer");
+//		Pattern gplusEventPattern = Pattern.compile("https://plus.google.com/events/" +
+//				"[^/]+");
+//		Pattern devsiteEventPattern = Pattern.compile("https://developers.google.com/events/" +
+//				"[^/]+/");
+//		Pattern gdgxHubEventPattern = Pattern.compile("https://hub.gdgx.io/events/" +
+//				"([^/]+)");
+		String requestURL = req.getRequestURL().toString();
+		String urlBase = requestURL.substring(0, requestURL.indexOf(req.getRequestURI())) + CHECK_IN_URL;
+		if (!referer.startsWith(urlBase) || referer.equals(urlBase)) {
+			//req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
+			resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
 
+		String gplusEventUrl = "https://plus.google.com/events/" + referer.substring(urlBase.length());
+
+		ActiveEvent activeEvent;
 		try {
-			Date eventDate = new Date();
-			logger.info("Event date (now): " + eventDate);
-			activeEvent.refresh(eventDate);
+			activeEvent = ActiveEvent.get(gplusEventUrl, spreadsheetManager);
 		} catch (ServiceException e) {
 			throw new ServletException(e);
 		}
@@ -240,10 +260,5 @@ public class CheckInServlet extends HttpServlet implements MemcacheKey {
 		generator.writeString(error);
 		generator.writeEndObject();
 		generator.flush();
-	}
-
-	@Override
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		MemcacheServiceFactory.getMemcacheService().delete(ACTIVE_EVENT);
 	}
 }

@@ -6,14 +6,12 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.developers.MemcacheKey;
-import com.google.developers.api.SpreadsheetManager;
-import com.google.inject.*;
+import com.google.inject.Binder;
+import com.google.inject.Module;
+import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ResourceBundle;
@@ -54,26 +52,6 @@ public class DevelopersSharedModule implements Module, MemcacheKey {
 				.toInstance(getMessage("clientSecret"));
 
 		return;
-	}
-
-	/**
-	 * binds ActiveEvent to an instance stored in memcache
-	 *
-	 * @param spreadsheetManagerProvider
-	 * @return
-	 * @throws IOException
-	 */
-	@Provides
-	@Inject
-	ActiveEvent provideActiveEvent(Provider<SpreadsheetManager> spreadsheetManagerProvider) throws IOException {
-
-		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
-		ActiveEvent activeEvent = (ActiveEvent) syncCache.get(ACTIVE_EVENT);
-		if (activeEvent == null) {
-			activeEvent = new ActiveEvent(spreadsheetManagerProvider.get());
-		}
-
-		return activeEvent;
 	}
 
 	public static String getMessage(String key) {
