@@ -3,7 +3,6 @@ package com.google.developers.event;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
-import com.google.developers.api.ContactManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.gdata.util.ServiceException;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
 
 /**
  * Created by +FrankR on 6/22/15.
@@ -25,6 +23,15 @@ public class ActiveEvent implements Serializable {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ActiveEvent.class);
+
+	public static final String GROUP_COLUMN = "Google Contact Group";
+	public static final String REGISTER_CUTOFF_DATE_COLUMN = "Register Cutoff Date";
+	public static final String CHECK_IN_CUTOFF_DATE_COLUMN = "Check-in Cutoff Date";
+	public static final String GPLUS_EVENT_COLUMN = "Google+ Event";
+	public static final String REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN = "Register Form Response Spreadsheet URL";
+	public static final String EMAIL_ADDRESS_COLUMN = "emailAddress";
+	public static final String NICKNAME_COLUMN = "nickname";
+	public static final String FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN = "Feedback Form Response Spreadsheet URL";
 
 	/*
 	 * retrieve the urls of register and check-in for the latest event
@@ -76,92 +83,28 @@ public class ActiveEvent implements Serializable {
 
 		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 
-			private final Map<String, Map<String, String>> map = new HashMap<>();
-
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
 
-				String event = valueMap.get("Group");
-				Map<String, String> lastValueMap = map.get(event);
-				if (lastValueMap != null) {
-					if (isRegister(valueMap) && isCheckin(lastValueMap)) {
-						logger.info("Event: " + event);
-						setEvent(event);
-						return false;
-					} else if (isRegister(lastValueMap) && isCheckin(valueMap)) {
-						logger.info("Event: " + event);
-						setEvent(event);
-						return false;
-					}
-				} else {
-					map.put(event, valueMap);
+				if (gplusEventUrl.equals(valueMap.get(GPLUS_EVENT_COLUMN))) {
+					setRegisterResponsesURL(valueMap.get(REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN));
+					setRegisterEmailColumn(valueMap.get(EMAIL_ADDRESS_COLUMN));
+					setRegisterNameColumn(valueMap.get(NICKNAME_COLUMN));
+					setRegisterCutoffDate(getDate("Register Cutoff Date", valueMap));
+					setLabel(valueMap.get("Label"));
+					setLogo(valueMap.get("Logo"));
+					setCheckInCutoffDate(getDate("Check-in Cutoff Date", valueMap));
+					return false;
 				}
 
 				return true;
 			}
 
-			private boolean isRegister(Map<String, String> valueMap) {
-
-				boolean result = false;
-
-				String activity = valueMap.get("Activity");
-				if (activity != null) {
-					Matcher matcher = ContactManager.ACTIVITY_PATTERN.matcher(activity);
-					if (matcher.matches()) {
-						String activityType = matcher.group(2);
-						if ("Register".equals(activityType) &&
-								gplusEventUrl.equals(valueMap.get("Google+ Event"))) {
-							Date date = getDate(valueMap);
-
-							setRegisterResponsesURL(valueMap.get("URL"));
-							setRegisterEmailColumn(valueMap.get("emailAddress"));
-							setRegisterNameColumn(valueMap.get("nickname"));
-
-							setRegisterCutoffDate(date);
-							result = true;
-						}
-					}
-				}
-
-				return result;
-			}
-
-			private boolean isCheckin(Map<String, String> valueMap) {
-
-				boolean result = false;
-
-				String activity = valueMap.get("Activity");
-				if (activity != null) {
-					Matcher matcher = ContactManager.ACTIVITY_PATTERN.matcher(activity);
-					if (matcher.matches()) {
-						String activityType = matcher.group(2);
-						if ("Check-in".equals(activityType)) {
-							Date date = getDate(valueMap);
-							setCheckInResponsesURL(valueMap.get("URL"));
-							setCheckInEmailColumn(valueMap.get("emailAddress"));
-							setCheckInTimestampColumn(valueMap.get("timestamp"));
-
-							setCheckInFormURL(valueMap.get("formResponse"));
-							setCheckInEmailEntry(valueMap.get("emailEntry"));
-							setCheckInClientIp(valueMap.get("clientIp"));
-
-							setLabel(valueMap.get("Label"));
-							setLogo(valueMap.get("Logo"));
-
-							setCheckInCutoffDate(date);
-							result = true;
-						}
-					}
-				}
-
-				return result;
-			}
-
-			private Date getDate(Map<String, String> valueMap) {
+			private Date getDate(String column, Map<String, String> valueMap) {
 				Date date = null;
 				try {
-					String dateString = valueMap.get("Date");
+					String dateString = valueMap.get(column);
 
 					String timestampDateFormat = valueMap.get("timestamp.dateFormat");
 					String timestampDateFormatLocale = valueMap.get("timestamp.dateFormat.locale");
@@ -194,11 +137,11 @@ public class ActiveEvent implements Serializable {
 			}
 		};
 		cellFeedProcessor.process(
-				spreadsheetManager.getWorksheet(
-						"https://docs.google.com/spreadsheets/d/1heiZJfKi3LmXy-Mg13nSSdhthwIZxOZ32m3tJuKhKI4/edit#gid=0"),
-				"Group", "Date", "Activity", "URL", "emailAddress", "nickname",
+				spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
+				GROUP_COLUMN, REGISTER_CUTOFF_DATE_COLUMN, CHECK_IN_CUTOFF_DATE_COLUMN,
+				REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, EMAIL_ADDRESS_COLUMN, NICKNAME_COLUMN,
 				"timestamp", "timestamp.dateFormat", "timestamp.dateFormat.locale", "timestamp.timeZone",
-				"formResponse", "emailEntry", "clientIp", "Label", "Logo", "Google+ Event");
+				"Label", "Logo", GPLUS_EVENT_COLUMN);
 	}
 
 	public String getRegisterResponsesURL() {

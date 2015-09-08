@@ -124,6 +124,7 @@ public class CheckInServlet extends HttpServlet implements Path {
 				@Override
 				protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
+
 					String qrCode = valueMap.get(QR_CODE_COLUMN);
 					if (qrCode != null && qrCode.equals(uuid)) {
 						emailThreadLocal.set(valueMap.get(registerEmailColumn));
@@ -214,6 +215,7 @@ public class CheckInServlet extends HttpServlet implements Path {
 			String clientIp = req.getRemoteAddr();
 
 			/*
+			 * FIXME replace the following by updating check-in data into register form response spreadsheet
 			 * http post to formResponse with email entry parameter
 			 */
 			HttpRequestFactory factory = transport.createRequestFactory();

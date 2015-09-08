@@ -52,8 +52,8 @@ public abstract class CellFeedProcessor {
 			row = 1;
 
 			CellFeed batchRequest = new CellFeed();
-			int colCount = sheet.getColCount();
-			for (int c = 1; c <= colCount; c++) {
+			int columnCount = sheet.getColCount();
+			for (int c = 1; c <= columnCount; c++) {
 				String idString = "R" + row + "C" + c;
 				CellEntry batchEntry = new CellEntry(row, c, "");
 				batchEntry.setId(cellFeedURL.toString() + "/" + idString);
