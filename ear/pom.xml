@@ -15,7 +15,7 @@
 
 	<name>event-manager-gae-ear</name>
 
-	<url>http://developers.dushu.hu/</url>
+	<url>http://developers.google.com/</url>
 
 	<prerequisites>
 		<!-- required by appengine-maven-plugin -->

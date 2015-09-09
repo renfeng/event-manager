@@ -32,6 +32,14 @@ public class ActiveEvent implements Serializable {
 	public static final String EMAIL_ADDRESS_COLUMN = "emailAddress";
 	public static final String NICKNAME_COLUMN = "nickname";
 	public static final String FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN = "Feedback Form Response Spreadsheet URL";
+	public static final String TIMESTAMP_COLUMN = "timestamp";
+	public static final String TIMESTAMP_DATE_FORMAT_COLUMN = "timestamp.dateFormat";
+	public static final String TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN = "timestamp.dateFormat.locale";
+	public static final String TIMESTAMP_TIME_ZONE_COLUMN = "timestamp.timeZone";
+	public static final String LABEL_COLUMN = "Label";
+	public static final String LOGO_COLUMN = "Logo";
+	public static final String CHECK_IN_TIMESTAMP_COLUMN = "checkInTimestamp";
+	public static final String CHECK_IN_CLIENT_IP_COLUMN = "checkInClientIp";
 
 	/*
 	 * retrieve the urls of register and check-in for the latest event
@@ -91,10 +99,10 @@ public class ActiveEvent implements Serializable {
 					setRegisterResponsesURL(valueMap.get(REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN));
 					setRegisterEmailColumn(valueMap.get(EMAIL_ADDRESS_COLUMN));
 					setRegisterNameColumn(valueMap.get(NICKNAME_COLUMN));
-					setRegisterCutoffDate(getDate("Register Cutoff Date", valueMap));
-					setLabel(valueMap.get("Label"));
-					setLogo(valueMap.get("Logo"));
-					setCheckInCutoffDate(getDate("Check-in Cutoff Date", valueMap));
+					setRegisterCutoffDate(getDate(REGISTER_CUTOFF_DATE_COLUMN, valueMap));
+					setLabel(valueMap.get(LABEL_COLUMN));
+					setLogo(valueMap.get(LOGO_COLUMN));
+					setCheckInCutoffDate(getDate(CHECK_IN_CUTOFF_DATE_COLUMN, valueMap));
 					return false;
 				}
 
@@ -106,9 +114,9 @@ public class ActiveEvent implements Serializable {
 				try {
 					String dateString = valueMap.get(column);
 
-					String timestampDateFormat = valueMap.get("timestamp.dateFormat");
-					String timestampDateFormatLocale = valueMap.get("timestamp.dateFormat.locale");
-					String timestampTimezone = valueMap.get("timestamp.timeZone");
+					String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
+					String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
+					String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN);
 
 					if (dateString != null && timestampDateFormat != null) {
 						/*
@@ -136,12 +144,13 @@ public class ActiveEvent implements Serializable {
 				return date;
 			}
 		};
-		cellFeedProcessor.process(
+		cellFeedProcessor.processForBatchUpdate(
 				spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
 				GROUP_COLUMN, REGISTER_CUTOFF_DATE_COLUMN, CHECK_IN_CUTOFF_DATE_COLUMN,
 				REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, EMAIL_ADDRESS_COLUMN, NICKNAME_COLUMN,
-				"timestamp", "timestamp.dateFormat", "timestamp.dateFormat.locale", "timestamp.timeZone",
-				"Label", "Logo", GPLUS_EVENT_COLUMN);
+				TIMESTAMP_COLUMN, TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN,
+				TIMESTAMP_TIME_ZONE_COLUMN, LABEL_COLUMN, LOGO_COLUMN, GPLUS_EVENT_COLUMN,
+				CHECK_IN_TIMESTAMP_COLUMN, CHECK_IN_CLIENT_IP_COLUMN);
 	}
 
 	public String getRegisterResponsesURL() {

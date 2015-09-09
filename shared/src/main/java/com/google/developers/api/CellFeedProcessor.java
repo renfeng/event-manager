@@ -50,10 +50,9 @@ public abstract class CellFeedProcessor {
 //		rowCount = (rowCount + 1954) / 2;
 		if (rowCount > 1) {
 			row = 1;
-
 			CellFeed batchRequest = new CellFeed();
-			int columnCount = sheet.getColCount();
-			for (int c = 1; c <= columnCount; c++) {
+			int colCount = sheet.getColCount();
+			for (int c = 1; c <= colCount; c++) {
 				String idString = "R" + row + "C" + c;
 				CellEntry batchEntry = new CellEntry(row, c, "");
 				batchEntry.setId(cellFeedURL.toString() + "/" + idString);
@@ -68,27 +67,26 @@ public abstract class CellFeedProcessor {
 					batchRequest);
 			List<CellEntry> cells = queryBatchResponse.getEntries();
 			for (CellEntry cellEntry : cells) {
-				Matcher matcher = cellIDPattern.matcher(
-						cellEntry.getId().substring(cellEntry.getId().lastIndexOf('/') + 1));
-				if (matcher.matches()) {
-					int column = Integer.parseInt(matcher.group(2));
+				String cellId = cellEntry.getId().substring(cellEntry.getId().lastIndexOf('/') + 1);
+				Matcher matcher = cellIDPattern.matcher(cellId);
+				if (!matcher.matches()) {
+					throw new RuntimeException("unexpected cell id: " + cellId);
+				}
 
-					String columnName = cellEntry.getCell().getValue();
-					if (columnNames.contains(columnName)) {
-						columnNameMap.put(column, columnName);
-						columnNames.remove(columnName);
-					}
+				int column = Integer.parseInt(matcher.group(2));
 
+				String columnName = cellEntry.getCell().getValue();
+				if (columnNames.contains(columnName)) {
 					processHeaderColumn(column, columnName);
-
+					columnNameMap.put(column, columnName);
+					columnNames.remove(columnName);
 					if (columnNames.size() == 0) {
 						break;
 					}
-				} else {
-				/*
-				 * won't be here
-				 */
 				}
+			}
+			if (columnNames.size() > 0) {
+				throw new RuntimeException("Missing columns: " + Arrays.toString(columnNames.toArray()));
 			}
 		}
 
@@ -175,29 +173,34 @@ public abstract class CellFeedProcessor {
 			CellEntry cell = iterator.next();
 			String cellId = cell.getId();
 			Matcher matcher = cellIDPattern.matcher(cellId.substring(cellId.lastIndexOf('/') + 1));
-			if (matcher.matches()) {
-				int column = Integer.parseInt(matcher.group(2));
-				int row = Integer.parseInt(matcher.group(1));
-
-				if (row != 1) {
-					break;
-				}
-				if (columnNames.size() == 0) {
-					break;
-				}
-
-				String columnName = cell.getCell().getValue();
-				if (columnNames.contains(columnName)) {
-					columnNameMap.put(column, columnName);
-					columnNames.remove(columnName);
-					processHeaderColumn(column, columnName);
-				}
-			} else {
+			if (!matcher.matches()) {
 				/*
 				 * won't be here
 				 */
 				throw new RuntimeException("invalid cell notation: " + cellId);
 			}
+			int column = Integer.parseInt(matcher.group(2));
+			int row = Integer.parseInt(matcher.group(1));
+
+			if (row != 1) {
+				break;
+			}
+			if (columnNames.size() == 0) {
+				break;
+			}
+
+			String columnName = cell.getCell().getValue();
+			if (columnNames.contains(columnName)) {
+				processHeaderColumn(column, columnName);
+				columnNameMap.put(column, columnName);
+				columnNames.remove(columnName);
+				if (columnNames.size() == 0) {
+					break;
+				}
+			}
+		}
+		if (columnNames.size() > 0) {
+			throw new RuntimeException("Missing columns: " + Arrays.toString(columnNames.toArray()));
 		}
 
 		this.row = 2;

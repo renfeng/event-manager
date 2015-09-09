@@ -67,6 +67,15 @@
 	<dependencies>
 
 		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.api.client</groupId>
+			<artifactId>google-api-data-spreadsheet-v3</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-calendar</artifactId>
 		</dependency>
@@ -75,17 +84,14 @@
 			<artifactId>google-api-services-drive</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.api.client</groupId>
-			<artifactId>google-api-data-spreadsheet-v3</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-plus</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.gdata</groupId>
-			<artifactId>core</artifactId>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-urlshortener</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>com.google.api-client</groupId>
 			<artifactId>google-api-client-appengine</artifactId>

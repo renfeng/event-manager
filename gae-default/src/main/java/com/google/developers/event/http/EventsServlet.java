@@ -20,11 +20,6 @@ import java.io.IOException;
 @Singleton
 public class EventsServlet extends HttpServlet {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -6167173608588448196L;
-
 	private final HttpRequestFactory factory;
 	private final JsonFactory jsonFactory;
 
