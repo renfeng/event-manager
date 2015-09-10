@@ -6,6 +6,17 @@ import com.google.api.client.json.JsonGenerator;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
+import com.google.developers.event.DevelopersSharedModule;
+import com.google.developers.event.MetaSpreadsheet;
+import com.google.developers.event.RegisterFormResponseSpreadsheet;
+import com.google.gdata.client.spreadsheet.SpreadsheetService;
+import com.google.gdata.data.Link;
+import com.google.gdata.data.batch.BatchOperationType;
+import com.google.gdata.data.batch.BatchStatus;
+import com.google.gdata.data.batch.BatchUtils;
+import com.google.gdata.data.spreadsheet.CellEntry;
+import com.google.gdata.data.spreadsheet.CellFeed;
+import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -18,19 +29,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by renfeng on 6/17/15.
  */
 @Singleton
-public class CheckInServlet extends HttpServlet implements Path {
+public class CheckInServlet extends HttpServlet
+		implements Path, MetaSpreadsheet, RegisterFormResponseSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(CheckInServlet.class);
-
-	private static final String QR_CODE_COLUMN = "QR code";
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
@@ -50,7 +61,8 @@ public class CheckInServlet extends HttpServlet implements Path {
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		final String uuid = req.getParameter("uuid");
 		final ThreadLocal<String> emailThreadLocal = new ThreadLocal<>();
@@ -117,9 +129,24 @@ public class CheckInServlet extends HttpServlet implements Path {
 								activeEvent.getEvent());
 			}
 
+			long startTime = System.currentTimeMillis();
+			CellFeed batchRequest = new CellFeed();
+			final List<CellEntry> entries = batchRequest.getEntries();
+
 			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 
-				private int number = 1;
+				int number = 1;
+				CellEntry checkInCell;
+				CellEntry clientIpCell;
+
+				@Override
+				protected void processDataColumn(CellEntry cell, String columnName) {
+					if ("Check-in".equals(columnName)) {
+						checkInCell = cell;
+					} else if ("Client IP".equals(columnName)) {
+						clientIpCell = cell;
+					}
+				}
 
 				@Override
 				protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
@@ -130,6 +157,29 @@ public class CheckInServlet extends HttpServlet implements Path {
 						emailThreadLocal.set(valueMap.get(registerEmailColumn));
 						nameThreadLocal.set(valueMap.get(registerNameColumn));
 						numberThreadLocal.set(String.format("%03d", number));
+
+						String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
+						String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
+						String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN);
+
+						DateFormat dateFormat;
+						if (timestampDateFormatLocale != null) {
+							dateFormat = new SimpleDateFormat(timestampDateFormat,
+									Locale.forLanguageTag(timestampDateFormatLocale));
+						} else {
+							dateFormat = new SimpleDateFormat(timestampDateFormat);
+						}
+						if (timestampTimezone != null) {
+							/*
+							 * How to set time zone of a java.util.Date? - Stack Overflow
+							 * http://stackoverflow.com/a/2891412/333033
+							 */
+							dateFormat.setTimeZone(TimeZone.getTimeZone(timestampTimezone));
+						}
+
+						updateCell(entries, checkInCell, dateFormat.format(new Date()));
+						updateCell(entries, clientIpCell, req.getRemoteAddr());
+
 						return false;
 					}
 
@@ -137,11 +187,57 @@ public class CheckInServlet extends HttpServlet implements Path {
 
 					return true;
 				}
+
+				private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
+
+					String inputValue = cellEntry.getCell().getInputValue();
+					if (SpreadsheetManager.diff(inputValue, value)) {
+						CellEntry batchEntry = new CellEntry(cellEntry);
+						batchEntry.changeInputValueLocal(value);
+
+						BatchUtils.setBatchId(batchEntry, batchEntry.getId());
+						BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
+
+						entries.add(batchEntry);
+					}
+
+					return;
+				}
 			};
 			try {
-				cellFeedProcessor.process(
-						spreadsheetManager.getWorksheet(registerURL),
-						registerEmailColumn, QR_CODE_COLUMN, registerNameColumn);
+				cellFeedProcessor.processForBatchUpdate(spreadsheetManager.getWorksheet(registerURL),
+						registerNameColumn, registerEmailColumn,
+						QR_CODE_COLUMN, CHECK_IN_COLUMN, CLIENT_IP_COLUMN, TIMESTAMP_COLUMN,
+						TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN,
+						TIMESTAMP_TIME_ZONE_COLUMN);
+
+				String url = DevelopersSharedModule.getMessage("event");
+				WorksheetEntry sheet = spreadsheetManager.getWorksheet(url);
+
+				/*
+				 * batchLink will be null for list feed
+				 */
+				URL cellFeedUrl = sheet.getCellFeedUrl();
+				SpreadsheetService ssSvc = spreadsheetManager.getService();
+				CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
+				Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
+				CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
+
+				// Check the results
+				boolean isSuccess = true;
+				for (CellEntry entry : batchResponse.getEntries()) {
+					String batchId = BatchUtils.getBatchId(entry);
+					if (!BatchUtils.isSuccess(entry)) {
+						isSuccess = false;
+						BatchStatus status = BatchUtils.getBatchStatus(entry);
+						logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
+						break;
+					}
+				}
+
+				logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
+				logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
+
 			} catch (ServiceException e) {
 				throw new ServletException(e);
 			}

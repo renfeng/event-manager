@@ -28,7 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class EventManager {
+public class EventManager implements MetaSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(EventManager.class);
@@ -183,7 +183,7 @@ public class EventManager {
 		cellFeedProcessor.process(
 				spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
 				"Group", "Activity", "Date", "Status", "URL", "nickname", "emailAddress", "phoneNumber",
-				"timestamp", "timestamp.dateFormat", "timestamp.dateFormat.locale");
+				TIMESTAMP_COLUMN, TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
 
 		return;
 	}
@@ -200,8 +200,9 @@ public class EventManager {
 			} else {
 				String date = valueMap.get("Date");
 				String activity = valueMap.get("Activity");
-				String timestampDateFormat = valueMap.get("timestamp.dateFormat");
-				String timestampDateFormatLocale = valueMap.get("timestamp.dateFormat.locale");
+				String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
+				String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
+				String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN);
 
 				try {
 					Date cutoffDate;
@@ -212,6 +213,13 @@ public class EventManager {
 									Locale.forLanguageTag(timestampDateFormatLocale));
 						} else {
 							dateFormat = new SimpleDateFormat(timestampDateFormat);
+						}
+						if (timestampTimezone != null) {
+							/*
+							 * How to set time zone of a java.util.Date? - Stack Overflow
+							 * http://stackoverflow.com/a/2891412/333033
+							 */
+							dateFormat.setTimeZone(TimeZone.getTimeZone(timestampTimezone));
 						}
 
 						cutoffDate = dateFormat.parse(date);
@@ -691,7 +699,6 @@ public class EventManager {
 
 		long startTime = System.currentTimeMillis();
 		CellFeed batchRequest = new CellFeed();
-
 		final List<CellEntry> entries = batchRequest.getEntries();
 
 		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {

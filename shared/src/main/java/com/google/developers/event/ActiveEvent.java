@@ -19,27 +19,10 @@ import java.util.*;
 /**
  * Created by +FrankR on 6/22/15.
  */
-public class ActiveEvent implements Serializable {
+public class ActiveEvent implements Serializable, MetaSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ActiveEvent.class);
-
-	public static final String GROUP_COLUMN = "Google Contact Group";
-	public static final String REGISTER_CUTOFF_DATE_COLUMN = "Register Cutoff Date";
-	public static final String CHECK_IN_CUTOFF_DATE_COLUMN = "Check-in Cutoff Date";
-	public static final String GPLUS_EVENT_COLUMN = "Google+ Event";
-	public static final String REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN = "Register Form Response Spreadsheet URL";
-	public static final String EMAIL_ADDRESS_COLUMN = "emailAddress";
-	public static final String NICKNAME_COLUMN = "nickname";
-	public static final String FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN = "Feedback Form Response Spreadsheet URL";
-	public static final String TIMESTAMP_COLUMN = "timestamp";
-	public static final String TIMESTAMP_DATE_FORMAT_COLUMN = "timestamp.dateFormat";
-	public static final String TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN = "timestamp.dateFormat.locale";
-	public static final String TIMESTAMP_TIME_ZONE_COLUMN = "timestamp.timeZone";
-	public static final String LABEL_COLUMN = "Label";
-	public static final String LOGO_COLUMN = "Logo";
-	public static final String CHECK_IN_TIMESTAMP_COLUMN = "checkInTimestamp";
-	public static final String CHECK_IN_CLIENT_IP_COLUMN = "checkInClientIp";
 
 	/*
 	 * retrieve the urls of register and check-in for the latest event
