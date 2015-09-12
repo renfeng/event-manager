@@ -184,7 +184,7 @@
 					<artifactId>appengine-maven-plugin</artifactId>
 
 					<!-- <version>${appengine.target.version}</version> -->
-					<version>1.9.23</version>
+					<version>1.9.26</version>
 					<configuration>
 
 						<!-- com.google.appengine.DevAppServerRunner -->
@@ -353,17 +353,17 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-calendar</artifactId>
-				<version>v3-rev137-1.20.0</version>
+				<version>v3-rev140-1.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-drive</artifactId>
-				<version>v2-rev183-1.20.0</version>
+				<version>v2-rev185-1.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev256-1.20.0</version>
+				<version>v1-rev262-1.20.0</version>
 			</dependency>
 
 			<dependency>
@@ -485,7 +485,7 @@
 		<appengine.app.id>s~effective-forge-706</appengine.app.id>
 
 		<appengine.module.ranking>event-manager-ranking</appengine.module.ranking>
-		<appengine.target.version>1.9.25</appengine.target.version>
+		<appengine.target.version>1.9.26</appengine.target.version>
 
 		<!-- <encoding>UTF-8</encoding> -->
 		<maven.compiler.source>1.7</maven.compiler.source>
