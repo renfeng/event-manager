@@ -6,7 +6,6 @@ import com.google.api.client.json.JsonGenerator;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
-import com.google.developers.event.DevelopersSharedModule;
 import com.google.developers.event.MetaSpreadsheet;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
@@ -210,12 +209,11 @@ public class CheckInServlet extends HttpServlet
 
 			if (errorThreadLocal.get() == null) {
 				if (emailThreadLocal.get() != null) {
-					String url = activeEvent.getRegisterResponsesURL();
-					WorksheetEntry sheet = spreadsheetManager.getWorksheet(url);
+					WorksheetEntry sheet = spreadsheetManager.getWorksheet(registerURL);
 
-				/*
-				 * batchLink will be null for list feed
-				 */
+					/*
+					 * batchLink will be null for list feed
+					 */
 					URL cellFeedUrl = sheet.getCellFeedUrl();
 					SpreadsheetService ssSvc = spreadsheetManager.getService();
 					CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
