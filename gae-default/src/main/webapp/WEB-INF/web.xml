@@ -27,6 +27,7 @@
 
 	<!-- https://developers.google.com/appengine/docs/java/config/webxml#Secure_URLs -->
 	<!-- this is for forcing https -->
+<!--
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>everything</web-resource-name>
@@ -36,6 +37,7 @@
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
+-->
 
 	<security-constraint>
 		<web-resource-collection>
