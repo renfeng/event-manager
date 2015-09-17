@@ -53,7 +53,10 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-	public static final Pattern ACTIVITY_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2}) (Register|Check-in|Feedback)");
+	/*
+	 * naming is in the context of Google Contacts UI
+	 */
+	public static final Pattern EVENT_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2}) (Register|Check-in|Feedback)");
 	public static final Pattern GROUP_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(?: .+)?");
 
 	@Inject
@@ -1018,7 +1021,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 			if (label == null) {
 				continue;
 			}
-			Matcher matcher = ACTIVITY_PATTERN.matcher(label);
+			Matcher matcher = EVENT_PATTERN.matcher(label);
 			if (!matcher.matches()) {
 				continue;
 			}
@@ -1227,7 +1230,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 				if (eventLabel == null) {
 					continue;
 				}
-				Matcher matcher = ACTIVITY_PATTERN.matcher(eventLabel);
+				Matcher matcher = EVENT_PATTERN.matcher(eventLabel);
 				if (!matcher.matches()) {
 					continue;
 				}

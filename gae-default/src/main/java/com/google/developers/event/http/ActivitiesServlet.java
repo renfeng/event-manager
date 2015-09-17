@@ -325,7 +325,7 @@ public class ActivitiesServlet extends HttpServlet {
 					return true;
 				}
 
-				Matcher matcher = ContactManager.ACTIVITY_PATTERN.matcher(activityLabel);
+				Matcher matcher = ContactManager.EVENT_PATTERN.matcher(activityLabel);
 				if (!matcher.matches()) {
 					return true;
 				}

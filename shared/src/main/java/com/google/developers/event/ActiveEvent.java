@@ -14,7 +14,10 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Created by +FrankR on 6/22/15.
@@ -52,6 +55,10 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 
 	private String event;
 
+	private String dateFormat;
+	private String locale;
+	private String timezone;
+
 	public static ActiveEvent get(String gplusEventUrl, SpreadsheetManager spreadsheetManager)
 			throws IOException, ServiceException {
 
@@ -79,27 +86,32 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 					throws IOException, ServiceException {
 
 				if (gplusEventUrl.equals(valueMap.get(GPLUS_EVENT_COLUMN))) {
+					setEvent(valueMap.get(GROUP_COLUMN));
 					setRegisterResponsesURL(valueMap.get(REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN));
 					setRegisterEmailColumn(valueMap.get(EMAIL_ADDRESS_COLUMN));
 					setRegisterNameColumn(valueMap.get(NICKNAME_COLUMN));
-					setRegisterCutoffDate(getDate(REGISTER_CUTOFF_DATE_COLUMN, valueMap));
 					setLabel(valueMap.get(LABEL_COLUMN));
 					setLogo(valueMap.get(LOGO_COLUMN));
-					setCheckInCutoffDate(getDate(CHECK_IN_CUTOFF_DATE_COLUMN, valueMap));
+
+					setDateFormat(valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN));
+					setLocale(valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN));
+					setTimezone(valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN));
+
+					setRegisterCutoffDate(getDate(valueMap.get(REGISTER_CUTOFF_DATE_COLUMN)));
+					setCheckInCutoffDate(getDate(valueMap.get(CHECK_IN_CUTOFF_DATE_COLUMN)));
+
 					return false;
 				}
 
 				return true;
 			}
 
-			private Date getDate(String column, Map<String, String> valueMap) {
+			private Date getDate(String dateString) {
 				Date date = null;
 				try {
-					String dateString = valueMap.get(column);
-
-					String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
-					String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
-					String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN);
+					String timestampDateFormat = getDateFormat();
+					String timestampDateFormatLocale = getLocale();
+					String timestampTimezone = getTimezone();
 
 					if (dateString != null && timestampDateFormat != null) {
 						/*
@@ -132,8 +144,7 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 				GROUP_COLUMN, REGISTER_CUTOFF_DATE_COLUMN, CHECK_IN_CUTOFF_DATE_COLUMN,
 				REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, EMAIL_ADDRESS_COLUMN, NICKNAME_COLUMN,
 				TIMESTAMP_COLUMN, TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN,
-				TIMESTAMP_TIME_ZONE_COLUMN, LABEL_COLUMN, LOGO_COLUMN, GPLUS_EVENT_COLUMN,
-				CHECK_IN_TIMESTAMP_COLUMN, CHECK_IN_CLIENT_IP_COLUMN);
+				TIMESTAMP_TIME_ZONE_COLUMN, LABEL_COLUMN, LOGO_COLUMN, GPLUS_EVENT_COLUMN);
 	}
 
 	public String getRegisterResponsesURL() {
@@ -246,5 +257,29 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 
 	public void setRegisterNameColumn(String registerNameColumn) {
 		this.registerNameColumn = registerNameColumn;
+	}
+
+	public String getDateFormat() {
+		return dateFormat;
+	}
+
+	public void setDateFormat(String dateFormat) {
+		this.dateFormat = dateFormat;
+	}
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
 	}
 }

@@ -27,6 +27,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
 
 public class EventManager implements MetaSpreadsheet {
 
@@ -158,7 +159,110 @@ public class EventManager implements MetaSpreadsheet {
 				/*
 				 * now I've read all the data I need in a row
 				 */
-				String status = importContactsFromSpreadsheet(valueMap);
+				importContactsFromSpreadsheet(
+						REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, "Register",
+						REGISTER_CUTOFF_DATE_COLUMN, valueMap, cellFeedURL);
+				importContactsFromSpreadsheet(
+						REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, "Check-in",
+						CHECK_IN_CUTOFF_DATE_COLUMN, valueMap, cellFeedURL);
+				importContactsFromSpreadsheet(
+						FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, "Feedback",
+						FEEDBACK_CUTOFF_DATE_COLUMN, valueMap, cellFeedURL);
+
+				statusCell = null;
+				return true;
+			}
+
+			private void importContactsFromSpreadsheet(
+					String sheetUrl, String activity, String dateColumn,
+					Map<String, String> valueMap, URL cellFeedURL)
+					throws IOException, ServiceException {
+
+				String status = valueMap.get(STATUS_COLUMN);
+				if (status == null) {
+					String event = valueMap.get(GROUP_COLUMN);
+					String url = valueMap.get(sheetUrl);
+					if (url == null) {
+						status = "missing register form response spreadsheet url";
+					} else {
+						String date = valueMap.get(dateColumn);
+						String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
+						String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
+						String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN);
+
+						try {
+							Date cutoffDate;
+							if (date != null) {
+								DateFormat dateFormat;
+								if (timestampDateFormatLocale != null) {
+									dateFormat = new SimpleDateFormat(timestampDateFormat,
+											Locale.forLanguageTag(timestampDateFormatLocale));
+								} else {
+									dateFormat = new SimpleDateFormat(timestampDateFormat);
+								}
+								if (timestampTimezone != null) {
+							/*
+							 * How to set time zone of a java.util.Date? - Stack Overflow
+							 * http://stackoverflow.com/a/2891412/333033
+							 */
+									dateFormat.setTimeZone(TimeZone.getTimeZone(timestampTimezone));
+								}
+
+								cutoffDate = dateFormat.parse(date);
+							} else {
+								cutoffDate = null;
+							}
+
+							List<EventParticipant> participants = spreadsheetManager.getEventParticipants(
+									url, cutoffDate, valueMap);
+
+							ContactGroupEntry eventGroup = contactManager.findGroupByName(event);
+							if (eventGroup == null) {
+								eventGroup = contactManager.createGroup(event);
+							}
+
+							/*
+							 * this loop fixes e-tag exceptions
+							 */
+							while (participants.size() > 0) {
+								Matcher matcher = ContactManager.GROUP_PATTERN.matcher(event);
+								if (matcher.matches()) {
+									String dateString = matcher.group(1);
+									List<EventParticipant> participants2 = contactManager.importContacts(
+											participants, eventGroup, dateString + " " + activity);
+									if (participants2.size() == participants.size()) {
+										throw new Exception("failed to update participants: " +
+												Arrays.toString(participants2.toArray()));
+									}
+									participants = participants2;
+								}
+							}
+
+							logger.debug("done: " + event);
+							status = "Done";
+						} catch (ServiceException ex) {
+							String message;
+							if (ex.getResponseBody() != null &&
+									ex.getResponseContentType().match(new ContentType("text/html"))) {
+								Document document = Jsoup.parse(ex.getResponseBody());
+
+								String s = ex.getClass().getName();
+								String localizedMessage = ex.getLocalizedMessage();
+								message = (localizedMessage != null ? (s + ": " + localizedMessage) : s) + "\n" +
+										document.text();
+							} else {
+								message = ex.toString();
+							}
+							logger.debug("error: " + message);
+							status = message;
+						} catch (Exception ex) {
+							String message = ex.toString();
+							logger.debug("error: " + message);
+							status = message;
+						}
+					}
+				}
+
 				if (status != null) {
 					if (statusCell != null) {
 						if (!status.equals(statusCell.getCell().getValue())) {
@@ -166,114 +270,25 @@ public class EventManager implements MetaSpreadsheet {
 							statusCell.update();
 						}
 					} else {
-						/*
-						 * google.com#q=google spreadsheet +api insert cell
-						 * http://stackoverflow.com/a/12936664/333033
-						 * http://stackoverflow.com/a/30187245/333033
-						 */
+				/*
+				 * google.com#q=google spreadsheet +api insert cell
+				 * http://stackoverflow.com/a/12936664/333033
+				 * http://stackoverflow.com/a/30187245/333033
+				 */
 						statusCell = new CellEntry(getRow(), statusColumn, status);
 						spreadsheetManager.getService().insert(cellFeedURL, statusCell);
 					}
 				}
-
-				statusCell = null;
-				return true;
 			}
 		};
 		cellFeedProcessor.process(
 				spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
-				"Group", "Activity", "Date", "Status", "URL", "nickname", "emailAddress", "phoneNumber",
+				GROUP_COLUMN, STATUS_COLUMN,
+				REGISTER_CUTOFF_DATE_COLUMN, CHECK_IN_CUTOFF_DATE_COLUMN,
+				REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN,
+				NICKNAME_COLUMN, EMAIL_ADDRESS_COLUMN, PHONE_NUMBER_COLUMN,
+				FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN,
 				TIMESTAMP_COLUMN, TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
-
-		return;
-	}
-
-	private String importContactsFromSpreadsheet(Map<String, String> valueMap)
-			throws IOException, ServiceException {
-
-		String status = valueMap.get("Status");
-		if (status == null) {
-			String event = valueMap.get("Group");
-			String url = valueMap.get("URL");
-			if (url == null) {
-				status = "missing url";
-			} else {
-				String date = valueMap.get("Date");
-				String activity = valueMap.get("Activity");
-				String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
-				String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
-				String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN);
-
-				try {
-					Date cutoffDate;
-					if (date != null) {
-						DateFormat dateFormat;
-						if (timestampDateFormatLocale != null) {
-							dateFormat = new SimpleDateFormat(timestampDateFormat,
-									Locale.forLanguageTag(timestampDateFormatLocale));
-						} else {
-							dateFormat = new SimpleDateFormat(timestampDateFormat);
-						}
-						if (timestampTimezone != null) {
-							/*
-							 * How to set time zone of a java.util.Date? - Stack Overflow
-							 * http://stackoverflow.com/a/2891412/333033
-							 */
-							dateFormat.setTimeZone(TimeZone.getTimeZone(timestampTimezone));
-						}
-
-						cutoffDate = dateFormat.parse(date);
-					} else {
-						cutoffDate = null;
-					}
-
-					List<EventParticipant> participants = spreadsheetManager.getEventParticipants(
-							url, cutoffDate, valueMap);
-
-					ContactGroupEntry eventGroup = contactManager.findGroupByName(event);
-					if (eventGroup == null) {
-						eventGroup = contactManager.createGroup(event);
-					}
-
-					/*
-					 * this loop fixes e-tag exceptions
-					 */
-					while (participants.size() > 0) {
-						List<EventParticipant> participants2 = contactManager.importContacts(
-								participants, eventGroup, activity);
-						if (participants2.size() == participants.size()) {
-							throw new Exception("failed to update participants: " +
-									Arrays.toString(participants2.toArray()));
-						}
-						participants = participants2;
-					}
-
-					logger.debug("done: " + event);
-					status = "Done";
-				} catch (ServiceException ex) {
-					String message;
-					if (ex.getResponseBody() != null &&
-							ex.getResponseContentType().match(new ContentType("text/html"))) {
-						Document document = Jsoup.parse(ex.getResponseBody());
-
-						String s = ex.getClass().getName();
-						String localizedMessage = ex.getLocalizedMessage();
-						message = (localizedMessage != null ? (s + ": " + localizedMessage) : s) + "\n" +
-								document.text();
-					} else {
-						message = ex.toString();
-					}
-					logger.debug("error: " + message);
-					status = message;
-				} catch (Exception ex) {
-					String message = ex.toString();
-					logger.debug("error: " + message);
-					status = message;
-				}
-			}
-		}
-
-		return status;
 	}
 
 	public void updateRanking() throws IOException, ServiceException {
@@ -667,8 +682,6 @@ public class EventManager implements MetaSpreadsheet {
 
 			entries.add(batchEntry);
 		}
-
-		return;
 	}
 
 	public void updateEventScore() throws IOException, ServiceException {
