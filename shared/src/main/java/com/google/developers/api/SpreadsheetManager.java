@@ -3,6 +3,7 @@ package com.google.developers.api;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.event.EventParticipant;
+import com.google.developers.event.MetaSpreadsheet;
 import com.google.gdata.client.spreadsheet.FeedURLFactory;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.Link;
@@ -22,7 +23,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
+public class SpreadsheetManager extends ServiceManager<SpreadsheetService> implements MetaSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(SpreadsheetManager.class);
@@ -157,13 +158,13 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> {
 		 * the benefit is no need to trim punctuations
 		 */
 
-		final String nicknameTag = valueMap.get("nickname");
-		final String emailAddressTag = valueMap.get("emailAddress");
-		final String phoneNumberTag = valueMap.get("phoneNumber");
+		final String nicknameTag = valueMap.get(NICKNAME_COLUMN);
+		final String emailAddressTag = valueMap.get(EMAIL_ADDRESS_COLUMN);
+		final String phoneNumberTag = valueMap.get(PHONE_NUMBER_COLUMN);
 
-		final String timestampTag = valueMap.get("timestamp");
-		final String timestampDateFormat = valueMap.get("timestamp.dateFormat");
-		final String timestampDateFormatLocale = valueMap.get("timestamp.dateFormat.locale");
+		final String timestampTag = valueMap.get(TIMESTAMP_COLUMN);
+		final String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
+		final String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
 
 		if (timestampTag != null && timestampDateFormat != null) {
 			/*
