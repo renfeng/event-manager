@@ -63,16 +63,6 @@ public class CheckInServlet extends HttpServlet
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		final String uuid = req.getParameter("uuid");
-		final ThreadLocal<String> emailThreadLocal = new ThreadLocal<>();
-		final ThreadLocal<String> nameThreadLocal = new ThreadLocal<>();
-		final ThreadLocal<String> numberThreadLocal = new ThreadLocal<>();
-		final ThreadLocal<String> errorThreadLocal = new ThreadLocal<>();
-
-		/*
-		 * retrieve the urls of register and check-in for the latest event
-		 */
-
 		/*
 		 * retrieve event id from http header, referer
 		 * e.g.
@@ -104,6 +94,10 @@ public class CheckInServlet extends HttpServlet
 			throw new ServletException(e);
 		}
 
+		/*
+		 * retrieve the urls of register and check-in for the event
+		 */
+
 		String registerURL = activeEvent.getRegisterResponsesURL();
 		if (registerURL == null) {
 			throw new ServletException(
@@ -127,6 +121,12 @@ public class CheckInServlet extends HttpServlet
 		long startTime = System.currentTimeMillis();
 		CellFeed batchRequest = new CellFeed();
 		final List<CellEntry> entries = batchRequest.getEntries();
+
+		final String uuid = req.getParameter("uuid");
+		final ThreadLocal<String> emailThreadLocal = new ThreadLocal<>();
+		final ThreadLocal<String> nameThreadLocal = new ThreadLocal<>();
+		final ThreadLocal<String> numberThreadLocal = new ThreadLocal<>();
+		final ThreadLocal<String> errorThreadLocal = new ThreadLocal<>();
 
 		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 

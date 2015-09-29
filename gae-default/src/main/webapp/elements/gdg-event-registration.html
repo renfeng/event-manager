@@ -1,0 +1,60 @@
+<dom-module id="gdg-event-registration">
+	<template>
+		<style>
+			input {
+				background-color: #f5f5f5;
+				border: none;
+				color: #15c;
+				font-family: arial,sans-serif;
+				font-size: 21px;
+				font-weight: bold;
+				height: 42px;
+				text-align: center;
+				width: 298px;
+				position: relative;
+				top: 2px;
+			}
+		</style>
+		<div on-keypress="keypressAction">
+			<paper-input id="longUrl" label="Paster your long URL here" value="{{longUrl}}"></paper-input>
+			<paper-button on-tap="shorten" raised>Shorten URL</paper-button>
+			<input id="shortLink" value="{{shortUrl}}" readonly="readonly"
+				   onclick="this.select();this.setSelectionRange(0, this.value.length)"/>
+		</div>
+		<iron-ajax id="shorten" url="/api/url/shorten" method="POST" body="{{longUrl}}"
+				   handle-as="text" on-response="onShortened"></iron-ajax>
+		<p>
+			<iron-image src="{{qrCode}}"></iron-image>
+		</p>
+	</template>
+	<script>
+	(function() {
+		Polymer({
+			is: "gdg-event-registration",
+			properties: {
+				qrCode: {
+					computed: "computeQrcode(shortUrl)"
+				}
+			},
+			computeQrcode: function(shortUrl) {
+				return "http://dushu.hu/chart?cht=qr&chs=300x300&chld=H|0&chl="
+				 	+ encodeURIComponent(shortUrl);
+			},
+			shorten: function() {
+				this.$.shorten.generateRequest();
+			},
+			onShortened: function(e, request) {
+				this.shortUrl = request.xhr.responseText;
+				console.log(request.xhr);
+			},
+			keypressAction: function(ev) {
+				var code = ev.keyCode || ev.charCode;
+				var key = ev.keyIdentifier;
+				if (key === 'Enter' || code === 13) {
+					this.shorten();
+				}
+			}
+		});
+	})();
+	</script>
+</dom-module>

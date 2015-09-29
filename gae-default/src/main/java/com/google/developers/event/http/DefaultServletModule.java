@@ -1,5 +1,7 @@
 package com.google.developers.event.http;
 
+import com.google.developers.event.qrcode.ParticipantsServlet;
+import com.google.developers.event.qrcode.SendQrServlet;
 import com.google.inject.servlet.ServletModule;
 
 public class DefaultServletModule extends ServletModule implements Path {
@@ -18,6 +20,7 @@ public class DefaultServletModule extends ServletModule implements Path {
 		serve("/api/chapters").with(ChaptersServlet.class);
 		serve("/api/events").with(EventsServlet.class);
 		serve("/api/activities").with(ActivitiesServlet.class);
+		serve("/api/participants").with(ParticipantsServlet.class);
 
 		serve(OAUTH2ENTRY).with(OAuth2EntryServlet.class);
 		serve(OAUTH2CALLBACK).with(OAuth2CallbackServlet.class);
@@ -25,6 +28,7 @@ public class DefaultServletModule extends ServletModule implements Path {
 		serve(EVENTS_URL + "*").with(EventsServlet.class);
 
 		serveRegex("/api/check-in|" + CHECK_IN_URL + "[0-9a-z]+").with(CheckInServlet.class);
+		serveRegex("/api/send-qr|" + SEND_QR_URL + "[0-9a-z]+").with(SendQrServlet.class);
 	}
 
 }
