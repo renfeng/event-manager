@@ -1,10 +1,14 @@
 {
-  "name": "topeka",
+  "name": "GDG Event Manager",
   "version": "0.0.0",
-  "homepage": "https://github.com/Polymer/topeka",
-  "authors": [],
+  "homepage": "https://github.com/renfeng/event-manager",
+  "authors": [
+    "Frank R. <renfeng.cn@gmail.com>"
+  ],
   "description": "",
-  "license": "BSD",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
   "ignore": [
     "**/.*",
     "node_modules",
@@ -12,13 +16,5 @@
     "components",
     "test",
     "tests"
-  ],
-  "dependencies": {
-    "topeka-elements": "Polymer/topeka-elements#^0.5.0",
-    "json-p": "*",
-    "app-router": "~2.6.1"
-  },
-  "resolutions": {
-    "webcomponentsjs": "0.7.10"
-  }
+  ]
 }

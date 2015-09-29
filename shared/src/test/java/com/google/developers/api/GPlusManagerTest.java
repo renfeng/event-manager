@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * Created by frren on 2015-07-10.
  */
-public class GPlusTest {
+public class GPlusManagerTest {
 
 	private final Injector injector = Guice.createInjector(Stage.DEVELOPMENT,
 			new DevelopersSharedModule());

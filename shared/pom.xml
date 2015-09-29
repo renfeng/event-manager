@@ -87,6 +87,10 @@
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-plus</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-gmail</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>com.google.api-client</groupId>
