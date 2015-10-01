@@ -1,3 +1,5 @@
+<link rel="import" href="../components/iron-ajax/iron-ajax.html">
+
 <dom-module id="gdg-event-registration">
 	<template>
 		<style>
@@ -15,17 +17,8 @@
 				top: 2px;
 			}
 		</style>
-		<div on-keypress="keypressAction">
-			<paper-input id="longUrl" label="Paster your long URL here" value="{{longUrl}}"></paper-input>
-			<paper-button on-tap="shorten" raised>Shorten URL</paper-button>
-			<input id="shortLink" value="{{shortUrl}}" readonly="readonly"
-				   onclick="this.select();this.setSelectionRange(0, this.value.length)"/>
-		</div>
-		<iron-ajax id="shorten" url="/api/url/shorten" method="POST" body="{{longUrl}}"
+		<iron-ajax auto url="/api/participants"
 				   handle-as="text" on-response="onShortened"></iron-ajax>
-		<p>
-			<iron-image src="{{qrCode}}"></iron-image>
-		</p>
 	</template>
 	<script>
 	(function() {

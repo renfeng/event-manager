@@ -1,8 +1,14 @@
 package com.google.developers.event.http;
 
+import com.google.developers.api.SpreadsheetManager;
+import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.qrcode.ParticipantsServlet;
 import com.google.developers.event.qrcode.SendQrServlet;
+import com.google.gdata.util.ServiceException;
 import com.google.inject.servlet.ServletModule;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 public class DefaultServletModule extends ServletModule implements Path {
 
@@ -31,4 +37,35 @@ public class DefaultServletModule extends ServletModule implements Path {
 		serveRegex("/api/send-qr|" + SEND_QR_URL + "[0-9a-z]+").with(SendQrServlet.class);
 	}
 
+	public static ActiveEvent getActiveEvent(HttpServletRequest req, SpreadsheetManager spreadsheetManager)
+			throws IOException, ServiceException {
+
+		/*
+		 * retrieve event id from http header, referer
+		 * e.g.
+		 * https://plus.google.com/events/c2vl1u3p3pbglde0gqhs7snv098
+		 * https://developers.google.com/events/6031536915218432/
+		 * https://hub.gdgx.io/events/6031536915218432
+		 */
+		String referer = req.getHeader("Referer");
+		if (referer == null) {
+			return null;
+		}
+
+//		Pattern gplusEventPattern = Pattern.compile("https://plus.google.com/events/" +
+//				"[^/]+");
+//		Pattern devsiteEventPattern = Pattern.compile("https://developers.google.com/events/" +
+//				"[^/]+/");
+//		Pattern gdgxHubEventPattern = Pattern.compile("https://hub.gdgx.io/events/" +
+//				"([^/]+)");
+		String requestURL = req.getRequestURL().toString();
+		String urlBase = requestURL.substring(0, requestURL.indexOf(req.getRequestURI())) + SEND_QR_URL;
+		if (!referer.startsWith(urlBase) || referer.equals(urlBase)) {
+			return null;
+		}
+
+		String gplusEventUrl = "https://plus.google.com/events/" + referer.substring(urlBase.length());
+
+		return ActiveEvent.get(gplusEventUrl, spreadsheetManager);
+	}
 }

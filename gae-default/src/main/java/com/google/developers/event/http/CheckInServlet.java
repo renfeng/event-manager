@@ -6,6 +6,7 @@ import com.google.api.client.json.JsonGenerator;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
+import com.google.developers.event.DevelopersSharedModule;
 import com.google.developers.event.MetaSpreadsheet;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
@@ -63,33 +64,14 @@ public class CheckInServlet extends HttpServlet
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		/*
-		 * retrieve event id from http header, referer
-		 * e.g.
-		 * https://plus.google.com/events/c2vl1u3p3pbglde0gqhs7snv098
-		 * https://developers.google.com/events/6031536915218432/
-		 * https://hub.gdgx.io/events/6031536915218432
-		 */
-		String referer = req.getHeader("Referer");
-//		Pattern gplusEventPattern = Pattern.compile("https://plus.google.com/events/" +
-//				"[^/]+");
-//		Pattern devsiteEventPattern = Pattern.compile("https://developers.google.com/events/" +
-//				"[^/]+/");
-//		Pattern gdgxHubEventPattern = Pattern.compile("https://hub.gdgx.io/events/" +
-//				"([^/]+)");
-		String requestURL = req.getRequestURL().toString();
-		String urlBase = requestURL.substring(0, requestURL.indexOf(req.getRequestURI())) + CHECK_IN_URL;
-		if (!referer.startsWith(urlBase) || referer.equals(urlBase)) {
-			//req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
-			resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return;
-		}
-
-		String gplusEventUrl = "https://plus.google.com/events/" + referer.substring(urlBase.length());
-
 		final ActiveEvent activeEvent;
 		try {
-			activeEvent = ActiveEvent.get(gplusEventUrl, spreadsheetManager);
+			activeEvent = DefaultServletModule.getActiveEvent(req, spreadsheetManager);
+			if (activeEvent == null) {
+				//req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
+				resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				return;
+			}
 		} catch (ServiceException e) {
 			throw new ServletException(e);
 		}
