@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -99,20 +101,44 @@ public class ParticipantsServlet extends HttpServlet
 
 		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
 
+			List<String> emailList = new ArrayList<>();
+
+			CellEntry qrCodeCellEntry;
+
+			@Override
+			protected void processDataColumn(CellEntry cell, String columnName) {
+				if (QR_CODE_COLUMN.equals(columnName)) {
+					qrCodeCellEntry = cell;
+				}
+			}
+
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
 
+				String nick = valueMap.get(registerNameColumn);
+				String email = valueMap.get(registerEmailColumn);
+				String qrCode = valueMap.get(QR_CODE_COLUMN);
+
+				if (emailList.contains(email)) {
+					if (qrCode == null) {
+						qrCodeCellEntry.changeInputValueLocal("dupe");
+						qrCodeCellEntry.update();
+					}
+					return true;
+				}
+				emailList.add(email);
+
 				generator.writeStartObject();
 
 				generator.writeFieldName("nick");
-				generator.writeString(valueMap.get(registerNameColumn));
+				generator.writeString(nick);
 
 				generator.writeFieldName("email");
-				generator.writeString(valueMap.get(registerEmailColumn));
+				generator.writeString(email);
 
 				generator.writeFieldName("qrCode");
-				generator.writeString(valueMap.get(QR_CODE_COLUMN));
+				generator.writeString(qrCode);
 
 				generator.writeEndObject();
 
