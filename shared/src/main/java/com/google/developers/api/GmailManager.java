@@ -87,6 +87,7 @@ public class GmailManager extends ClientManager<Gmail> {
 		email.setText(bodyText);
 		return email;
 	}
+
 	/**
 	 * Create a Message from an email
 	 *
@@ -120,6 +121,7 @@ public class GmailManager extends ClientManager<Gmail> {
 	public static MimeMessage createEmailWithAttachment(
 			String to, String from, String subject,
 			String bodyText, String fileDir, String filename) throws MessagingException, IOException {
+
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 
@@ -158,17 +160,16 @@ public class GmailManager extends ClientManager<Gmail> {
 	/**
 	 * Send an email from the user's mailbox to its recipient.
 	 *
-	 * @param service Authorized Gmail API instance.
 	 * @param userId  User's email address. The special value "me"
 	 *                can be used to indicate the authenticated user.
 	 * @param email   Email to be sent.
 	 * @throws MessagingException
 	 * @throws IOException
 	 */
-	public static void sendMessage(Gmail service, String userId, MimeMessage email)
+	public void sendMessage(String userId, MimeMessage email)
 			throws MessagingException, IOException {
 		Message message = createMessageWithEmail(email);
-		message = service.users().messages().send(userId, message).execute();
+		message = getClient().users().messages().send(userId, message).execute();
 
 		System.out.println("Message id: " + message.getId());
 		System.out.println(message.toPrettyString());
@@ -181,7 +182,6 @@ public class GmailManager extends ClientManager<Gmail> {
 	/**
 	 * Create draft email.
 	 *
-	 * @param service an authorized Gmail API instance
 	 * @param userId user's email address. The special value "me"
 	 * can be used to indicate the authenticated user
 	 * @param email the MimeMessage used as email within the draft
@@ -189,12 +189,12 @@ public class GmailManager extends ClientManager<Gmail> {
 	 * @throws MessagingException
 	 * @throws IOException
 	 */
-	public static Draft createDraft(Gmail service, String userId, MimeMessage email)
+	public Draft createDraft(String userId, MimeMessage email)
 			throws MessagingException, IOException {
 		Message message = createMessageWithEmail(email);
 		Draft draft = new Draft();
 		draft.setMessage(message);
-		draft = service.users().drafts().create(userId, draft).execute();
+		draft = getClient().users().drafts().create(userId, draft).execute();
 
 		System.out.println("draft id: " + draft.getId());
 		System.out.println(draft.toPrettyString());

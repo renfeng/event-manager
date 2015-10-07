@@ -23,4 +23,13 @@ public interface MetaSpreadsheet {
 	String LABEL_COLUMN = "Self Check-in page Dymo Label";
 	String LOGO_COLUMN = "Self Check-in Page Logo";
 
+	String TICKET_EMAIL_TEMPLATE = "Ticket Email Template";
+	String TICKET_EMAIL_SUBJECT = "Ticket Email Subject";
+	String TICKET_EMAIL_CC = "Ticket Email CC";
+	String TICKET_EMAIL_BCC = "Ticket Email BCC";
+	String EVENT_START_TIME = "Event Start Time";
+	String EVENT_END_TIME = "Event End Time";
+	String EVENT_LOCATION = "Event Location";
+	String EVENT_TRANSIT = "Event Transit";
+	String EVENT_POINST_OF_CONTACT= "Event Point of Contact";
 }

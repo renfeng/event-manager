@@ -1,6 +1,6 @@
 package com.google.developers.event.http;
 
-import com.google.api.client.http.*;
+import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.gdata.util.ServiceException;
@@ -14,8 +14,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
 
 /**
  * Created by renfeng on 6/22/15.
@@ -26,12 +26,12 @@ public class LogoServlet extends HttpServlet implements Path {
 	private static final Logger logger = LoggerFactory
 			.getLogger(LogoServlet.class);
 
-	private final HttpTransport transport;
+	private final DriveManager driveManager;
 	private final SpreadsheetManager spreadsheetManager;
 
 	@Inject
-	public LogoServlet(HttpTransport transport, SpreadsheetManager spreadsheetManager) {
-		this.transport = transport;
+	public LogoServlet(DriveManager driveManager, SpreadsheetManager spreadsheetManager) {
+		this.driveManager = driveManager;
 		this.spreadsheetManager = spreadsheetManager;
 	}
 
@@ -40,7 +40,8 @@ public class LogoServlet extends HttpServlet implements Path {
 
 		ActiveEvent activeEvent;
 		try {
-			activeEvent = DefaultServletModule.getActiveEvent(req, spreadsheetManager);
+			activeEvent = DefaultServletModule.getActiveEvent(
+					req, spreadsheetManager, CHECK_IN_URL);
 			if (activeEvent == null) {
 				req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
 				return;
@@ -49,20 +50,7 @@ public class LogoServlet extends HttpServlet implements Path {
 			throw new ServletException(e);
 		}
 
-		HttpRequestFactory factory = transport.createRequestFactory();
-
-		String logo = activeEvent.getLogo();
-		GenericUrl url = new GenericUrl(
-				"https://googledrive.com/host/0B8bvxFOa9pJlfkVwbVlnWDF3TzJxdzJJZDMySzAwQzhyVmozMHRYSVBaX1NCMHpYd25jYnc/"
-						+ URLEncoder.encode(logo, "UTF-8"));
-		HttpRequest request = factory.buildGetRequest(url);
-
-		HttpResponse response = request.execute();
-		if (response.getStatusCode() == 200) {
-//			resp.addHeader("Content-Type", "text/javascript");
-			IOUtils.copy(response.getContent(), resp.getOutputStream());
-		} else {
-			resp.setStatus(response.getStatusCode());
-		}
+		IOUtils.copy(new ByteArrayInputStream(activeEvent.getLogoCache(driveManager)),
+				resp.getOutputStream());
 	}
 }

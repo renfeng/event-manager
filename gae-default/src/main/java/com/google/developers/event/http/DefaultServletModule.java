@@ -1,5 +1,6 @@
 package com.google.developers.event.http;
 
+import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.qrcode.ParticipantsServlet;
@@ -37,8 +38,14 @@ public class DefaultServletModule extends ServletModule implements Path {
 		serveRegex("/api/send-qr|" + SEND_QR_URL + "[0-9a-z]+").with(SendQrServlet.class);
 	}
 
-	public static ActiveEvent getActiveEvent(HttpServletRequest req, SpreadsheetManager spreadsheetManager)
+	public static ActiveEvent getActiveEvent(
+			HttpServletRequest req, SpreadsheetManager spreadsheetManager,
+			String path)
 			throws IOException, ServiceException {
+
+		/*
+		 * TODO https://github.com/google/guice/wiki/AssistedInject
+		 */
 
 		/*
 		 * retrieve event id from http header, referer
@@ -59,7 +66,7 @@ public class DefaultServletModule extends ServletModule implements Path {
 //		Pattern gdgxHubEventPattern = Pattern.compile("https://hub.gdgx.io/events/" +
 //				"([^/]+)");
 		String requestURL = req.getRequestURL().toString();
-		String urlBase = requestURL.substring(0, requestURL.indexOf(req.getRequestURI())) + SEND_QR_URL;
+		String urlBase = requestURL.substring(0, requestURL.indexOf(req.getRequestURI())) + path;
 		if (!referer.startsWith(urlBase) || referer.equals(urlBase)) {
 			return null;
 		}

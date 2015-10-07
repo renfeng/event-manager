@@ -1,14 +1,15 @@
 package com.google.developers.event.qrcode;
 
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.developers.api.CellFeedProcessor;
+import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.developers.event.http.DefaultServletModule;
 import com.google.developers.event.http.Path;
+import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -33,16 +34,16 @@ public class ParticipantsServlet extends HttpServlet
 	private static final Logger logger = LoggerFactory
 			.getLogger(ParticipantsServlet.class);
 
-	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final SpreadsheetManager spreadsheetManager;
+	private final DriveManager driveManager;
 
 	@Inject
-	public ParticipantsServlet(HttpTransport transport, JsonFactory jsonFactory,
-							   SpreadsheetManager spreadsheetManager) {
-		this.transport = transport;
+	public ParticipantsServlet(
+			JsonFactory jsonFactory, SpreadsheetManager spreadsheetManager, DriveManager driveManager) {
 		this.jsonFactory = jsonFactory;
 		this.spreadsheetManager = spreadsheetManager;
+		this.driveManager = driveManager;
 	}
 
 	@Override
@@ -50,9 +51,10 @@ public class ParticipantsServlet extends HttpServlet
 
 		final ActiveEvent activeEvent;
 		try {
-			activeEvent = DefaultServletModule.getActiveEvent(req, spreadsheetManager);
+			activeEvent = DefaultServletModule.getActiveEvent(
+					req, spreadsheetManager, SEND_QR_URL);
 			if (activeEvent == null) {
-				throw new ServiceException("missing active event");
+				throw new ServletException("missing active event");
 			}
 		} catch (ServiceException e) {
 			throw new ServletException(e);
@@ -109,13 +111,8 @@ public class ParticipantsServlet extends HttpServlet
 				generator.writeFieldName("email");
 				generator.writeString(valueMap.get(registerEmailColumn));
 
-				generator.writeFieldName("sent");
-				String qrCode = valueMap.get(QR_CODE_COLUMN);
-				if (qrCode != null && !qrCode.equals("x")) {
-					generator.writeBoolean(true);
-				} else {
-					generator.writeBoolean(false);
-				}
+				generator.writeFieldName("qrCode");
+				generator.writeString(valueMap.get(QR_CODE_COLUMN));
 
 				generator.writeEndObject();
 
@@ -132,5 +129,78 @@ public class ParticipantsServlet extends HttpServlet
 		generator.writeEndArray();
 		generator.writeEndObject();
 		generator.flush();
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+		final String email = req.getParameter("email");
+		final String qrCode = req.getParameter("qrCode");
+
+		final ActiveEvent activeEvent;
+		try {
+			activeEvent = DefaultServletModule.getActiveEvent(
+					req, spreadsheetManager, SEND_QR_URL);
+			if (activeEvent == null) {
+				throw new ServletException("missing active event");
+			}
+		} catch (ServiceException e) {
+			throw new ServletException(e);
+		}
+
+		String registerURL = activeEvent.getRegisterResponsesURL();
+		if (registerURL == null) {
+			throw new ServletException(
+					"Missing URL to the register form responses of event, " + activeEvent.getEvent());
+		}
+
+		final String registerEmailColumn = activeEvent.getRegisterEmailColumn();
+		if (registerEmailColumn == null) {
+			throw new ServletException(
+					"Missing emailAddress column mapping for the register form responses of event, " +
+							activeEvent.getEvent());
+		}
+
+		final String registerNameColumn = activeEvent.getRegisterNameColumn();
+		if (registerNameColumn == null) {
+			throw new ServletException(
+					"Missing nickname column mapping for the register form responses of event, " +
+							activeEvent.getEvent());
+		}
+
+		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
+
+			CellEntry qrCodeCellEntry;
+
+			@Override
+			protected void processDataColumn(CellEntry cell, String columnName) {
+				if (QR_CODE_COLUMN.equals(columnName)) {
+					qrCodeCellEntry = cell;
+				}
+			}
+
+			@Override
+			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
+					throws IOException, ServiceException {
+
+				if (email.equals(valueMap.get(registerEmailColumn))) {
+					/*
+					 * https://developers.google.com/google-apps/spreadsheets/data#change_contents_of_a_cell
+					 */
+					qrCodeCellEntry.changeInputValueLocal(qrCode);
+					qrCodeCellEntry.update();
+
+					return false;
+				}
+
+				return true;
+			}
+		};
+		try {
+			cellFeedProcessor.processForBatchUpdate(spreadsheetManager.getWorksheet(registerURL),
+					registerNameColumn, registerEmailColumn, QR_CODE_COLUMN);
+		} catch (ServiceException e) {
+			throw new ServletException(e);
+		}
 	}
 }

@@ -4,9 +4,9 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.developers.api.CellFeedProcessor;
+import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
-import com.google.developers.event.DevelopersSharedModule;
 import com.google.developers.event.MetaSpreadsheet;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
@@ -46,13 +46,16 @@ public class CheckInServlet extends HttpServlet
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final SpreadsheetManager spreadsheetManager;
+	private final DriveManager driveManager;
 
 	@Inject
-	public CheckInServlet(HttpTransport transport, JsonFactory jsonFactory,
-						  SpreadsheetManager spreadsheetManager) {
+	public CheckInServlet(
+			HttpTransport transport, JsonFactory jsonFactory,
+			SpreadsheetManager spreadsheetManager, DriveManager driveManager) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.spreadsheetManager = spreadsheetManager;
+		this.driveManager = driveManager;
 	}
 
 	@Override
@@ -66,7 +69,8 @@ public class CheckInServlet extends HttpServlet
 
 		final ActiveEvent activeEvent;
 		try {
-			activeEvent = DefaultServletModule.getActiveEvent(req, spreadsheetManager);
+			activeEvent = DefaultServletModule.getActiveEvent(
+					req, spreadsheetManager, CHECK_IN_URL);
 			if (activeEvent == null) {
 				//req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
 				resp.setStatus(HttpServletResponse.SC_FORBIDDEN);

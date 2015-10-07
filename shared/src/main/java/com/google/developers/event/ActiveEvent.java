@@ -1,10 +1,14 @@
 package com.google.developers.event;
 
+import com.google.api.client.http.*;
+import com.google.api.services.drive.model.File;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
+import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.gdata.util.ServiceException;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,18 +31,29 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 	private static final Logger logger = LoggerFactory
 			.getLogger(ActiveEvent.class);
 
+	private String gplusEventUrl;
+
+	private String event;
+
 	/*
 	 * retrieve the urls of register and check-in for the latest event
 	 */
+	private Date registerCutoffDate;
 	private String registerResponsesURL;
-	private String checkInResponsesURL;
 	private String registerEmailColumn;
 	private String registerNameColumn;
-	private String checkInEmailColumn;
-	private String checkInTimestampColumn;
-	private String checkInFormURL;
-	private String checkInEmailEntry;
-	private String checkInClientIp;
+
+	private String ticketEmailTemplate;
+	private String ticketEmailSubject;
+	private String ticketEmailCc;
+	private String ticketEmailBcc;
+	private Date eventStartTime;
+	private Date eventEndTime;
+	private String eventLocation;
+	private String eventTransit;
+	private String eventPointOfContact;
+
+	private Date checkInCutoffDate;
 
 	/*
 	 * for label printer
@@ -50,14 +65,15 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 	 */
 	private String logo;
 
-	private Date registerCutoffDate;
-	private Date checkInCutoffDate;
-
-	private String event;
-
 	private String dateFormat;
 	private String locale;
 	private String timezone;
+
+	/*
+	 * cache
+	 */
+	private String templateCache;
+	private byte[] logoCache;
 
 	public static ActiveEvent get(String gplusEventUrl, SpreadsheetManager spreadsheetManager)
 			throws IOException, ServiceException {
@@ -66,7 +82,11 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 		ActiveEvent activeEvent = (ActiveEvent) syncCache.get(gplusEventUrl);
 		if (activeEvent == null) {
 			activeEvent = new ActiveEvent(gplusEventUrl, spreadsheetManager);
-			syncCache.put(gplusEventUrl, activeEvent);
+			if (activeEvent.getGplusEventUrl() != null) {
+				syncCache.put(gplusEventUrl, activeEvent);
+			} else {
+				activeEvent = null;
+			}
 		}
 
 		return activeEvent;
@@ -87,9 +107,23 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 
 				if (gplusEventUrl.equals(valueMap.get(GPLUS_EVENT_COLUMN))) {
 					setEvent(valueMap.get(GROUP_COLUMN));
+					setRegisterCutoffDate(getDate(valueMap.get(REGISTER_CUTOFF_DATE_COLUMN)));
 					setRegisterResponsesURL(valueMap.get(REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN));
 					setRegisterEmailColumn(valueMap.get(EMAIL_ADDRESS_COLUMN));
 					setRegisterNameColumn(valueMap.get(NICKNAME_COLUMN));
+
+					setCheckInCutoffDate(getDate(valueMap.get(CHECK_IN_CUTOFF_DATE_COLUMN)));
+
+					setTicketEmailTemplate(valueMap.get(TICKET_EMAIL_TEMPLATE));
+					setTicketEmailSubject(valueMap.get(TICKET_EMAIL_SUBJECT));
+					setTicketEmailCc(valueMap.get(TICKET_EMAIL_CC));
+					setTicketEmailBcc(valueMap.get(TICKET_EMAIL_BCC));
+					setEventStartTime(getDate(valueMap.get(EVENT_START_TIME)));
+					setEventEndTime(getDate(valueMap.get(EVENT_END_TIME)));
+					setEventLocation(valueMap.get(EVENT_LOCATION));
+					setEventTransit(valueMap.get(EVENT_TRANSIT));
+					setEventPointOfContact(valueMap.get(EVENT_POINST_OF_CONTACT));
+
 					setLabel(valueMap.get(LABEL_COLUMN));
 					setLogo(valueMap.get(LOGO_COLUMN));
 
@@ -97,8 +131,7 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 					setLocale(valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN));
 					setTimezone(valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN));
 
-					setRegisterCutoffDate(getDate(valueMap.get(REGISTER_CUTOFF_DATE_COLUMN)));
-					setCheckInCutoffDate(getDate(valueMap.get(CHECK_IN_CUTOFF_DATE_COLUMN)));
+					ActiveEvent.this.gplusEventUrl = gplusEventUrl;
 
 					return false;
 				}
@@ -144,7 +177,9 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 				GROUP_COLUMN, REGISTER_CUTOFF_DATE_COLUMN, CHECK_IN_CUTOFF_DATE_COLUMN,
 				REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, EMAIL_ADDRESS_COLUMN, NICKNAME_COLUMN,
 				TIMESTAMP_COLUMN, TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN,
-				TIMESTAMP_TIME_ZONE_COLUMN, LABEL_COLUMN, LOGO_COLUMN, GPLUS_EVENT_COLUMN);
+				TIMESTAMP_TIME_ZONE_COLUMN, LABEL_COLUMN, LOGO_COLUMN, GPLUS_EVENT_COLUMN,
+				TICKET_EMAIL_TEMPLATE, TICKET_EMAIL_SUBJECT, TICKET_EMAIL_CC, TICKET_EMAIL_BCC,
+				EVENT_START_TIME, EVENT_END_TIME, EVENT_LOCATION, EVENT_POINST_OF_CONTACT);
 	}
 
 	public String getRegisterResponsesURL() {
@@ -155,44 +190,12 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 		this.registerResponsesURL = registerResponsesURL;
 	}
 
-	public String getCheckInResponsesURL() {
-		return checkInResponsesURL;
-	}
-
-	public void setCheckInResponsesURL(String checkInResponsesURL) {
-		this.checkInResponsesURL = checkInResponsesURL;
-	}
-
 	public String getRegisterEmailColumn() {
 		return registerEmailColumn;
 	}
 
 	public void setRegisterEmailColumn(String registerEmailColumn) {
 		this.registerEmailColumn = registerEmailColumn;
-	}
-
-	public String getCheckInEmailColumn() {
-		return checkInEmailColumn;
-	}
-
-	public void setCheckInEmailColumn(String checkInEmailColumn) {
-		this.checkInEmailColumn = checkInEmailColumn;
-	}
-
-	public String getCheckInFormURL() {
-		return checkInFormURL;
-	}
-
-	public void setCheckInFormURL(String checkInFormURL) {
-		this.checkInFormURL = checkInFormURL;
-	}
-
-	public String getCheckInEmailEntry() {
-		return checkInEmailEntry;
-	}
-
-	public void setCheckInEmailEntry(String checkInEmailEntry) {
-		this.checkInEmailEntry = checkInEmailEntry;
 	}
 
 	public String getLabel() {
@@ -235,22 +238,6 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 		this.event = event;
 	}
 
-	public String getCheckInClientIp() {
-		return checkInClientIp;
-	}
-
-	public void setCheckInClientIp(String checkInClientIp) {
-		this.checkInClientIp = checkInClientIp;
-	}
-
-	public String getCheckInTimestampColumn() {
-		return checkInTimestampColumn;
-	}
-
-	public void setCheckInTimestampColumn(String checkInTimestampColumn) {
-		this.checkInTimestampColumn = checkInTimestampColumn;
-	}
-
 	public String getRegisterNameColumn() {
 		return registerNameColumn;
 	}
@@ -281,5 +268,122 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 
 	public void setTimezone(String timezone) {
 		this.timezone = timezone;
+	}
+
+	public String getTicketEmailTemplate() {
+		return ticketEmailTemplate;
+	}
+
+	public void setTicketEmailTemplate(String ticketEmailTemplate) {
+		this.ticketEmailTemplate = ticketEmailTemplate;
+	}
+
+	public String getTicketEmailSubject() {
+		return ticketEmailSubject;
+	}
+
+	public void setTicketEmailSubject(String ticketEmailSubject) {
+		this.ticketEmailSubject = ticketEmailSubject;
+	}
+
+	public String getTicketEmailCc() {
+		return ticketEmailCc;
+	}
+
+	public void setTicketEmailCc(String ticketEmailCc) {
+		this.ticketEmailCc = ticketEmailCc;
+	}
+
+	public String getTicketEmailBcc() {
+		return ticketEmailBcc;
+	}
+
+	public void setTicketEmailBcc(String ticketEmailBcc) {
+		this.ticketEmailBcc = ticketEmailBcc;
+	}
+
+	public Date getEventStartTime() {
+		return eventStartTime;
+	}
+
+	public void setEventStartTime(Date eventStartTime) {
+		this.eventStartTime = eventStartTime;
+	}
+
+	public Date getEventEndTime() {
+		return eventEndTime;
+	}
+
+	public void setEventEndTime(Date eventEndTime) {
+		this.eventEndTime = eventEndTime;
+	}
+
+	public String getEventLocation() {
+		return eventLocation;
+	}
+
+	public void setEventLocation(String eventLocation) {
+		this.eventLocation = eventLocation;
+	}
+
+	public String getEventTransit() {
+		return eventTransit;
+	}
+
+	public void setEventTransit(String eventTransit) {
+		this.eventTransit = eventTransit;
+	}
+
+	public String getEventPointOfContact() {
+		return eventPointOfContact;
+	}
+
+	public void setEventPointOfContact(String eventPointOfContact) {
+		this.eventPointOfContact = eventPointOfContact;
+	}
+
+	public String getTemplateCache(DriveManager driveManager, HttpTransport transport) throws IOException {
+
+		if (templateCache == null) {
+			String templateURL = getTicketEmailTemplate();
+			File file = driveManager.getClient().files().get(templateURL).execute();
+			String downloadUrl = file.getExportLinks().get("text/plain");
+			System.out.println(downloadUrl);
+
+			HttpRequestFactory factory = transport.createRequestFactory();
+			HttpRequest request = factory.buildGetRequest(new GenericUrl(downloadUrl));
+			HttpResponse response = request.execute();
+
+			templateCache = IOUtils.toString(response.getContent());
+			updateCache();
+		}
+
+		return templateCache;
+	}
+
+	public void updateCache() {
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+		if (this.getGplusEventUrl() != null) {
+			syncCache.put(this.getGplusEventUrl(), this);
+		}
+	}
+
+	public byte[] getLogoCache(DriveManager driveManager) throws IOException {
+
+		if (logoCache == null) {
+			logoCache = IOUtils.toByteArray(driveManager.getClient().files().get(getLogo())
+					.executeMediaAsInputStream());
+			updateCache();
+		}
+
+		return logoCache;
+	}
+
+	public String getGplusEventUrl() {
+		return gplusEventUrl;
+	}
+
+	public void setGplusEventUrl(String gplusEventUrl) {
+		this.gplusEventUrl = gplusEventUrl;
 	}
 }
