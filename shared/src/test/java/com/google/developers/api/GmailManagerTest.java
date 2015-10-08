@@ -30,7 +30,7 @@ public class GmailManagerTest {
 		Gmail.Users.Messages.List list = gmail.users().messages().list("me").setQ("from:renfeng.cn@gmail.com ");
 		ListMessagesResponse response = list.execute();
 		for (Message message:response.getMessages()) {
-//			Message m = gmail.users().messages().get("me", message.getId()).execute();
+			Message m = gmail.users().messages().get("me", message.getId()).setFormat("full").execute();
 			System.out.println("Message id: " + message.getId());
 			System.out.println(message.toPrettyString());
 		}

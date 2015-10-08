@@ -20,6 +20,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.services.plus.PlusScopes;
+import com.google.developers.api.GoogleAPIScope;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -28,15 +29,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-class OAuth2Utils implements Path {
+class OAuth2Utils implements Path,GoogleAPIScope {
 
 	/*
 	 * TODO add gmail api, and port the appscript for sending qr code
+	 *
+	 * https://developers.google.com/oauthplayground/
 	 */
 	private static final List<String> SCOPES = Arrays.asList(
 			PlusScopes.PLUS_ME,
-			"https://www.google.com/m8/feeds/",
-			"https://spreadsheets.google.com/feeds/");
+			CONTACTS_V3,
+			SPREADSHEETS_V3);
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;

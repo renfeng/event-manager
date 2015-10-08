@@ -128,8 +128,6 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 				logger.error("failed to save refresh token for chapter, " + gplusId, e);
 			}
 		}
-
-
 	}
 
 	@Override
