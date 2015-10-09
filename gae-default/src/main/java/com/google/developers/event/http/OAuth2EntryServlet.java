@@ -88,7 +88,8 @@ public class OAuth2EntryServlet
 	protected void onAuthorization(
 			HttpServletRequest req, HttpServletResponse resp, AuthorizationCodeRequestUrl authorizationUrl)
 			throws ServletException, IOException {
-		req.getSession().setAttribute(SessionKey.OAUTH2_ORIGIN, req.getRequestURL().toString());
+		String referer = req.getHeader("Referer");
+		req.getSession().setAttribute(SessionKey.OAUTH2_ORIGIN, referer);
 		super.onAuthorization(req, resp, authorizationUrl);
 	}
 }
