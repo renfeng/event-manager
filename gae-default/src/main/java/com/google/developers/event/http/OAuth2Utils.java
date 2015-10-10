@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-class OAuth2Utils implements Path,GoogleAPIScope {
+public class OAuth2Utils implements Path, GoogleAPIScope {
 
 	/*
 	 * TODO add gmail api, and port the appscript for sending qr code
@@ -37,9 +37,7 @@ class OAuth2Utils implements Path,GoogleAPIScope {
 	 * https://developers.google.com/oauthplayground/
 	 */
 	private static final List<String> SCOPES = Arrays.asList(
-			PlusScopes.PLUS_ME,
-			CONTACTS_V3,
-			SPREADSHEETS_V3);
+			PlusScopes.PLUS_ME, CONTACTS_V3, SPREADSHEETS_V3, DRIVE_API_V2, GMAIL_SEND);
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
@@ -59,7 +57,7 @@ class OAuth2Utils implements Path,GoogleAPIScope {
 		this.clientSecret = clientSecret;
 	}
 
-	GoogleAuthorizationCodeFlow initializeFlow() throws IOException {
+	public GoogleAuthorizationCodeFlow initializeFlow() throws IOException {
 		return new GoogleAuthorizationCodeFlow.Builder(transport, jsonFactory, clientId, clientSecret, SCOPES)
 				.setDataStoreFactory(dataStoreFactory)
 				.setAccessType("offline").build();

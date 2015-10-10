@@ -86,6 +86,9 @@
 				<div style="position: fixed; bottom: 1em; right: 1em;">
 					<paper-fab icon="mail" on-tap="sendTicket">Send invites</paper-fab>
 				</div>
+				<div style="display: none; position: fixed; bottom: 1em; left: 1em;">
+					<paper-fab icon="exit-to-app" on-tap="logout">Logout out</paper-fab>
+				</div>
 			</paper-header-panel>
 			<paper-header-panel main>
 				<paper-toolbar>
@@ -113,9 +116,11 @@
 						   contentType="application/x-www-form-urlencoded"></iron-ajax>
 				<iron-ajax id="sendTicketAjax" url="/api/send-qr" method="POST"
 						   contentType="application/x-www-form-urlencoded"
-						   on-response="ticketSent"></iron-ajax>
+						   on-response="ticketSent" on-error="ticketFailed"></iron-ajax>
 			</paper-header-panel>
 		</paper-drawer-panel>
+		<iron-ajax id="oauth2RevokeAjax" url="/authenticated/oauth2revoke" method="DELETE"
+				   on-response="oauth2Revoked"></iron-ajax>
 	</template>
 	<script>
 	(function() {
@@ -223,6 +228,17 @@
 			sendTicket: function() {
 				this.$.sendTicketAjax.body = "qrCode=newTicket";
 				this.$.sendTicketAjax.generateRequest();
+			},
+			ticketFailed: function(e, x, y) {
+				console.log(e);
+				console.log(x);
+				console.log(y);
+			},
+			logout: function() {
+				this.$.oauth2RevokeAjax.generateRequest();
+			},
+			oauth2Revoked: function() {
+				location.reload();
 			}
 		});
 	})();

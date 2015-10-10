@@ -30,9 +30,9 @@ public class OAuth2EntryServlet
 		extends AbstractAppEngineAuthorizationCodeServlet
 		implements SessionKey {
 
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
-	private final OAuth2Utils oauth2Utils;
+	protected final HttpTransport transport;
+	protected final JsonFactory jsonFactory;
+	protected final OAuth2Utils oauth2Utils;
 
 	@Inject
 	public OAuth2EntryServlet(
@@ -43,7 +43,7 @@ public class OAuth2EntryServlet
 	}
 
 	@Override
-	public void doGet(HttpServletRequest req, HttpServletResponse resp)
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, ServletException {
 		// Get the stored credentials using the Authorization Flow
 		AuthorizationCodeFlow authFlow = initializeFlow();

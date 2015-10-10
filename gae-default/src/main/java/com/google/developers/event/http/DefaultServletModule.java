@@ -31,6 +31,7 @@ public class DefaultServletModule extends ServletModule implements Path {
 
 		serve(OAUTH2ENTRY).with(OAuth2EntryServlet.class);
 		serve(OAUTH2CALLBACK).with(OAuth2CallbackServlet.class);
+		serve(OAUTH2REVOKE).with(OAuth2RevokeServlet.class);
 
 		serve(EVENTS_URL + "*").with(EventsServlet.class);
 

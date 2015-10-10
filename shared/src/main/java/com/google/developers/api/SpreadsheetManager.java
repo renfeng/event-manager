@@ -25,8 +25,7 @@ import java.util.regex.Pattern;
 
 public class SpreadsheetManager extends ServiceManager<SpreadsheetService> implements MetaSpreadsheet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(SpreadsheetManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(SpreadsheetManager.class);
 
 	public static boolean diff(String oldInputValue, String newInputValue) {
 
