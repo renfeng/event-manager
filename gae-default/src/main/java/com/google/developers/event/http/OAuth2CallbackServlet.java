@@ -73,7 +73,7 @@ public class OAuth2CallbackServlet
 	protected void onSuccess(HttpServletRequest req, HttpServletResponse resp, Credential credential)
 			throws ServletException, IOException {
 
-		String refreshToken = credential.getRefreshToken();
+		final String refreshToken = credential.getRefreshToken();
 		if (refreshToken != null) {
 			/*
 			 * get G+ ID
@@ -105,27 +105,35 @@ public class OAuth2CallbackServlet
 				 * later, only organizer(s) of an event will be able to submit URLs of Google Spreadsheets for
 				 * register, check-in, and feedback
 				 */
-				final ThreadLocal<CellEntry> cellEntryThreadLocal = new ThreadLocal<>();
 				CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
 
-					Map<String, CellEntry> cellMap = new HashMap<>();
+					CellEntry refreshTokenCell;
 
 					@Override
 					protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 							throws IOException, ServiceException {
 						if (gplusId.equals(valueMap.get("gplusID"))) {
-							cellEntryThreadLocal.set(cellMap.get("refreshToken"));
+							if (SpreadsheetManager.diff(refreshTokenCell.getCell().getInputValue(), refreshToken)) {
+								refreshTokenCell.changeInputValueLocal(refreshToken);
+								try {
+									refreshTokenCell.update();
+								} catch (ServiceException e) {
+									logger.error("failed to save refresh token for chapter, " + gplusId, e);
+								}
+							}
 							return false;
 						}
 
-						cellMap = new HashMap<>();
+						refreshTokenCell = null;
 
 						return true;
 					}
 
 					@Override
 					protected void processDataColumn(CellEntry cell, String columnName) {
-						cellMap.put(columnName, cell);
+						if ("refreshToken".equals(columnName)) {
+							refreshTokenCell = cell;
+						}
 					}
 				};
 				try {
@@ -133,15 +141,6 @@ public class OAuth2CallbackServlet
 							"gplusID", "refreshToken", "chapterPage");
 				} catch (ServiceException e) {
 					logger.error("failed to load refresh token for chapter, " + gplusId, e);
-				}
-				CellEntry cellEntry = cellEntryThreadLocal.get();
-				if (SpreadsheetManager.diff(cellEntry.getCell().getInputValue(), refreshToken)) {
-					cellEntry.changeInputValueLocal(refreshToken);
-					try {
-						cellEntry.update();
-					} catch (ServiceException e) {
-						logger.error("failed to save refresh token for chapter, " + gplusId, e);
-					}
 				}
 			}
 		}
