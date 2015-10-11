@@ -1,10 +1,9 @@
 package com.google.developers.event.http;
 
-import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
-import com.google.developers.event.qrcode.ParticipantsServlet;
-import com.google.developers.event.qrcode.SendQrServlet;
+import com.google.developers.event.qrcode.RegistrationServlet;
+import com.google.developers.event.qrcode.TicketServlet;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.servlet.ServletModule;
 
@@ -21,21 +20,26 @@ public class DefaultServletModule extends ServletModule implements Path {
 		 */
 		serve("/api/401/*").with(UnauthorizedServlet.class);
 
+		/*
+		 * A servlet is a singleton, and is allowed to be registered only once.
+		 */
 //		serve("/api/check-in").with(CheckInServlet.class);
+
 		serve("/api/label").with(LabelServlet.class);
 		serve("/api/logo").with(LogoServlet.class);
 		serve("/api/chapters").with(ChaptersServlet.class);
 		serve("/api/events").with(EventsServlet.class);
 		serve("/api/activities").with(ActivitiesServlet.class);
-		serve("/api/participants").with(ParticipantsServlet.class);
+		serve("/api/participants").with(RegistrationServlet.class);
 
 		serve(OAUTH2ENTRY).with(OAuth2EntryServlet.class);
 		serve(OAUTH2CALLBACK).with(OAuth2CallbackServlet.class);
+		serve(OAUTH2REVOKE).with(OAuth2RevokeServlet.class);
 
 		serve(EVENTS_URL + "*").with(EventsServlet.class);
 
 		serveRegex("/api/check-in|" + CHECK_IN_URL + "[0-9a-z]+").with(CheckInServlet.class);
-		serveRegex("/api/send-qr|" + SEND_QR_URL + "[0-9a-z]+").with(SendQrServlet.class);
+		serveRegex("/api/ticket|" + TICKET_URL + "[0-9a-z]+").with(TicketServlet.class);
 	}
 
 	public static ActiveEvent getActiveEvent(

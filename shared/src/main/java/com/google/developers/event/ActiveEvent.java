@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -354,7 +355,8 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 			HttpRequest request = factory.buildGetRequest(new GenericUrl(downloadUrl));
 			HttpResponse response = request.execute();
 
-			templateCache = IOUtils.toString(response.getContent());
+			logger.debug("default character set: {}", Charset.defaultCharset());
+			templateCache = IOUtils.toString(response.getContent(), "UTF-8");
 			updateCache();
 		}
 

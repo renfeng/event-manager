@@ -1,5 +1,7 @@
 package com.google.developers.event.qrcode;
 
+import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.api.CellFeedProcessor;
@@ -9,17 +11,21 @@ import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.developers.event.http.DefaultServletModule;
+import com.google.developers.event.http.OAuth2EntryServlet;
+import com.google.developers.event.http.OAuth2Utils;
 import com.google.developers.event.http.Path;
 import com.google.gdata.data.spreadsheet.CellEntry;
+import com.google.gdata.util.ContentType;
 import com.google.gdata.util.ServiceException;
-import com.google.gdata.util.common.util.Base64;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
-import javax.activation.URLDataSource;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
@@ -29,7 +35,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -42,30 +47,36 @@ import java.util.Random;
  * Created by frren on 2015-09-29.
  */
 @Singleton
-public class SendQrServlet extends HttpServlet
+public class TicketServlet extends OAuth2EntryServlet
 		implements Path, RegisterFormResponseSpreadsheet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(SendQrServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(TicketServlet.class);
 
-	private final HttpTransport transport;
-	private final SpreadsheetManager spreadsheetManager;
-	private final GmailManager gmailManager;
-	private final DriveManager driveManager;
+	private final String clientId;
+	private final String clientSecret;
+
+	private SpreadsheetManager spreadsheetManager;
+	private GmailManager gmailManager;
+	private DriveManager driveManager;
 
 	@Inject
-	public SendQrServlet(
-			HttpTransport transport, SpreadsheetManager spreadsheetManager,
-			GmailManager gmailManager, DriveManager driveManager) {
-		this.transport = transport;
+	public TicketServlet(
+			HttpTransport transport, JsonFactory jsonFactory,
+			SpreadsheetManager spreadsheetManager, GmailManager gmailManager,
+			DriveManager driveManager, OAuth2Utils oauth2Utils,
+			@Named("clientId") String clientId,
+			@Named("clientSecret") String clientSecret) {
+		super(transport, jsonFactory, oauth2Utils);
 		this.spreadsheetManager = spreadsheetManager;
 		this.gmailManager = gmailManager;
 		this.driveManager = driveManager;
+		this.clientId = clientId;
+		this.clientSecret = clientSecret;
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getRequestDispatcher("/send-qr/index.html").forward(req, resp);
+		req.getRequestDispatcher("/authenticated/ticket/index.html").forward(req, resp);
 	}
 
 	@Override
@@ -73,10 +84,25 @@ public class SendQrServlet extends HttpServlet
 
 		final String qrCode = req.getParameter("qrCode");
 
+		// Get the stored credentials using the Authorization Flow
+		AuthorizationCodeFlow authFlow = initializeFlow();
+		Credential credential = authFlow.loadCredential(getUserId(req));
+		String refreshToken = credential.getRefreshToken();
+
+		/*
+		 * http://stackoverflow.com/questions/10827920/google-oauth-refresh-token-is-not-being-received
+		 */
+		spreadsheetManager = new SpreadsheetManager(refreshToken,
+				clientId, clientSecret, transport, jsonFactory);
+		gmailManager = new GmailManager(refreshToken,
+				clientId, clientSecret, transport, jsonFactory);
+		driveManager = new DriveManager(refreshToken,
+				clientId, clientSecret, transport, jsonFactory);
+
 		final ActiveEvent activeEvent;
 		try {
 			activeEvent = DefaultServletModule.getActiveEvent(
-					req, spreadsheetManager, SEND_QR_URL);
+					req, spreadsheetManager, TICKET_URL);
 			if (activeEvent == null) {
 				throw new ServletException("missing active event");
 			}
@@ -204,8 +230,26 @@ public class SendQrServlet extends HttpServlet
 		try {
 			cellFeedProcessor.processForBatchUpdate(spreadsheetManager.getWorksheet(registerURL),
 					registerNameColumn, registerEmailColumn, QR_CODE_COLUMN);
-		} catch (ServiceException e) {
-			throw new ServletException(e);
+		} catch (ServiceException ex) {
+			/*
+			 * jsoup to extract text
+			 *
+			 * TODO show the html to user (insert into <head> tag, <base href="https://www.google.com"/>)
+			 */
+			String message;
+			if (ex.getResponseBody() != null &&
+					ex.getResponseContentType().match(new ContentType("text/html"))) {
+				Document document = Jsoup.parse(ex.getResponseBody());
+
+				String s = ex.getClass().getName();
+				String localizedMessage = ex.getLocalizedMessage();
+				message = (localizedMessage != null ? (s + ": " + localizedMessage) : s) + "\n" +
+						document.text();
+			} else {
+				message = ex.toString();
+			}
+			logger.debug("error: " + message);
+			throw new ServletException(message);
 		}
 	}
 }

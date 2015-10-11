@@ -16,8 +16,10 @@ public interface GoogleAPIScope {
 	String CONTACTS_V3 = "https://www.google.com/m8/feeds/";
 
 	/*
-	 * TODO Drive API v2
+	 * Drive API v2
+	 * https://developers.google.com/drive/web/scopes
 	 */
+	String DRIVE_API_V2 = "https://www.googleapis.com/auth/drive";
 
 	/*
 	 * TODO Gmail API v1

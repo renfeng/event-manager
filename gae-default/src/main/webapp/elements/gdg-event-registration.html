@@ -68,6 +68,10 @@
 					margin: auto;
 				}
 			}
+			#mainContainer {
+				max-width: 900px;
+				margin: auto;
+			}
 		</style>
 		<iron-ajax id="registrationAjax" auto url="/api/participants" last-response="{{registration}}"></iron-ajax>
 		<paper-drawer-panel right-drawer responsive-width="800px">
@@ -83,6 +87,9 @@
 				<paper-checkbox class="participant-filter" checked="{{showInvited}}">Show invited</paper-checkbox>
 				<div style="position: fixed; bottom: 1em; right: 1em;">
 					<paper-fab icon="mail" on-tap="sendTicket">Send invites</paper-fab>
+				</div>
+				<div style="display: none; position: fixed; bottom: 1em; left: 1em;">
+					<paper-fab icon="exit-to-app" on-tap="logout">Logout out</paper-fab>
 				</div>
 			</paper-header-panel>
 			<paper-header-panel main>
@@ -109,11 +116,13 @@
 				</template>
 				<iron-ajax id="candidateAjax" url="/api/participants" method="POST"
 						   contentType="application/x-www-form-urlencoded"></iron-ajax>
-				<iron-ajax id="sendTicketAjax" url="/api/send-qr" method="POST"
+				<iron-ajax id="sendTicketAjax" url="/api/ticket" method="POST"
 						   contentType="application/x-www-form-urlencoded"
-						   on-response="ticketSent"></iron-ajax>
+						   on-response="ticketSent" on-error="ticketFailed"></iron-ajax>
 			</paper-header-panel>
 		</paper-drawer-panel>
+		<iron-ajax id="oauth2RevokeAjax" url="/authenticated/oauth2revoke" method="DELETE"
+				   on-response="oauth2Revoked"></iron-ajax>
 	</template>
 	<script>
 	(function() {
@@ -221,6 +230,17 @@
 			sendTicket: function() {
 				this.$.sendTicketAjax.body = "qrCode=newTicket";
 				this.$.sendTicketAjax.generateRequest();
+			},
+			ticketFailed: function(e, x, y) {
+				console.log(e);
+				console.log(x);
+				console.log(y);
+			},
+			logout: function() {
+				this.$.oauth2RevokeAjax.generateRequest();
+			},
+			oauth2Revoked: function() {
+				location.reload();
 			}
 		});
 	})();

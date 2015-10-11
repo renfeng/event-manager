@@ -60,10 +60,6 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 			throws ServletException, IOException {
 
 		/*
-		 * https://developers.google.com/identity/protocols/OAuth2WebServer?hl=en
-		 */
-
-		/*
 		 * get G+ ID
 		 * https://developers.google.com/+/web/api/rest/latest/people/get
 		 */
@@ -121,9 +117,14 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 				 * The token can be an access token or a refresh token.
 				 * If the token is an access token and it has a corresponding refresh token,
 				 * the refresh token will also be revoked.
-				 * https://developers.google.com/identity/protocols/OAuth2WebServer?hl=en
+				 *
+				 * If the revocation is successfully processed, then the status code of the response is 200.
+				 * For error conditions, a status code 400 is returned along with an error code.
+				 *
+				 * https://developers.google.com/identity/protocols/OAuth2WebServer
 				 */
 				}
+				resp.setStatus(response.getStatusCode());
 			} catch (ServiceException e) {
 				logger.error("failed to save refresh token for chapter, " + gplusId, e);
 			}
