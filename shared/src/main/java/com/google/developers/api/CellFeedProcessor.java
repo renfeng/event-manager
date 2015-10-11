@@ -1,5 +1,6 @@
 package com.google.developers.api;
 
+import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.batch.BatchOperationType;
 import com.google.gdata.data.batch.BatchUtils;
@@ -22,12 +23,12 @@ public abstract class CellFeedProcessor {
 	private static final Pattern cellIDPattern = Pattern.compile("R([0-9]+)C([0-9]+)");
 //		Pattern titlePattern = Pattern.compile("([A-Z]+)([0-9]+)");
 
-	private final SpreadsheetManager spreadsheetManager;
+	private final SpreadsheetService spreadsheetService;
 
 	private int row;
 
-	public CellFeedProcessor(SpreadsheetManager spreadsheetManager) {
-		this.spreadsheetManager = spreadsheetManager;
+	public CellFeedProcessor(SpreadsheetService spreadsheetService) {
+		this.spreadsheetService = spreadsheetService;
 	}
 
 	public void processForBatchUpdate(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
@@ -61,8 +62,8 @@ public abstract class CellFeedProcessor {
 				batchRequest.getEntries().add(batchEntry);
 			}
 
-			CellFeed cellFeed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
-			CellFeed queryBatchResponse = spreadsheetManager.getService().batch(
+			CellFeed cellFeed = spreadsheetService.getFeed(cellFeedURL, CellFeed.class);
+			CellFeed queryBatchResponse = spreadsheetService.batch(
 					new URL(cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM).getHref()),
 					batchRequest);
 			List<CellEntry> cells = queryBatchResponse.getEntries();
@@ -106,49 +107,50 @@ public abstract class CellFeedProcessor {
 				}
 			}
 
-			CellFeed cellFeed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
-			CellFeed queryBatchResponse = spreadsheetManager.getService().batch(
+			CellFeed cellFeed = spreadsheetService.getFeed(cellFeedURL, CellFeed.class);
+			CellFeed queryBatchResponse = spreadsheetService.batch(
 					new URL(cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM).getHref()),
 					batchRequest);
 			List<CellEntry> cells = queryBatchResponse.getEntries();
 			for (CellEntry cellEntry : cells) {
-				Matcher matcher = cellIDPattern.matcher(
-						cellEntry.getId().substring(cellEntry.getId().lastIndexOf('/') + 1));
-				if (matcher.matches()) {
-					int column = Integer.parseInt(matcher.group(2));
-					int row = Integer.parseInt(matcher.group(1));
-					if (row != this.row) {
-						/*
-						 * now I've read all the data I need in a row
-						 */
-						if (!processDataRow(valueMap, cellFeedURL)) {
-							stoppedOnDemand = true;
-							break;
-						}
-
-						valueMap = new HashMap<>();
-						this.row = row;
-					}
-
-					String columnName = columnNameMap.get(column);
-					if (columnName != null) {
-						processDataColumn(cellEntry, columnName);
-
-						String value = cellEntry.getCell().getValue();
-						if (value == null) {
-							continue;
-						}
-
-						valueMap.put(columnName, value);
-					}
-				} else {
+				String cellId = cellEntry.getId();
+				Matcher matcher = cellIDPattern.matcher(cellId.substring(cellId.lastIndexOf('/') + 1));
+				if (!matcher.matches()) {
 				/*
 				 * won't be here
 				 */
+					throw new RuntimeException("invalid cell notation: " + cellId);
+				}
+
+				int column = Integer.parseInt(matcher.group(2));
+				int row = Integer.parseInt(matcher.group(1));
+				if (row != this.row) {
+						/*
+						 * now I've read all the data I need in a row
+						 */
+					if (!processDataRow(valueMap, cellFeedURL)) {
+						stoppedOnDemand = true;
+						break;
+					}
+
+					valueMap = new HashMap<>();
+					this.row = row;
+				}
+
+				String columnName = columnNameMap.get(column);
+				if (columnName != null) {
+					processDataColumn(cellEntry, columnName);
+
+					String value = cellEntry.getCell().getValue();
+					if (value == null) {
+						continue;
+					}
+
+					valueMap.put(columnName, value);
 				}
 			}
 
-			if (!stoppedOnDemand && valueMap != null) {
+			if (!stoppedOnDemand) {
 				processDataRow(valueMap, cellFeedURL);
 			}
 		}
@@ -164,7 +166,7 @@ public abstract class CellFeedProcessor {
 		Map<String, String> valueMap = new HashMap<>();
 
 		URL cellFeedURL = sheet.getCellFeedUrl();
-		CellFeed feed = spreadsheetManager.getService().getFeed(cellFeedURL, CellFeed.class);
+		CellFeed feed = spreadsheetService.getFeed(cellFeedURL, CellFeed.class);
 		List<CellEntry> cells = feed.getEntries();
 		Iterator<CellEntry> iterator = cells.iterator();
 
@@ -208,44 +210,43 @@ public abstract class CellFeedProcessor {
 			CellEntry cell = iterator.next();
 			String cellId = cell.getId();
 			Matcher matcher = cellIDPattern.matcher(cellId.substring(cellId.lastIndexOf('/') + 1));
-			if (matcher.matches()) {
-
-				int column = Integer.parseInt(matcher.group(2));
-				int row = Integer.parseInt(matcher.group(1));
-
-				if (row != this.row) {
-						/*
-						 * now all the cells in a row is collected
-						 */
-					if (!processDataRow(valueMap, cellFeedURL)) {
-						stoppedOnDemand = true;
-						break;
-					}
-
-					valueMap = new HashMap<>();
-					this.row = row;
-				}
-
-				String columnName = columnNameMap.get(column);
-				if (columnName != null) {
-					processDataColumn(cell, columnName);
-
-					String value = cell.getCell().getValue();
-					if (value == null) {
-						continue;
-					}
-
-					valueMap.put(columnName, value);
-				}
-			} else {
+			if (!matcher.matches()) {
 				/*
 				 * won't be here
 				 */
 				throw new RuntimeException("invalid cell notation: " + cellId);
 			}
+
+			int column = Integer.parseInt(matcher.group(2));
+			int row = Integer.parseInt(matcher.group(1));
+
+			if (row != this.row) {
+						/*
+						 * now all the cells in a row is collected
+						 */
+				if (!processDataRow(valueMap, cellFeedURL)) {
+					stoppedOnDemand = true;
+					break;
+				}
+
+				valueMap = new HashMap<>();
+				this.row = row;
+			}
+
+			String columnName = columnNameMap.get(column);
+			if (columnName != null) {
+				processDataColumn(cell, columnName);
+
+				String value = cell.getCell().getValue();
+				if (value == null) {
+					continue;
+				}
+
+				valueMap.put(columnName, value);
+			}
 		}
 
-		if (!stoppedOnDemand && valueMap != null) {
+		if (!stoppedOnDemand) {
 			processDataRow(valueMap, cellFeedURL);
 		}
 	}

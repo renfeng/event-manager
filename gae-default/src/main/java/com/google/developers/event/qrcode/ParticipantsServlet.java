@@ -99,7 +99,7 @@ public class ParticipantsServlet extends HttpServlet
 		generator.writeFieldName("participants");
 		generator.writeStartArray();
 
-		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			List<String> emailList = new ArrayList<>();
 
@@ -194,7 +194,7 @@ public class ParticipantsServlet extends HttpServlet
 							activeEvent.getEvent());
 		}
 
-		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			CellEntry qrCodeCellEntry;
 

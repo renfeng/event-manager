@@ -1,7 +1,7 @@
 package com.google.developers.event;
 
+import com.google.api.client.util.store.AbstractDataStoreFactory;
 import com.google.api.client.util.store.DataStore;
-import com.google.api.client.util.store.DataStoreFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -9,9 +9,9 @@ import java.io.Serializable;
 /**
  * Created by frren on 2015-08-03.
  */
-public class SpreadsheetDataStoreFactory implements DataStoreFactory {
+public class SpreadsheetDataStoreFactory extends AbstractDataStoreFactory {
 	@Override
-	public <V extends Serializable> DataStore<V> getDataStore(String id) throws IOException {
-		return null;
+	protected <V extends Serializable> DataStore<V> createDataStore(String id) throws IOException {
+		return new SpreadsheetDataStore<>(this, id);
 	}
 }

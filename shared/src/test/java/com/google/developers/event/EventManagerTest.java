@@ -15,7 +15,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,7 +51,7 @@ public class EventManagerTest {
 		final ThreadLocal<Float> costThreadLocal = new ThreadLocal<>();
 
 		SpreadsheetManager spreadsheetManager = injector.getInstance(SpreadsheetManager.class);
-		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)

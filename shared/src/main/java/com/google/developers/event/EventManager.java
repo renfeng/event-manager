@@ -133,7 +133,7 @@ public class EventManager implements MetaSpreadsheet {
 		/*
 		 * cell update
 		 */
-		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			CellEntry statusCell;
 			int statusColumn;
@@ -397,7 +397,7 @@ public class EventManager implements MetaSpreadsheet {
 
 		final List<CellEntry> entries = batchRequest.getEntries();
 
-		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			int activitiesIndex = 0;
 
@@ -559,7 +559,7 @@ public class EventManager implements MetaSpreadsheet {
 
 		final List<CellEntry> entries = batchRequest.getEntries();
 
-		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			int activitiesIndex = 0;
 
@@ -714,7 +714,7 @@ public class EventManager implements MetaSpreadsheet {
 		CellFeed batchRequest = new CellFeed();
 		final List<CellEntry> entries = batchRequest.getEntries();
 
-		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			int eventIndex = 0;
 

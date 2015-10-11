@@ -114,7 +114,7 @@ public class CheckInServlet extends HttpServlet
 		final ThreadLocal<String> numberThreadLocal = new ThreadLocal<>();
 		final ThreadLocal<String> errorThreadLocal = new ThreadLocal<>();
 
-		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			int number = 1;
 			CellEntry checkInCell;

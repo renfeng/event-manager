@@ -105,7 +105,7 @@ public class OAuth2CallbackServlet
 				 * later, only organizer(s) of an event will be able to submit URLs of Google Spreadsheets for
 				 * register, check-in, and feedback
 				 */
-				CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+				CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 					CellEntry refreshTokenCell;
 

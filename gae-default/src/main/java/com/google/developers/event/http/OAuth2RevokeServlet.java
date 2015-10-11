@@ -76,7 +76,7 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 		final String gplusId = profile.getId();
 		logger.trace("https://plus.google.com/" + gplusId);
 		final ThreadLocal<CellEntry> cellEntryThreadLocal = new ThreadLocal<>();
-		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			Map<String, CellEntry> cellMap = new HashMap<>();
 

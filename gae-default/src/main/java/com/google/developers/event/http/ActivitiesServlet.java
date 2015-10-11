@@ -308,7 +308,7 @@ public class ActivitiesServlet extends HttpServlet {
 		List<String> eventsNotOnSpreadsheet = new ArrayList<>();
 
 		final Map<String, EventActivities> eventGplusMap = new HashMap<>();
-		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			Map<String, EventActivities> eventLabelMap = new HashMap<>();
 

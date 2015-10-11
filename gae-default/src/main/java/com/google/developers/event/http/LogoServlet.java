@@ -23,8 +23,7 @@ import java.io.IOException;
 @Singleton
 public class LogoServlet extends HttpServlet implements Path {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(LogoServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(LogoServlet.class);
 
 	private final DriveManager driveManager;
 	private final SpreadsheetManager spreadsheetManager;

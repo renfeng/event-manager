@@ -29,13 +29,8 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 			.getLogger(SpreadsheetManager.class);
 
 	public static boolean diff(String oldInputValue, String newInputValue) {
-
-		if ((newInputValue != null && !newInputValue.equals(oldInputValue)) ||
-				(newInputValue == null && oldInputValue != null && oldInputValue.length() > 0)) {
-			return true;
-		}
-
-		return false;
+		return (newInputValue != null && !newInputValue.equals(oldInputValue)) ||
+				(newInputValue == null && oldInputValue != null && oldInputValue.length() > 0);
 	}
 
 	@Inject
@@ -61,8 +56,6 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 		service.setReadTimeout(3 * 60000);
 
 		setService(service);
-
-		return;
 	}
 
 	public List<EventParticipant> getGoogleGroupsMember(String spreadsheet)
@@ -177,7 +170,7 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 			} else {
 				dateFormat = new SimpleDateFormat(timestampDateFormat);
 			}
-			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(this) {
+			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(getService()) {
 				@Override
 				public boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
@@ -214,7 +207,7 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 			/*
 			 * cutoff date as event date
 			 */
-			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(this) {
+			CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(getService()) {
 				@Override
 				public boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 						throws IOException, ServiceException {
@@ -240,7 +233,7 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 	}
 
 	/**
-	 * @param url
+	 * @param url e.g. https://docs.google.com/spreadsheets/d/1y6RNHHA8HDZEbJ1L8QsCiilwGChN8u6ZmeJ3bJi6EyQ/edit#gid=187918259
 	 * @return
 	 * @throws IOException
 	 * @throws ServiceException
@@ -249,9 +242,6 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 
 		WorksheetEntry entry;
 
-		/*-
-		 * https://docs.google.com/spreadsheets/d/1y6RNHHA8HDZEbJ1L8QsCiilwGChN8u6ZmeJ3bJi6EyQ/edit#gid=187918259
-		 */
 		String SPREADSHEET_PATTERN = "[^/]+";
 		String GRID_ID_PATTERN = "#gid=(\\d+)";
 		String PREFIX_PATTERN = "https://docs.google.com/spreadsheets/d/";

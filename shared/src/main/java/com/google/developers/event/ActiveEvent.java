@@ -99,7 +99,7 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 			throw new IllegalArgumentException("missing gplusEventUrl");
 		}
 
-		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)

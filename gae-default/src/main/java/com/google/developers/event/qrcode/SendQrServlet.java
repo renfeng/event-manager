@@ -49,18 +49,15 @@ public class SendQrServlet extends HttpServlet
 			.getLogger(SendQrServlet.class);
 
 	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
 	private final SpreadsheetManager spreadsheetManager;
 	private final GmailManager gmailManager;
 	private final DriveManager driveManager;
 
 	@Inject
 	public SendQrServlet(
-			HttpTransport transport, JsonFactory jsonFactory,
-			SpreadsheetManager spreadsheetManager, GmailManager gmailManager,
-			DriveManager driveManager) {
+			HttpTransport transport, SpreadsheetManager spreadsheetManager,
+			GmailManager gmailManager, DriveManager driveManager) {
 		this.transport = transport;
-		this.jsonFactory = jsonFactory;
 		this.spreadsheetManager = spreadsheetManager;
 		this.gmailManager = gmailManager;
 		this.driveManager = driveManager;
@@ -107,7 +104,7 @@ public class SendQrServlet extends HttpServlet
 							activeEvent.getEvent());
 		}
 
-		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager) {
+		CellFeedProcessor cellFeedProcessor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			CellEntry qrCodeCellEntry;
 
@@ -126,7 +123,7 @@ public class SendQrServlet extends HttpServlet
 					/*
 					 * removed cc and bcc
 					 *
-					 * TODO send as the user (oauth2), c.f. the system
+					 * send as the user (oauth2), c.f. the system
 					 * TODO add a column to track sender
 					 */
 
@@ -146,8 +143,6 @@ public class SendQrServlet extends HttpServlet
 						String from = "suzhou.gdg@gmail.com";
 						String to = valueMap.get(registerEmailColumn);
 
-//						MimeMessage email = GmailManager.createEmail(
-//								to, from, subject, body);
 						Properties props = new Properties();
 						Session session = Session.getDefaultInstance(props, null);
 
@@ -162,8 +157,8 @@ public class SendQrServlet extends HttpServlet
 						Multipart multipart = new MimeMultipart("related");
 						{
 							MimeBodyPart mimeBodyPart = new MimeBodyPart();
-							mimeBodyPart.setContent(body, "text/html; charset=\"UTF-8\"");
-//							mimeBodyPart.setHeader("Content-Type", "text/html; charset=\"UTF-8\"");
+//							mimeBodyPart.setContent(body, "text/html; charset=\"UTF-8\"");
+							mimeBodyPart.setContent(body, "text/html; charset=UTF-8");
 							multipart.addBodyPart(mimeBodyPart);
 						}
 						{
@@ -173,9 +168,6 @@ public class SendQrServlet extends HttpServlet
 							MimeBodyPart mimeBodyPart = new MimeBodyPart();
 							mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
 									activeEvent.getLogoCache(driveManager), "image/png")));
-//							mimeBodyPart.setDataHandler(new DataHandler(new URLDataSource(new URL(
-//									"data:image/png;base64," + Base64.encode(activeEvent.getLogoCache(driveManager))))));
-//							mimeBodyPart.setHeader("Content-ID", "<logoBlob>");
 							mimeBodyPart.setContentID("<logoBlob>");
 							mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
 
@@ -190,7 +182,6 @@ public class SendQrServlet extends HttpServlet
 							MimeBodyPart mimeBodyPart = new MimeBodyPart();
 							mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
 									response.getContent(), "image/png")));
-//							mimeBodyPart.setHeader("Content-ID", "<qrCodeBlob>");
 							mimeBodyPart.setContentID("<qrCodeBlob>");
 							mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
 
