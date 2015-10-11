@@ -1,13 +1,11 @@
 package com.google.developers.api;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Activity;
 import com.google.api.services.plus.model.ActivityFeed;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,28 +15,27 @@ import java.util.List;
  */
 public class GPlusManager extends ClientManager<Plus> {
 
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
+	private static GPlusManager gPlusManager;
 
-	@Inject
-	public GPlusManager(
-			@Named("refreshToken") String refreshToken,
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret,
-			HttpTransport transport, JsonFactory jsonFactory) {
+	public static GPlusManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
+			throws IOException {
 
-		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
-
-		this.transport = transport;
-		this.jsonFactory = jsonFactory;
+		if (gPlusManager == null) {
+			synchronized (GPlusManager.class) {
+				if (gPlusManager == null) {
+					gPlusManager = new GPlusManager(transport, jsonFactory,
+							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
+				}
+			}
+		}
+		return gPlusManager;
 	}
 
-	@Override
-	protected void updateCredential(GoogleCredential credential) {
+	public GPlusManager(HttpTransport transport, JsonFactory jsonFactory, Credential credential) {
 
 		// Create a new authorized API client.
 		Plus plus = new Plus.Builder(transport, jsonFactory, credential)
-				.setApplicationName("GDG Event Management")
+				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME)
 				.build();
 
 		setClient(plus);

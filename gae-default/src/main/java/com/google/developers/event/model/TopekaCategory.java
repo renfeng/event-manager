@@ -3,8 +3,6 @@ package com.google.developers.event.model;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.Key;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 

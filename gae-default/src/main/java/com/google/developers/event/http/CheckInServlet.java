@@ -4,7 +4,6 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.developers.api.CellFeedProcessor;
-import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.MetaSpreadsheet;
@@ -45,17 +44,11 @@ public class CheckInServlet extends HttpServlet
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
-	private final SpreadsheetManager spreadsheetManager;
-	private final DriveManager driveManager;
 
 	@Inject
-	public CheckInServlet(
-			HttpTransport transport, JsonFactory jsonFactory,
-			SpreadsheetManager spreadsheetManager, DriveManager driveManager) {
+	public CheckInServlet(HttpTransport transport, JsonFactory jsonFactory) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
-		this.spreadsheetManager = spreadsheetManager;
-		this.driveManager = driveManager;
 	}
 
 	@Override
@@ -66,6 +59,9 @@ public class CheckInServlet extends HttpServlet
 	@Override
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+
+		final SpreadsheetManager spreadsheetManager =
+				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 
 		final ActiveEvent activeEvent;
 		try {
@@ -189,7 +185,8 @@ public class CheckInServlet extends HttpServlet
 			}
 		};
 		try {
-			cellFeedProcessor.processForBatchUpdate(spreadsheetManager.getWorksheet(registerURL),
+			cellFeedProcessor.processForBatchUpdate(
+					spreadsheetManager.getWorksheet(registerURL),
 					registerNameColumn, registerEmailColumn,
 					QR_CODE_COLUMN, CHECK_IN_COLUMN, CLIENT_IP_COLUMN);
 

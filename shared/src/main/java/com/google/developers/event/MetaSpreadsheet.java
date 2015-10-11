@@ -5,23 +5,23 @@ package com.google.developers.event;
  */
 public interface MetaSpreadsheet {
 
-	String GROUP_COLUMN = "Google Contact Group";
-	String STATUS_COLUMN = "Status";
-	String REGISTER_CUTOFF_DATE_COLUMN = "Register Cutoff Date";
-	String CHECK_IN_CUTOFF_DATE_COLUMN = "Check-in Cutoff Date";
-	String FEEDBACK_CUTOFF_DATE_COLUMN = "Feedback Cutoff Date";
-	String GPLUS_EVENT_COLUMN = "Google+ Event";
-	String REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN = "Register Form Response Spreadsheet URL";
-	String NICKNAME_COLUMN = "nickname";
-	String EMAIL_ADDRESS_COLUMN = "emailAddress";
-	String PHONE_NUMBER_COLUMN = "phoneNumber";
-	String FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN = "Feedback Form Response Spreadsheet URL";
-	String TIMESTAMP_COLUMN = "timestamp";
-	String TIMESTAMP_DATE_FORMAT_COLUMN = "timestamp.dateFormat";
-	String TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN = "timestamp.dateFormat.locale";
-	String TIMESTAMP_TIME_ZONE_COLUMN = "timestamp.timeZone";
-	String LABEL_COLUMN = "Self Check-in page Dymo Label";
-	String LOGO_COLUMN = "Self Check-in Page Logo";
+	String GROUP = "Google Contact Group";
+	String STATUS = "Status";
+	String REGISTER_CUTOFF_DATE = "Register Cutoff Date";
+	String CHECK_IN_CUTOFF_DATE = "Check-in Cutoff Date";
+	String FEEDBACK_CUTOFF_DATE = "Feedback Cutoff Date";
+	String GPLUS_EVENT = "Google+ Event";
+	String REGISTER_FORM_RESPONSE_SPREADSHEET_URL = "Register Form Response Spreadsheet URL";
+	String NICKNAME = "nickname";
+	String EMAIL_ADDRESS = "emailAddress";
+	String PHONE_NUMBER = "phoneNumber";
+	String FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL = "Feedback Form Response Spreadsheet URL";
+	String TIMESTAMP = "timestamp";
+	String TIMESTAMP_DATE_FORMAT = "timestamp.dateFormat";
+	String TIMESTAMP_DATE_FORMAT_LOCALE = "timestamp.dateFormat.locale";
+	String TIMESTAMP_TIME_ZONE = "timestamp.timeZone";
+	String LABEL = "Self Check-in page Dymo Label";
+	String LOGO = "Self Check-in Page Logo";
 
 	String TICKET_EMAIL_TEMPLATE = "Ticket Email Template";
 	String TICKET_EMAIL_SUBJECT = "Ticket Email Subject";

@@ -1,5 +1,6 @@
 package com.google.developers.event.http;
 
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.api.client.util.DateTime;
@@ -48,24 +49,26 @@ public class ActivitiesServlet extends HttpServlet {
 	 *
 	 * http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
 	 */
-	private static final SimpleDateFormat GPLUS_EVENT_DATE_TIME_FORMAT = new SimpleDateFormat("EEE, MMMMM d, h:mm a");
+	private static final SimpleDateFormat GPLUS_EVENT_DATE_TIME_FORMAT =
+			new SimpleDateFormat("EEE, MMMMM d, h:mm a");
 
-	private final GPlusManager gplusManager;
-	private final CalendarManager calendarManager;
-	private final SpreadsheetManager spreadsheetManager;
 	private final JsonFactory jsonFactory;
+	private final HttpTransport transport;
 
 	@Inject
-	public ActivitiesServlet(GPlusManager gplusManager, CalendarManager calendarManager,
-							 SpreadsheetManager spreadsheetManager, JsonFactory jsonFactory) {
-		this.gplusManager = gplusManager;
-		this.calendarManager = calendarManager;
-		this.spreadsheetManager = spreadsheetManager;
+	public ActivitiesServlet(HttpTransport transport, JsonFactory jsonFactory) {
 		this.jsonFactory = jsonFactory;
+		this.transport = transport;
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		final SpreadsheetManager spreadsheetManager =
+				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		CalendarManager calendarManager = CalendarManager.getGlobalInstance(transport, jsonFactory);
+		GPlusManager gplusManager = GPlusManager.getGlobalInstance(transport, jsonFactory);
 
 		List<Event> publishedEvents = new ArrayList<>();
 		List<String> eventsNotOnCalendar = new ArrayList<>();
@@ -308,7 +311,8 @@ public class ActivitiesServlet extends HttpServlet {
 		List<String> eventsNotOnSpreadsheet = new ArrayList<>();
 
 		final Map<String, EventActivities> eventGplusMap = new HashMap<>();
-		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
+		CellFeedProcessor processor = new CellFeedProcessor(
+				spreadsheetManager.getService()) {
 
 			Map<String, EventActivities> eventLabelMap = new HashMap<>();
 
@@ -376,7 +380,8 @@ public class ActivitiesServlet extends HttpServlet {
 			}
 		};
 		try {
-			processor.process(spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
+			processor.process(spreadsheetManager
+							.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
 					"Google+ Event", "Activity", "Date",
 					"timestamp.dateFormat", "timestamp.dateFormat.locale");
 		} catch (ServiceException e) {

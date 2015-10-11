@@ -106,14 +106,14 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
 
-				if (gplusEventUrl.equals(valueMap.get(GPLUS_EVENT_COLUMN))) {
-					setEvent(valueMap.get(GROUP_COLUMN));
-					setRegisterCutoffDate(getDate(valueMap.get(REGISTER_CUTOFF_DATE_COLUMN)));
-					setRegisterResponsesURL(valueMap.get(REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN));
-					setRegisterEmailColumn(valueMap.get(EMAIL_ADDRESS_COLUMN));
-					setRegisterNameColumn(valueMap.get(NICKNAME_COLUMN));
+				if (gplusEventUrl.equals(valueMap.get(GPLUS_EVENT))) {
+					setEvent(valueMap.get(GROUP));
+					setRegisterCutoffDate(getDate(valueMap.get(REGISTER_CUTOFF_DATE)));
+					setRegisterResponsesURL(valueMap.get(REGISTER_FORM_RESPONSE_SPREADSHEET_URL));
+					setRegisterEmailColumn(valueMap.get(EMAIL_ADDRESS));
+					setRegisterNameColumn(valueMap.get(NICKNAME));
 
-					setCheckInCutoffDate(getDate(valueMap.get(CHECK_IN_CUTOFF_DATE_COLUMN)));
+					setCheckInCutoffDate(getDate(valueMap.get(CHECK_IN_CUTOFF_DATE)));
 
 					setTicketEmailTemplate(valueMap.get(TICKET_EMAIL_TEMPLATE));
 					setTicketEmailSubject(valueMap.get(TICKET_EMAIL_SUBJECT));
@@ -125,12 +125,12 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 					setEventTransit(valueMap.get(EVENT_TRANSIT));
 					setEventPointOfContact(valueMap.get(EVENT_POINST_OF_CONTACT));
 
-					setLabel(valueMap.get(LABEL_COLUMN));
-					setLogo(valueMap.get(LOGO_COLUMN));
+					setLabel(valueMap.get(LABEL));
+					setLogo(valueMap.get(LOGO));
 
-					setDateFormat(valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN));
-					setLocale(valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN));
-					setTimezone(valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN));
+					setDateFormat(valueMap.get(TIMESTAMP_DATE_FORMAT));
+					setLocale(valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE));
+					setTimezone(valueMap.get(TIMESTAMP_TIME_ZONE));
 
 					ActiveEvent.this.gplusEventUrl = gplusEventUrl;
 
@@ -175,10 +175,10 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 		};
 		cellFeedProcessor.processForBatchUpdate(
 				spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
-				GROUP_COLUMN, REGISTER_CUTOFF_DATE_COLUMN, CHECK_IN_CUTOFF_DATE_COLUMN,
-				REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, EMAIL_ADDRESS_COLUMN, NICKNAME_COLUMN,
-				TIMESTAMP_COLUMN, TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN,
-				TIMESTAMP_TIME_ZONE_COLUMN, LABEL_COLUMN, LOGO_COLUMN, GPLUS_EVENT_COLUMN,
+				GROUP, REGISTER_CUTOFF_DATE, CHECK_IN_CUTOFF_DATE,
+				REGISTER_FORM_RESPONSE_SPREADSHEET_URL, EMAIL_ADDRESS, NICKNAME,
+				TIMESTAMP, TIMESTAMP_DATE_FORMAT, TIMESTAMP_DATE_FORMAT_LOCALE,
+				TIMESTAMP_TIME_ZONE, LABEL, LOGO, GPLUS_EVENT,
 				TICKET_EMAIL_TEMPLATE, TICKET_EMAIL_SUBJECT, TICKET_EMAIL_CC, TICKET_EMAIL_BCC,
 				EVENT_START_TIME, EVENT_END_TIME, EVENT_LOCATION, EVENT_POINST_OF_CONTACT);
 	}

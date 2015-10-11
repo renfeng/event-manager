@@ -4,12 +4,14 @@ import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.appengine.auth.oauth2.AbstractAppEngineAuthorizationCodeServlet;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Person;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.developers.api.GoogleOAuthManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -50,7 +52,8 @@ public class OAuth2EntryServlet
 		Credential credential = authFlow.loadCredential(getUserId(req));
 
 		// Build the Plus object using the credentials
-		Plus plus = new Plus.Builder(transport, jsonFactory, credential).setApplicationName("").build();
+		Plus plus = new Plus.Builder(transport, jsonFactory, credential)
+				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME).build();
 		// Make the API call
 		Person profile = plus.people().get("me").execute();
 		// Send the results as the response
@@ -70,7 +73,7 @@ public class OAuth2EntryServlet
 	}
 
 	@Override
-	protected AuthorizationCodeFlow initializeFlow() throws ServletException, IOException {
+	protected GoogleAuthorizationCodeFlow initializeFlow() throws ServletException, IOException {
 		return oauth2Utils.initializeFlow();
 	}
 

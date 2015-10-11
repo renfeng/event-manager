@@ -1,16 +1,13 @@
 package com.google.developers.api;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,33 +17,31 @@ import java.util.Map;
  */
 public class CalendarManager extends ClientManager<Calendar> {
 
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
+	private static CalendarManager calendarManager;
 
-	@Inject
-	public CalendarManager(
-			@Named("refreshToken") String refreshToken,
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret,
-			HttpTransport transport, JsonFactory jsonFactory) {
+	public static CalendarManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
+			throws IOException {
 
-		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
-
-		this.transport = transport;
-		this.jsonFactory = jsonFactory;
+		if (calendarManager == null) {
+			synchronized (CalendarManager.class) {
+				if (calendarManager == null) {
+					calendarManager = new CalendarManager(transport, jsonFactory,
+							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
+				}
+			}
+		}
+		return calendarManager;
 	}
 
-	@Override
-	protected void updateCredential(GoogleCredential credential) {
+	public CalendarManager(HttpTransport transport, JsonFactory jsonFactory, Credential credential) {
 
 		Calendar calendar = new Calendar.Builder(transport, jsonFactory, credential)
-				.setApplicationName("GDG Event Management").build();
+				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME).build();
 
 		setClient(calendar);
 	}
 
 	/**
-	 *
 	 * @return maps G+ event url to its object
 	 * @throws IOException
 	 */

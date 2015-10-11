@@ -1,12 +1,10 @@
 package com.google.developers.api;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,29 +14,27 @@ import java.io.InputStream;
  */
 public class DriveManager extends ClientManager<Drive> {
 
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
+	private static DriveManager driveManager;
 
-	@Inject
-	public DriveManager(
-			@Named("refreshToken") String refreshToken,
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret,
-			HttpTransport transport, JsonFactory jsonFactory) {
+	public static DriveManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
+			throws IOException {
 
-		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
-
-		this.transport = transport;
-		this.jsonFactory = jsonFactory;
-
-		return;
+		if (driveManager == null) {
+			synchronized (DriveManager.class) {
+				if (driveManager == null) {
+					driveManager = new DriveManager(transport, jsonFactory,
+							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
+				}
+			}
+		}
+		return driveManager;
 	}
 
-	@Override
-	protected void updateCredential(GoogleCredential credential) {
+	public DriveManager(HttpTransport transport, JsonFactory jsonFactory,
+						Credential credential) {
 
 		Drive drive = new Drive.Builder(transport, jsonFactory, credential)
-				.setApplicationName("GDG Event Management")
+				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME)
 				.build();
 
 		setClient(drive);

@@ -1,5 +1,6 @@
 package com.google.developers.api;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.event.EventParticipant;
@@ -9,8 +10,6 @@ import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.spreadsheet.*;
 import com.google.gdata.util.ServiceException;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,22 +26,32 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 
 	private static final Logger logger = LoggerFactory.getLogger(SpreadsheetManager.class);
 
+	private static SpreadsheetManager spreadsheetManager;
+
+	public static SpreadsheetManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
+			throws IOException {
+
+		if (spreadsheetManager == null) {
+			synchronized (SpreadsheetManager.class) {
+				if (spreadsheetManager == null) {
+					spreadsheetManager = new SpreadsheetManager(
+							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
+				}
+			}
+		}
+		return spreadsheetManager;
+	}
+
 	public static boolean diff(String oldInputValue, String newInputValue) {
 		return (newInputValue != null && !newInputValue.equals(oldInputValue)) ||
 				(newInputValue == null && oldInputValue != null && oldInputValue.length() > 0);
 	}
 
-	@Inject
-	public SpreadsheetManager(
-			@Named("refreshToken") String refreshToken,
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret,
-			HttpTransport transport, JsonFactory jsonFactory) {
+	public SpreadsheetManager(Credential credential) throws IOException {
 
-		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
-
-		SpreadsheetService service = new SpreadsheetService("GDG Event Management");
+		SpreadsheetService service = new SpreadsheetService(GoogleOAuthManager.APPLICATION_NAME);
 		service.setProtocolVersion(SpreadsheetService.Versions.V3);
+		service.setOAuth2Credentials(credential);
 
 		/*
 		 * Unable to process batch request for spread sheet. - Google Groups
@@ -150,13 +159,13 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 		 * the benefit is no need to trim punctuations
 		 */
 
-		final String nicknameTag = valueMap.get(NICKNAME_COLUMN);
-		final String emailAddressTag = valueMap.get(EMAIL_ADDRESS_COLUMN);
-		final String phoneNumberTag = valueMap.get(PHONE_NUMBER_COLUMN);
+		final String nicknameTag = valueMap.get(NICKNAME);
+		final String emailAddressTag = valueMap.get(EMAIL_ADDRESS);
+		final String phoneNumberTag = valueMap.get(PHONE_NUMBER);
 
-		final String timestampTag = valueMap.get(TIMESTAMP_COLUMN);
-		final String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
-		final String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
+		final String timestampTag = valueMap.get(TIMESTAMP);
+		final String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT);
+		final String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE);
 
 		if (timestampTag != null && timestampDateFormat != null) {
 			/*
@@ -293,7 +302,7 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 //			/*
 //			 * There is always a sheet.
 //			 *
-//			 * "You can't remove the last sheet is a document."
+//			 * "You can't remove the last sheet in a document."
 //			 */
 //			entry = worksheets.get(0);
 //		}

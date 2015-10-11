@@ -1,7 +1,7 @@
 package com.google.developers.event.qrcode;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.api.CellFeedProcessor;
@@ -19,7 +19,6 @@ import com.google.gdata.util.ContentType;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
@@ -52,26 +51,9 @@ public class TicketServlet extends OAuth2EntryServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(TicketServlet.class);
 
-	private final String clientId;
-	private final String clientSecret;
-
-	private SpreadsheetManager spreadsheetManager;
-	private GmailManager gmailManager;
-	private DriveManager driveManager;
-
 	@Inject
-	public TicketServlet(
-			HttpTransport transport, JsonFactory jsonFactory,
-			SpreadsheetManager spreadsheetManager, GmailManager gmailManager,
-			DriveManager driveManager, OAuth2Utils oauth2Utils,
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret) {
+	public TicketServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		super(transport, jsonFactory, oauth2Utils);
-		this.spreadsheetManager = spreadsheetManager;
-		this.gmailManager = gmailManager;
-		this.driveManager = driveManager;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
 	}
 
 	@Override
@@ -80,24 +62,21 @@ public class TicketServlet extends OAuth2EntryServlet
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		final String qrCode = req.getParameter("qrCode");
 
 		// Get the stored credentials using the Authorization Flow
-		AuthorizationCodeFlow authFlow = initializeFlow();
+		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
 		Credential credential = authFlow.loadCredential(getUserId(req));
-		String refreshToken = credential.getRefreshToken();
 
 		/*
 		 * http://stackoverflow.com/questions/10827920/google-oauth-refresh-token-is-not-being-received
 		 */
-		spreadsheetManager = new SpreadsheetManager(refreshToken,
-				clientId, clientSecret, transport, jsonFactory);
-		gmailManager = new GmailManager(refreshToken,
-				clientId, clientSecret, transport, jsonFactory);
-		driveManager = new DriveManager(refreshToken,
-				clientId, clientSecret, transport, jsonFactory);
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
+		final GmailManager gmailManager = new GmailManager(transport, jsonFactory, credential);
+		final DriveManager driveManager = new DriveManager(transport, jsonFactory, credential);
 
 		final ActiveEvent activeEvent;
 		try {

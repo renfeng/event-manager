@@ -21,8 +21,8 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.services.plus.PlusScopes;
 import com.google.developers.api.GoogleAPIScope;
+import com.google.developers.event.DevelopersSharedModule;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -42,23 +42,18 @@ public class OAuth2Utils implements Path, GoogleAPIScope {
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final DataStoreFactory dataStoreFactory;
-	private final String clientId;
-	private final String clientSecret;
 
 	@Inject
 	public OAuth2Utils(
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret,
 			HttpTransport transport, JsonFactory jsonFactory, DataStoreFactory dataStoreFactory) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.dataStoreFactory = dataStoreFactory;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
 	}
 
 	public GoogleAuthorizationCodeFlow initializeFlow() throws IOException {
-		return new GoogleAuthorizationCodeFlow.Builder(transport, jsonFactory, clientId, clientSecret, SCOPES)
+		return new GoogleAuthorizationCodeFlow.Builder(transport, jsonFactory,
+				DevelopersSharedModule.CLIENT_ID, DevelopersSharedModule.CLIENT_SECRET, SCOPES)
 				.setDataStoreFactory(dataStoreFactory)
 				.setAccessType("offline").build();
 	}

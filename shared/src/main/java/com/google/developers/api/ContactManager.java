@@ -1,5 +1,6 @@
 package com.google.developers.api;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.PropertiesContant;
@@ -17,8 +18,6 @@ import com.google.gdata.data.extensions.Email;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.data.extensions.When;
 import com.google.gdata.util.ServiceException;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -59,16 +58,28 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 	public static final Pattern EVENT_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2}) (Register|Check-in|Feedback)");
 	public static final Pattern GROUP_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(?: .+)?");
 
-	@Inject
-	public ContactManager(@Named("refreshToken") String refreshToken,
-						  @Named("clientId") String clientId,
-						  @Named("clientSecret") String clientSecret,
-						  HttpTransport transport, JsonFactory jsonFactory) {
+	private static ContactManager contactManager;
 
-		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
+	public static ContactManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
+			throws IOException {
 
-		ContactsService service = new ContactsService("GDG Event Management");
+		if (contactManager == null) {
+			synchronized (ContactManager.class) {
+				if (contactManager == null) {
+					contactManager = new ContactManager(
+							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
+				}
+			}
+		}
+		return contactManager;
+	}
+
+	public ContactManager(Credential credential) {
+
+		ContactsService service = new ContactsService(GoogleOAuthManager.APPLICATION_NAME);
 		service.setProtocolVersion(ContactsService.Versions.V3_1);
+		service.setOAuth2Credentials(credential);
+
 		setService(service);
 	}
 

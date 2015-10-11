@@ -24,7 +24,10 @@ import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Person;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
+import com.google.developers.api.GoogleOAuthManager;
+import com.google.developers.api.ServiceManager;
 import com.google.developers.api.SpreadsheetManager;
+import com.google.developers.event.ChapterSpreadsheet;
 import com.google.developers.event.DevelopersSharedModule;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.util.ServiceException;
@@ -38,7 +41,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -49,7 +51,7 @@ import java.util.Map;
 @Singleton
 public class OAuth2CallbackServlet
 		extends AbstractAppEngineAuthorizationCodeCallbackServlet
-		implements Path {
+		implements Path, ChapterSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(OAuth2CallbackServlet.class);
@@ -57,21 +59,19 @@ public class OAuth2CallbackServlet
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final OAuth2Utils auth2Utils;
-	private final SpreadsheetManager spreadsheetManager;
 
 	@Inject
-	public OAuth2CallbackServlet(
-			HttpTransport transport, JsonFactory jsonFactory,
-			OAuth2Utils oauth2Utils, SpreadsheetManager spreadsheetManager) {
+	public OAuth2CallbackServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.auth2Utils = oauth2Utils;
-		this.spreadsheetManager = spreadsheetManager;
 	}
 
 	@Override
 	protected void onSuccess(HttpServletRequest req, HttpServletResponse resp, Credential credential)
 			throws ServletException, IOException {
+
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 
 		final String refreshToken = credential.getRefreshToken();
 		if (refreshToken != null) {
@@ -80,7 +80,8 @@ public class OAuth2CallbackServlet
 			 * https://developers.google.com/+/web/api/rest/latest/people/get
 			 */
 			// Build the Plus object using the credentials
-			Plus plus = new Plus.Builder(transport, jsonFactory, credential).setApplicationName("").build();
+			Plus plus = new Plus.Builder(transport, jsonFactory, credential)
+					.setApplicationName(GoogleOAuthManager.APPLICATION_NAME).build();
 			// Make the API call
 			Person profile = plus.people().get("me").execute();
 			final String gplusId = profile.getId();
@@ -131,14 +132,14 @@ public class OAuth2CallbackServlet
 
 					@Override
 					protected void processDataColumn(CellEntry cell, String columnName) {
-						if ("refreshToken".equals(columnName)) {
+						if (REFRESH_TOKEN.equals(columnName)) {
 							refreshTokenCell = cell;
 						}
 					}
 				};
 				try {
 					processor.process(spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("chapter")),
-							"gplusID", "refreshToken", "chapterPage");
+							GPLUS_ID, REFRESH_TOKEN, CHAPTER_PAGE);
 				} catch (ServiceException e) {
 					logger.error("failed to load refresh token for chapter, " + gplusId, e);
 				}

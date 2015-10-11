@@ -44,8 +44,7 @@ public class DefaultServletModule extends ServletModule implements Path {
 
 	public static ActiveEvent getActiveEvent(
 			HttpServletRequest req, SpreadsheetManager spreadsheetManager,
-			String path)
-			throws IOException, ServiceException {
+			String path) throws IOException, ServiceException {
 
 		/*
 		 * TODO https://github.com/google/guice/wiki/AssistedInject

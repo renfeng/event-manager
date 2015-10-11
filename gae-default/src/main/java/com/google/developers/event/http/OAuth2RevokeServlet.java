@@ -9,7 +9,9 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Person;
 import com.google.developers.api.CellFeedProcessor;
+import com.google.developers.api.GoogleOAuthManager;
 import com.google.developers.api.SpreadsheetManager;
+import com.google.developers.event.ChapterSpreadsheet;
 import com.google.developers.event.DevelopersSharedModule;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.util.ServiceException;
@@ -30,7 +32,8 @@ import java.util.Map;
  * Created by renfeng on 8/3/15.
  */
 @Singleton
-public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServlet {
+public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServlet
+		implements ChapterSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(OAuth2RevokeServlet.class);
@@ -39,25 +42,22 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 	private final JsonFactory jsonFactory;
 	private final OAuth2Utils oauth2Utils;
 	private final DataStoreFactory dataStoreFactory;
-	private final SpreadsheetManager spreadsheetManager;
 
 	@Inject
 	public OAuth2RevokeServlet(
-			HttpTransport transport,
-			JsonFactory jsonFactory,
-			OAuth2Utils oauth2Utils,
-			DataStoreFactory dataStoreFactory,
-			SpreadsheetManager spreadsheetManager) {
+			HttpTransport transport, JsonFactory jsonFactory,
+			OAuth2Utils oauth2Utils, DataStoreFactory dataStoreFactory) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.oauth2Utils = oauth2Utils;
 		this.dataStoreFactory = dataStoreFactory;
-		this.spreadsheetManager = spreadsheetManager;
 	}
 
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 
 		/*
 		 * get G+ ID
@@ -66,7 +66,8 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 		AuthorizationCodeFlow authFlow = initializeFlow();
 		Credential credential = authFlow.loadCredential(getUserId(req));
 		// Build the Plus object using the credentials
-		Plus plus = new Plus.Builder(transport, jsonFactory, credential).setApplicationName("").build();
+		Plus plus = new Plus.Builder(transport, jsonFactory, credential)
+				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME).build();
 		// Make the API call
 		Person profile = plus.people().get("me").execute();
 		final String gplusId = profile.getId();
@@ -79,8 +80,8 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 			@Override
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
-				if (gplusId.equals(valueMap.get("gplusID"))) {
-					cellEntryThreadLocal.set(cellMap.get("refreshToken"));
+				if (gplusId.equals(valueMap.get(GPLUS_ID))) {
+					cellEntryThreadLocal.set(cellMap.get(REFRESH_TOKEN));
 					return false;
 				}
 
@@ -96,7 +97,7 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 		};
 		try {
 			processor.process(spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("chapter")),
-					"gplusID", "refreshToken", "chapterPage");
+					GPLUS_ID, REFRESH_TOKEN, CHAPTER_PAGE);
 		} catch (ServiceException e) {
 			logger.error("failed to load refresh token for chapter, " + gplusId, e);
 		}

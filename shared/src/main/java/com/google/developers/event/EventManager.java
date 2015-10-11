@@ -1,5 +1,7 @@
 package com.google.developers.event;
 
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.ContactManager;
 import com.google.developers.api.SpreadsheetManager;
@@ -49,18 +51,20 @@ public class EventManager implements MetaSpreadsheet {
 	 */
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("M/d/yyyy");
 
-	private final SpreadsheetManager spreadsheetManager;
-	private final ContactManager contactManager;
+	private final HttpTransport transport;
+	private final JsonFactory jsonFactory;
 
 	@Inject
-	public EventManager(SpreadsheetManager spreadsheetManager, ContactManager contactManager) {
-		this.spreadsheetManager = spreadsheetManager;
-		this.contactManager = contactManager;
+	public EventManager(HttpTransport transport, JsonFactory jsonFactory) {
+		this.transport = transport;
+		this.jsonFactory = jsonFactory;
 	}
 
 	public void importContactsFromSpreadsheet(
 			String spreadsheetKey, String eventName, String activity, int cutoffYear, int cutoffMonth, int cutoffDay)
 			throws IOException, ServiceException, ParseException {
+
+		ContactManager contactManager = ContactManager.getGlobalInstance(transport, jsonFactory);
 
 		/*
 		 * separated the date of registration, check-in and feedback
@@ -90,6 +94,7 @@ public class EventManager implements MetaSpreadsheet {
 			}
 		}
 
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 		List<EventParticipant> participants = spreadsheetManager.getEventParticipants(
 				spreadsheetKey, cutoffDate, columnMap);
 
@@ -110,6 +115,9 @@ public class EventManager implements MetaSpreadsheet {
 	public void importContactsFromSpreadsheet(String spreadsheet)
 			throws IOException, ServiceException, ParseException {
 
+		ContactManager contactManager = ContactManager.getGlobalInstance(transport, jsonFactory);
+
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 		List<EventParticipant> participants = spreadsheetManager.getGoogleGroupsMember(spreadsheet);
 
 		contactManager.dedupeGroups();
@@ -127,6 +135,10 @@ public class EventManager implements MetaSpreadsheet {
 	}
 
 	public void importContactsFromSpreadsheets() throws IOException, ServiceException {
+
+		final SpreadsheetManager spreadsheetManager =
+				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		final ContactManager contactManager = ContactManager.getGlobalInstance(transport, jsonFactory);
 
 		contactManager.dedupeGroups();
 
@@ -160,14 +172,14 @@ public class EventManager implements MetaSpreadsheet {
 				 * now I've read all the data I need in a row
 				 */
 				importContactsFromSpreadsheet(
-						REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, "Register",
-						REGISTER_CUTOFF_DATE_COLUMN, valueMap, cellFeedURL);
+						REGISTER_FORM_RESPONSE_SPREADSHEET_URL, "Register",
+						REGISTER_CUTOFF_DATE, valueMap, cellFeedURL);
 				importContactsFromSpreadsheet(
-						REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, "Check-in",
-						CHECK_IN_CUTOFF_DATE_COLUMN, valueMap, cellFeedURL);
+						REGISTER_FORM_RESPONSE_SPREADSHEET_URL, "Check-in",
+						CHECK_IN_CUTOFF_DATE, valueMap, cellFeedURL);
 				importContactsFromSpreadsheet(
-						FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN, "Feedback",
-						FEEDBACK_CUTOFF_DATE_COLUMN, valueMap, cellFeedURL);
+						FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL, "Feedback",
+						FEEDBACK_CUTOFF_DATE, valueMap, cellFeedURL);
 
 				statusCell = null;
 				return true;
@@ -178,17 +190,17 @@ public class EventManager implements MetaSpreadsheet {
 					Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
 
-				String status = valueMap.get(STATUS_COLUMN);
+				String status = valueMap.get(STATUS);
 				if (status == null) {
-					String event = valueMap.get(GROUP_COLUMN);
+					String event = valueMap.get(GROUP);
 					String url = valueMap.get(sheetUrl);
 					if (url == null) {
 						status = "missing register form response spreadsheet url";
 					} else {
 						String date = valueMap.get(dateColumn);
-						String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT_COLUMN);
-						String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
-						String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE_COLUMN);
+						String timestampDateFormat = valueMap.get(TIMESTAMP_DATE_FORMAT);
+						String timestampDateFormatLocale = valueMap.get(TIMESTAMP_DATE_FORMAT_LOCALE);
+						String timestampTimezone = valueMap.get(TIMESTAMP_TIME_ZONE);
 
 						try {
 							Date cutoffDate;
@@ -283,15 +295,17 @@ public class EventManager implements MetaSpreadsheet {
 		};
 		cellFeedProcessor.process(
 				spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
-				GROUP_COLUMN, STATUS_COLUMN,
-				REGISTER_CUTOFF_DATE_COLUMN, CHECK_IN_CUTOFF_DATE_COLUMN,
-				REGISTER_FORM_RESPONSE_SPREADSHEET_URL_COLUMN,
-				NICKNAME_COLUMN, EMAIL_ADDRESS_COLUMN, PHONE_NUMBER_COLUMN,
-				FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL_COLUMN,
-				TIMESTAMP_COLUMN, TIMESTAMP_DATE_FORMAT_COLUMN, TIMESTAMP_DATE_FORMAT_LOCALE_COLUMN);
+				GROUP, STATUS,
+				REGISTER_CUTOFF_DATE, CHECK_IN_CUTOFF_DATE,
+				REGISTER_FORM_RESPONSE_SPREADSHEET_URL,
+				NICKNAME, EMAIL_ADDRESS, PHONE_NUMBER,
+				FEEDBACK_FORM_RESPONSE_SPREADSHEET_URL,
+				TIMESTAMP, TIMESTAMP_DATE_FORMAT, TIMESTAMP_DATE_FORMAT_LOCALE);
 	}
 
 	public void updateRanking() throws IOException, ServiceException {
+
+		ContactManager contactManager = ContactManager.getGlobalInstance(transport, jsonFactory);
 
 		/*
 		 * cutoff date: a year ago
@@ -321,6 +335,8 @@ public class EventManager implements MetaSpreadsheet {
 
 	public void updateStreakRanking(List<ParticipantStatistics> activities)
 			throws IOException, ServiceException {
+
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 
 		final List<ParticipantStatistics> activitiesWithStreak = new ArrayList<>();
 		for (ParticipantStatistics p : activities) {
@@ -518,6 +534,8 @@ public class EventManager implements MetaSpreadsheet {
 	public void updateCreditRanking(List<ParticipantStatistics> activities)
 			throws IOException, ServiceException {
 
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+
 		final List<ParticipantStatistics> activitiesWithCredit = new ArrayList<>();
 		for (ParticipantStatistics p : activities) {
 			/*
@@ -685,6 +703,9 @@ public class EventManager implements MetaSpreadsheet {
 	}
 
 	public void updateEventScore() throws IOException, ServiceException {
+
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		ContactManager contactManager = ContactManager.getGlobalInstance(transport, jsonFactory);
 
 		/*
 		 * cutoff date: a year ago

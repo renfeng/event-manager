@@ -4,7 +4,6 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.developers.api.CellFeedProcessor;
-import com.google.developers.api.DriveManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
@@ -16,7 +15,6 @@ import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,26 +37,16 @@ public class RegistrationServlet extends OAuth2EntryServlet
 	private static final Logger logger = LoggerFactory
 			.getLogger(RegistrationServlet.class);
 
-	private final String clientId;
-	private final String clientSecret;
-
-	private SpreadsheetManager spreadsheetManager;
-	private DriveManager driveManager;
-
 	@Inject
-	public RegistrationServlet(
-			HttpTransport transport, JsonFactory jsonFactory,
-			SpreadsheetManager spreadsheetManager, OAuth2Utils oauth2Utils,
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret) {
+	public RegistrationServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		super(transport, jsonFactory, oauth2Utils);
-		this.spreadsheetManager = spreadsheetManager;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
 	}
 
 	@Override
-	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(final HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 
 		final ActiveEvent activeEvent;
 		try {
@@ -167,7 +155,10 @@ public class RegistrationServlet extends OAuth2EntryServlet
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
 
 		final String email = req.getParameter("email");
 		final String qrCode = req.getParameter("qrCode");

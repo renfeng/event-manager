@@ -1,14 +1,12 @@
 package com.google.developers.api;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.Base64;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Draft;
 import com.google.api.services.gmail.model.Message;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -31,29 +29,27 @@ import java.util.Properties;
  */
 public class GmailManager extends ClientManager<Gmail> {
 
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
+	private static GmailManager gmailManager;
 
-	@Inject
-	public GmailManager(
-			@Named("refreshToken") String refreshToken,
-			@Named("clientId") String clientId,
-			@Named("clientSecret") String clientSecret,
-			HttpTransport transport, JsonFactory jsonFactory) {
+	public static GmailManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
+			throws IOException {
 
-		super(refreshToken, clientId, clientSecret, transport, jsonFactory);
-
-		this.transport = transport;
-		this.jsonFactory = jsonFactory;
-
-		return;
+		if (gmailManager == null) {
+			synchronized (GmailManager.class) {
+				if (gmailManager == null) {
+					gmailManager = new GmailManager(transport, jsonFactory,
+							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
+				}
+			}
+		}
+		return gmailManager;
 	}
 
-	@Override
-	protected void updateCredential(GoogleCredential credential) {
+	public GmailManager(HttpTransport transport, JsonFactory jsonFactory,
+						Credential credential) {
 
 		Gmail gmail = new Gmail.Builder(transport, jsonFactory, credential)
-				.setApplicationName("GDG Event Management")
+				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME)
 				.build();
 
 		setClient(gmail);
@@ -160,9 +156,9 @@ public class GmailManager extends ClientManager<Gmail> {
 	/**
 	 * Send an email from the user's mailbox to its recipient.
 	 *
-	 * @param userId  User's email address. The special value "me"
-	 *                can be used to indicate the authenticated user.
-	 * @param email   Email to be sent.
+	 * @param userId User's email address. The special value "me"
+	 *               can be used to indicate the authenticated user.
+	 * @param email  Email to be sent.
 	 * @throws MessagingException
 	 * @throws IOException
 	 */
@@ -183,8 +179,8 @@ public class GmailManager extends ClientManager<Gmail> {
 	 * Create draft email.
 	 *
 	 * @param userId user's email address. The special value "me"
-	 * can be used to indicate the authenticated user
-	 * @param email the MimeMessage used as email within the draft
+	 *               can be used to indicate the authenticated user
+	 * @param email  the MimeMessage used as email within the draft
 	 * @return the created draft
 	 * @throws MessagingException
 	 * @throws IOException
