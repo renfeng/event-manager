@@ -67,8 +67,10 @@ public class ActivitiesServlet extends HttpServlet {
 
 		final SpreadsheetManager spreadsheetManager =
 				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
-		CalendarManager calendarManager = CalendarManager.getGlobalInstance(transport, jsonFactory);
-		GPlusManager gplusManager = GPlusManager.getGlobalInstance(transport, jsonFactory);
+		CalendarManager calendarManager =
+				CalendarManager.getGlobalInstance(transport, jsonFactory);
+		GPlusManager gplusManager =
+				GPlusManager.getGlobalInstance(transport, jsonFactory);
 
 		List<Event> publishedEvents = new ArrayList<>();
 		List<String> eventsNotOnCalendar = new ArrayList<>();

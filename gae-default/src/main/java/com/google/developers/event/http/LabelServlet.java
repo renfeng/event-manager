@@ -40,8 +40,10 @@ public class LabelServlet extends HttpServlet implements Path {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
-		DriveManager driveManager = DriveManager.getGlobalInstance(transport, jsonFactory);
+		SpreadsheetManager spreadsheetManager =
+				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		DriveManager driveManager =
+				DriveManager.getGlobalInstance(transport, jsonFactory);
 
 		ActiveEvent activeEvent;
 		try {

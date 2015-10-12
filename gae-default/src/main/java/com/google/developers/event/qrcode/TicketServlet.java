@@ -58,7 +58,7 @@ public class TicketServlet extends OAuth2EntryServlet
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getRequestDispatcher("/authenticated/ticket/index.html").forward(req, resp);
+		req.getRequestDispatcher(TICKET_URL + "index.html").forward(req, resp);
 	}
 
 	@Override

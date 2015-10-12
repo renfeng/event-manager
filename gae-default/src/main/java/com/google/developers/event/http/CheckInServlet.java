@@ -1,5 +1,7 @@
 package com.google.developers.event.http;
 
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
@@ -23,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -36,32 +37,32 @@ import java.util.*;
  * Created by renfeng on 6/17/15.
  */
 @Singleton
-public class CheckInServlet extends HttpServlet
+public class CheckInServlet extends OAuth2EntryServlet
 		implements Path, MetaSpreadsheet, RegisterFormResponseSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(CheckInServlet.class);
 
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
-
 	@Inject
-	public CheckInServlet(HttpTransport transport, JsonFactory jsonFactory) {
-		this.transport = transport;
-		this.jsonFactory = jsonFactory;
+	public CheckInServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
+		super(transport, jsonFactory, oauth2Utils);
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getRequestDispatcher("/check-in/index.html").forward(req, resp);
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		req.getRequestDispatcher(CHECK_IN_URL + "index.html").forward(req, resp);
 	}
 
 	@Override
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		final SpreadsheetManager spreadsheetManager =
-				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		// Get the stored credentials using the Authorization Flow
+		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
+		Credential credential = authFlow.loadCredential(getUserId(req));
+
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
 
 		final ActiveEvent activeEvent;
 		try {
@@ -226,7 +227,7 @@ public class CheckInServlet extends HttpServlet
 				}
 			}
 		} catch (ServiceException e) {
-			throw new ServletException(e);
+			errorThreadLocal.set(e.getResponseBody());
 		}
 
 		/*
