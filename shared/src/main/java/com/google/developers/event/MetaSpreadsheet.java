@@ -3,7 +3,7 @@ package com.google.developers.event;
 /**
  * Created by frren on 2015-09-10.
  */
-public interface MetaSpreadsheet {
+public interface MetaSpreadsheet extends SpreadsheetColumnNames {
 
 	String GROUP = "Google Contact Group";
 	String STATUS = "Status";
@@ -31,5 +31,5 @@ public interface MetaSpreadsheet {
 	String EVENT_END_TIME = "Event End Time";
 	String EVENT_LOCATION = "Event Location";
 	String EVENT_TRANSIT = "Event Transit";
-	String EVENT_POINST_OF_CONTACT= "Event Point of Contact";
+	String EVENT_POINST_OF_CONTACT = "Event Point of Contact";
 }
