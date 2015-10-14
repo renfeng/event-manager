@@ -31,7 +31,7 @@ public abstract class CellFeedProcessor {
 		this.spreadsheetService = spreadsheetService;
 	}
 
-	public void processForBatchUpdate(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
+	public void processForUpdate(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
 
 		boolean stoppedOnDemand = false;
 
@@ -266,4 +266,24 @@ public abstract class CellFeedProcessor {
 
 	protected abstract boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 			throws IOException, ServiceException;
+
+	protected void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
+
+		String inputValue = cellEntry.getCell().getInputValue();
+		if (diff(inputValue, value)) {
+			CellEntry batchEntry = new CellEntry(cellEntry);
+			batchEntry.changeInputValueLocal(value);
+
+			BatchUtils.setBatchId(batchEntry, batchEntry.getId());
+			BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
+
+			entries.add(batchEntry);
+		}
+	}
+
+	protected boolean diff(String oldInputValue, String newInputValue) {
+		return (newInputValue != null && !newInputValue.equals(oldInputValue)) ||
+				(newInputValue == null && oldInputValue != null && oldInputValue.length() > 0);
+	}
+
 }

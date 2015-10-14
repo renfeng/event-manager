@@ -42,11 +42,6 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 		return spreadsheetManager;
 	}
 
-	public static boolean diff(String oldInputValue, String newInputValue) {
-		return (newInputValue != null && !newInputValue.equals(oldInputValue)) ||
-				(newInputValue == null && oldInputValue != null && oldInputValue.length() > 0);
-	}
-
 	public SpreadsheetManager(Credential credential) throws IOException {
 
 		SpreadsheetService service = new SpreadsheetService(GoogleOAuthManager.APPLICATION_NAME);

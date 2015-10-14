@@ -6,6 +6,7 @@ public interface Path {
 
 	String CHECK_IN_URL = "/authenticated/check-in/";
 	String TICKET_URL = "/authenticated/ticket/";
+	String CAMPAIGN_URL = "/authenticated/campaign/";
 
 	String OAUTH2ENTRY = "/authenticated/oauth2entry";
 	String OAUTH2CALLBACK = "/authenticated/oauth2callback";

@@ -1,0 +1,20 @@
+<link rel="import" href="../components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../components/paper-button/paper-button.html">
+
+<dom-module id="gdg-event-campaign">
+	<template>
+		<iron-ajax id="populateContactsAjax" url="/api/campaign" method="POST"
+				   contentType="application/x-www-form-urlencoded"></iron-ajax>
+		<paper-button raised on-tap="populate">Populate</paper-button>
+	</template>
+	<script>
+	(function() {
+		Polymer({
+			is: "gdg-event-campaign",
+			populate: function() {
+				this.$.populateContactsAjax.generateRequest();
+			}
+		});
+	})();
+	</script>
+</dom-module>

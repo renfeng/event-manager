@@ -25,7 +25,6 @@ import com.google.api.services.plus.model.Person;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.GoogleOAuthManager;
-import com.google.developers.api.ServiceManager;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ChapterSpreadsheet;
 import com.google.developers.event.DevelopersSharedModule;
@@ -114,7 +113,7 @@ public class OAuth2CallbackServlet
 					protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 							throws IOException, ServiceException {
 						if (gplusId.equals(valueMap.get("gplusID"))) {
-							if (SpreadsheetManager.diff(refreshTokenCell.getCell().getInputValue(), refreshToken)) {
+							if (diff(refreshTokenCell.getCell().getInputValue(), refreshToken)) {
 								refreshTokenCell.changeInputValueLocal(refreshToken);
 								try {
 									refreshTokenCell.update();

@@ -2,6 +2,7 @@ package com.google.developers.event.http;
 
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
+import com.google.developers.event.campaign.CampaignServlet;
 import com.google.developers.event.qrcode.RegistrationServlet;
 import com.google.developers.event.qrcode.TicketServlet;
 import com.google.gdata.util.ServiceException;
@@ -40,6 +41,7 @@ public class DefaultServletModule extends ServletModule implements Path {
 
 		serveRegex("/api/check-in|" + CHECK_IN_URL + "[0-9a-z]+").with(CheckInServlet.class);
 		serveRegex("/api/ticket|" + TICKET_URL + "[0-9a-z]+").with(TicketServlet.class);
+		serveRegex("/api/campaign|" + CAMPAIGN_URL + "[0-9a-z]+").with(CampaignServlet.class);
 	}
 
 	public static ActiveEvent getActiveEvent(

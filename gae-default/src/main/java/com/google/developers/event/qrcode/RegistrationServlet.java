@@ -143,7 +143,7 @@ public class RegistrationServlet extends OAuth2EntryServlet
 			}
 		};
 		try {
-			cellFeedProcessor.processForBatchUpdate(spreadsheetManager.getWorksheet(registerURL),
+			cellFeedProcessor.processForUpdate(spreadsheetManager.getWorksheet(registerURL),
 					registerNameColumn, registerEmailColumn, QR_CODE_COLUMN);
 		} catch (ServiceException e) {
 			throw new ServletException(e);
@@ -223,7 +223,7 @@ public class RegistrationServlet extends OAuth2EntryServlet
 			}
 		};
 		try {
-			cellFeedProcessor.processForBatchUpdate(spreadsheetManager.getWorksheet(registerURL),
+			cellFeedProcessor.processForUpdate(spreadsheetManager.getWorksheet(registerURL),
 					registerNameColumn, registerEmailColumn, QR_CODE_COLUMN);
 		} catch (ServiceException e) {
 			throw new ServletException(e);

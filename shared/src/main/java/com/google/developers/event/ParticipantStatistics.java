@@ -22,6 +22,7 @@ public class ParticipantStatistics {
 	private String contactID;
 
 	private String nickname;
+	private String email;
 	private String gplusID;
 
 	/*
@@ -90,6 +91,14 @@ public class ParticipantStatistics {
 
 	public void setToDate(Date toDate) {
 		this.toDate = toDate;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	@Override

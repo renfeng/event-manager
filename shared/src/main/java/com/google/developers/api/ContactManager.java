@@ -80,6 +80,16 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		service.setProtocolVersion(ContactsService.Versions.V3_1);
 		service.setOAuth2Credentials(credential);
 
+		/*
+		 * Unable to process batch request for spread sheet. - Google Groups
+		 * https://groups.google.com/d/msg/google-appengine/PVqNF8AumdY/gZNMJKpObowJ
+		 *
+		 * Timeouts and Errors | API Client Library for Java | Google Developers
+		 * https://developers.google.com/api-client-library/java/google-api-java-client/errors
+		 */
+		service.setConnectTimeout(3 * 60000);
+		service.setReadTimeout(3 * 60000);
+
 		setService(service);
 	}
 
@@ -978,8 +988,9 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		 * get gplus id
 		 */
 		String gplusId = null;
+		String emailAddress = null;
 		for (Email email : entry.getEmailAddresses()) {
-			String emailAddress = email.getAddress();
+			emailAddress = email.getAddress();
 
 			/*
 			 * in case of manual input
@@ -1178,6 +1189,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		participantStatistics.setToDate(to);
 		participantStatistics.setLatestStreak(latestStreak);
 		participantStatistics.setGplusID(gplusId);
+		participantStatistics.setEmail(emailAddress);
 		participantStatistics.setNickname(nickname);
 
 		String id = entry.getId();

@@ -170,23 +170,9 @@ public class CheckInServlet extends OAuth2EntryServlet
 
 				return true;
 			}
-
-			private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
-
-				String inputValue = cellEntry.getCell().getInputValue();
-				if (SpreadsheetManager.diff(inputValue, value)) {
-					CellEntry batchEntry = new CellEntry(cellEntry);
-					batchEntry.changeInputValueLocal(value);
-
-					BatchUtils.setBatchId(batchEntry, batchEntry.getId());
-					BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
-
-					entries.add(batchEntry);
-				}
-			}
 		};
 		try {
-			cellFeedProcessor.processForBatchUpdate(
+			cellFeedProcessor.processForUpdate(
 					spreadsheetManager.getWorksheet(registerURL),
 					registerNameColumn, registerEmailColumn,
 					QR_CODE_COLUMN, CHECK_IN_COLUMN, CLIENT_IP_COLUMN);

@@ -46,6 +46,7 @@ public class OAuth2EntryServlet
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, ServletException {
+
 		// Get the stored credentials using the Authorization Flow
 		AuthorizationCodeFlow authFlow = initializeFlow();
 		Credential credential = authFlow.loadCredential(getUserId(req));
@@ -90,8 +91,11 @@ public class OAuth2EntryServlet
 	protected void onAuthorization(
 			HttpServletRequest req, HttpServletResponse resp, AuthorizationCodeRequestUrl authorizationUrl)
 			throws ServletException, IOException {
-		String referer = req.getHeader("Referer");
-		req.getSession().setAttribute(SessionKey.OAUTH2_ORIGIN, referer);
+		String origin = req.getHeader("Referer");
+		if (origin == null) {
+			origin = req.getRequestURL().toString();
+		}
+		req.getSession().setAttribute(SessionKey.OAUTH2_ORIGIN, origin);
 		super.onAuthorization(req, resp, authorizationUrl);
 	}
 }

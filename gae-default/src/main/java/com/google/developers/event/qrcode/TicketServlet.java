@@ -207,7 +207,7 @@ public class TicketServlet extends OAuth2EntryServlet
 			}
 		};
 		try {
-			cellFeedProcessor.processForBatchUpdate(spreadsheetManager.getWorksheet(registerURL),
+			cellFeedProcessor.processForUpdate(spreadsheetManager.getWorksheet(registerURL),
 					registerNameColumn, registerEmailColumn, QR_CODE_COLUMN);
 		} catch (ServiceException ex) {
 			/*

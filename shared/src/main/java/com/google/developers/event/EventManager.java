@@ -33,23 +33,7 @@ import java.util.regex.Matcher;
 
 public class EventManager implements MetaSpreadsheet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(EventManager.class);
-
-	/*
-	 * 2000000
-	 * Size: Up to 2 million cells.
-	 * https://support.google.com/docs/answer/37603?hl=en
-	 */
-	public static final int MAX_CELLS = 2000000;
-
-	/*
-	 * The literal value of the cell element is the calculated value of the cell,
-	 * without formatting applied. If the cell contains a formula, the calculated value is given here.
-	 * The Sheets API has no concept of formatting, and thus cannot manipulate formatting of cells.
-	 * https://developers.google.com/google-apps/spreadsheets/data#work_with_cell-based_feeds
-	 */
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("M/d/yyyy");
+	private static final Logger logger = LoggerFactory.getLogger(EventManager.class);
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
@@ -500,7 +484,7 @@ public class EventManager implements MetaSpreadsheet {
 				columnMap.put(columnName, column);
 			}
 		};
-		processor.processForBatchUpdate(sheet, columnNames);
+		processor.processForUpdate(sheet, columnNames);
 
 		/*
 		 * batchLink will be null for list feed
@@ -574,7 +558,6 @@ public class EventManager implements MetaSpreadsheet {
 
 		long startTime = System.currentTimeMillis();
 		CellFeed batchRequest = new CellFeed();
-
 		final List<CellEntry> entries = batchRequest.getEntries();
 
 		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
@@ -657,7 +640,7 @@ public class EventManager implements MetaSpreadsheet {
 				columnMap.put(columnName, column);
 			}
 		};
-		processor.processForBatchUpdate(sheet, columnNames);
+		processor.processForUpdate(sheet, columnNames);
 
 		/*
 		 * batchLink will be null for list feed
@@ -686,20 +669,6 @@ public class EventManager implements MetaSpreadsheet {
 //		sheet.setRowCount(processor.getRow());
 //		sheet.update();
 		logger.info("credit ranking rows updated: " + (processor.getRow() - 1));
-	}
-
-	private void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
-
-		String inputValue = cellEntry.getCell().getInputValue();
-		if (SpreadsheetManager.diff(inputValue, value)) {
-			CellEntry batchEntry = new CellEntry(cellEntry);
-			batchEntry.changeInputValueLocal(value);
-
-			BatchUtils.setBatchId(batchEntry, batchEntry.getId());
-			BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
-
-			entries.add(batchEntry);
-		}
 	}
 
 	public void updateEventScore() throws IOException, ServiceException {
@@ -770,7 +739,7 @@ public class EventManager implements MetaSpreadsheet {
 				columnMap.put(columnName, column);
 			}
 		};
-		processor.processForBatchUpdate(sheet, "Name", "Score", "Organizer");
+		processor.processForUpdate(sheet, "Name", "Score", "Organizer");
 
 		/*
 		 * batchLink will be null for list feed
