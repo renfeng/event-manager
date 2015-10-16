@@ -44,8 +44,6 @@ public class UnauthorizedServlet extends HttpServlet {
 		generator.writeString(userAgent);
 		generator.writeEndObject();
 		generator.flush();
-
-		return;
 	}
 
 	@Override

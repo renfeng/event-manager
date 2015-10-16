@@ -38,6 +38,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
@@ -145,10 +146,16 @@ public class OAuth2CallbackServlet
 			}
 		}
 
-		String redirUrl = (String) req.getSession().getAttribute(SessionKey.OAUTH2_ORIGIN);
+		HttpSession session = req.getSession();
+		String redirUrl = (String) session.getAttribute(SessionKey.OAUTH2_ORIGIN);
 		if (redirUrl == null) {
 			redirUrl = OAUTH2ENTRY;
+		} else {
+			session.removeAttribute(SessionKey.OAUTH2_ORIGIN);
 		}
+		/*
+		 * FIXME redir works like a forward...
+		 */
 		resp.sendRedirect(redirUrl);
 	}
 
@@ -160,7 +167,6 @@ public class OAuth2CallbackServlet
 		resp.getWriter().print("<h3>Hey " + nickname + ", why don't you want to play with me?</h1>");
 		resp.setStatus(200);
 		resp.addHeader("Content-Type", "text/html");
-		return;
 	}
 
 	@Override

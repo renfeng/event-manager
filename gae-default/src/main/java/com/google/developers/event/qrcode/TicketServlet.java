@@ -72,6 +72,10 @@ public class TicketServlet extends OAuth2EntryServlet
 		Credential credential = authFlow.loadCredential(getUserId(req));
 
 		/*
+		 * TODO https://developers.google.com/api-client-library/java/google-oauth-java-client/oauth2?hl=en#detecting_an_expired_access_token
+		 */
+
+		/*
 		 * http://stackoverflow.com/questions/10827920/google-oauth-refresh-token-is-not-being-received
 		 */
 		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);

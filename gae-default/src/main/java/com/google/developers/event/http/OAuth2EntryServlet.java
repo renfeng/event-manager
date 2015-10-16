@@ -18,6 +18,7 @@ import com.google.inject.Singleton;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -91,11 +92,16 @@ public class OAuth2EntryServlet
 	protected void onAuthorization(
 			HttpServletRequest req, HttpServletResponse resp, AuthorizationCodeRequestUrl authorizationUrl)
 			throws ServletException, IOException {
-		String origin = req.getHeader("Referer");
-		if (origin == null) {
-			origin = req.getRequestURL().toString();
+
+		HttpSession session = req.getSession();
+		if (session.getAttribute(SessionKey.OAUTH2_ORIGIN) == null) {
+			String origin = req.getHeader("Referer");
+			if (origin == null) {
+				origin = req.getRequestURL().toString();
+			}
+			session.setAttribute(SessionKey.OAUTH2_ORIGIN, origin);
 		}
-		req.getSession().setAttribute(SessionKey.OAUTH2_ORIGIN, origin);
+
 		super.onAuthorization(req, resp, authorizationUrl);
 	}
 }
