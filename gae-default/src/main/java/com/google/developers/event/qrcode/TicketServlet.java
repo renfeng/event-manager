@@ -133,7 +133,10 @@ public class TicketServlet extends OAuth2EntryServlet
 					 */
 
 					String nick = valueMap.get(registerNameColumn);
-					String subject = activeEvent.getTicketEmailSubject() + nick;
+
+					String subject = activeEvent.getTicketEmailSubject();
+					subject = subject.replaceAll("[$][{]nickname[}]", nick);
+
 					String uuid = Float.toHexString(new Random().nextFloat());
 
 					try {
@@ -157,12 +160,11 @@ public class TicketServlet extends OAuth2EntryServlet
 
 						email.setFrom(fAddress);
 						email.addRecipient(javax.mail.Message.RecipientType.TO, tAddress);
-						email.setSubject(subject);
+						email.setSubject(subject, "UTF-8");
 
 						Multipart multipart = new MimeMultipart("related");
 						{
 							MimeBodyPart mimeBodyPart = new MimeBodyPart();
-//							mimeBodyPart.setContent(body, "text/html; charset=\"UTF-8\"");
 							mimeBodyPart.setContent(body, "text/html; charset=UTF-8");
 							multipart.addBodyPart(mimeBodyPart);
 						}
