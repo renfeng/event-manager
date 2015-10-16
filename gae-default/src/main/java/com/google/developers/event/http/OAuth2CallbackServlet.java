@@ -156,6 +156,7 @@ public class OAuth2CallbackServlet
 		/*
 		 * FIXME redir works like a forward...
 		 */
+//		resp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
 		resp.sendRedirect(redirUrl);
 	}
 
