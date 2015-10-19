@@ -1,8 +1,6 @@
 package com.google.developers.api;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.developers.event.EventParticipant;
 import com.google.developers.event.MetaSpreadsheet;
 import com.google.gdata.client.spreadsheet.FeedURLFactory;
@@ -26,25 +24,9 @@ public class SpreadsheetManager extends ServiceManager<SpreadsheetService> imple
 
 	private static final Logger logger = LoggerFactory.getLogger(SpreadsheetManager.class);
 
-	private static SpreadsheetManager spreadsheetManager;
-
-	public static SpreadsheetManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
-			throws IOException {
-
-		if (spreadsheetManager == null) {
-			synchronized (SpreadsheetManager.class) {
-				if (spreadsheetManager == null) {
-					spreadsheetManager = new SpreadsheetManager(
-							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
-				}
-			}
-		}
-		return spreadsheetManager;
-	}
-
 	public SpreadsheetManager(Credential credential) throws IOException {
 
-		SpreadsheetService service = new SpreadsheetService(GoogleOAuthManager.APPLICATION_NAME);
+		SpreadsheetService service = new SpreadsheetService(GoogleOAuth2.APPLICATION_NAME);
 		service.setProtocolVersion(SpreadsheetService.Versions.V3);
 		service.setOAuth2Credentials(credential);
 

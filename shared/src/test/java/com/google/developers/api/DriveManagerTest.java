@@ -23,16 +23,18 @@ public class DriveManagerTest {
 
 	@Test
 	public void test() throws IOException {
-		DriveManager drive = DriveManager.getGlobalInstance(
-				injector.getInstance(HttpTransport.class),
-				injector.getInstance(JsonFactory.class));
+
+		HttpTransport transport = injector.getInstance(HttpTransport.class);
+		JsonFactory jsonFactory = injector.getInstance(JsonFactory.class);
+
+		DriveManager drive = new DriveManager(transport, jsonFactory,
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 		Drive service = drive.getClient();
 		File file = service.files().get("1HyyFJfqms_ZII3kNHr9smIXFadMYNRQvXsOhLOsUhLg").execute();
 //		IOUtils.toString(downloadFile(service, file));
 		String downloadUrl = file.getExportLinks().get("text/html");
 		System.out.println(downloadUrl);
 
-		HttpTransport transport = injector.getInstance(HttpTransport.class);
 		HttpRequestFactory factory = transport.createRequestFactory();
 		HttpRequest request = factory.buildGetRequest(new GenericUrl(downloadUrl));
 		HttpResponse response = request.execute();

@@ -14,27 +14,11 @@ import java.io.InputStream;
  */
 public class DriveManager extends ClientManager<Drive> {
 
-	private static DriveManager driveManager;
-
-	public static DriveManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
-			throws IOException {
-
-		if (driveManager == null) {
-			synchronized (DriveManager.class) {
-				if (driveManager == null) {
-					driveManager = new DriveManager(transport, jsonFactory,
-							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
-				}
-			}
-		}
-		return driveManager;
-	}
-
 	public DriveManager(HttpTransport transport, JsonFactory jsonFactory,
 						Credential credential) {
 
 		Drive drive = new Drive.Builder(transport, jsonFactory, credential)
-				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME)
+				.setApplicationName(GoogleOAuth2.APPLICATION_NAME)
 				.build();
 
 		setClient(drive);

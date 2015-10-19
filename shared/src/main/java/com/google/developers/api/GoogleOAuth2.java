@@ -1,5 +1,6 @@
 package com.google.developers.api;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -12,17 +13,16 @@ import java.io.IOException;
 /**
  * Created by renfeng on 6/19/15.
  */
-public class GoogleOAuthManager {
+public class GoogleOAuth2 {
 
 	public static final String APPLICATION_NAME = "GDG Event Management";
 
 	private static GoogleCredential credential;
 
-	public static GoogleCredential createCredentialWithRefreshToken(
-			HttpTransport transport, JsonFactory jsonFactory) throws IOException {
+	public static Credential getGlobalCredential(HttpTransport transport, JsonFactory jsonFactory) throws IOException {
 
 		if (credential == null) {
-			synchronized (GoogleOAuthManager.class) {
+			synchronized (GoogleOAuth2.class) {
 				if (credential == null) {
 					x(transport, jsonFactory);
 				}

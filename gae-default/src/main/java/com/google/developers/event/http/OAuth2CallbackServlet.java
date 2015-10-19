@@ -24,7 +24,7 @@ import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Person;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
-import com.google.developers.api.GoogleOAuthManager;
+import com.google.developers.api.GoogleOAuth2;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ChapterSpreadsheet;
 import com.google.developers.event.DevelopersSharedModule;
@@ -71,7 +71,7 @@ public class OAuth2CallbackServlet
 	protected void onSuccess(HttpServletRequest req, HttpServletResponse resp, Credential credential)
 			throws ServletException, IOException {
 
-		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
 
 		final String refreshToken = credential.getRefreshToken();
 		if (refreshToken != null) {
@@ -81,7 +81,7 @@ public class OAuth2CallbackServlet
 			 */
 			// Build the Plus object using the credentials
 			Plus plus = new Plus.Builder(transport, jsonFactory, credential)
-					.setApplicationName(GoogleOAuthManager.APPLICATION_NAME).build();
+					.setApplicationName(GoogleOAuth2.APPLICATION_NAME).build();
 			// Make the API call
 			Person profile = plus.people().get("me").execute();
 			final String gplusId = profile.getId();
@@ -99,12 +99,11 @@ public class OAuth2CallbackServlet
 			HttpResponse response = request.execute();
 			if (response.getStatusCode() == 200) {
 				/*
-				 * TODO write to meta spreadsheet refresh token - the contacts api will be invoked to store participants
+				 * write to meta spreadsheet refresh token - the contacts api will be invoked to store participants
 				 *
 				 * so far, it's enabled to collect participant data
 				 *
-				 * later, only organizer(s) of an event will be able to submit URLs of Google Spreadsheets for
-				 * register, check-in, and feedback
+				 * TODO only organizer(s) of an event will be able to submit URLs of Google Spreadsheets for register, check-in, and feedback
 				 */
 				CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
@@ -154,7 +153,7 @@ public class OAuth2CallbackServlet
 			session.removeAttribute(SessionKey.OAUTH2_ORIGIN);
 		}
 		/*
-		 * FIXME redir works like a forward...
+		 * FIXME redir works like a forward on devserver for chrome. firefox works fine.
 		 */
 //		resp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
 		resp.sendRedirect(redirUrl);

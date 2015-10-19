@@ -1,8 +1,10 @@
 package com.google.developers.event.http;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.api.DriveManager;
+import com.google.developers.api.GoogleOAuth2;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.gdata.util.ServiceException;
@@ -39,10 +41,10 @@ public class LogoServlet extends HttpServlet implements Path {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		SpreadsheetManager spreadsheetManager =
-				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
-		DriveManager driveManager =
-				DriveManager.getGlobalInstance(transport, jsonFactory);
+		Credential credential = GoogleOAuth2.getGlobalCredential(transport, jsonFactory);
+
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
+		DriveManager driveManager = new DriveManager(transport, jsonFactory, credential);
 
 		ActiveEvent activeEvent;
 		try {

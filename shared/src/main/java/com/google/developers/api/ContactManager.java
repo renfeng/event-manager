@@ -1,8 +1,6 @@
 package com.google.developers.api;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.developers.PropertiesContant;
 import com.google.developers.event.*;
 import com.google.gdata.client.Query;
@@ -43,8 +41,7 @@ import java.util.regex.Pattern;
  */
 public class ContactManager extends ServiceManager<ContactsService> implements PropertiesContant {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(ContactManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(ContactManager.class);
 
 	private static final String GROUPS_URL = "https://www.google.com/m8/feeds/groups/default/full";
 	private static final String CONTACTS_URL = "https://www.google.com/m8/feeds/contacts/default/full";
@@ -58,25 +55,9 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 	public static final Pattern EVENT_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2}) (Register|Check-in|Feedback)");
 	public static final Pattern GROUP_PATTERN = Pattern.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(?: .+)?");
 
-	private static ContactManager contactManager;
-
-	public static ContactManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
-			throws IOException {
-
-		if (contactManager == null) {
-			synchronized (ContactManager.class) {
-				if (contactManager == null) {
-					contactManager = new ContactManager(
-							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
-				}
-			}
-		}
-		return contactManager;
-	}
-
 	public ContactManager(Credential credential) {
 
-		ContactsService service = new ContactsService(GoogleOAuthManager.APPLICATION_NAME);
+		ContactsService service = new ContactsService(GoogleOAuth2.APPLICATION_NAME);
 		service.setProtocolVersion(ContactsService.Versions.V3_1);
 		service.setOAuth2Credentials(credential);
 

@@ -8,8 +8,11 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.Person;
+import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
-import com.google.developers.api.GoogleOAuthManager;
+import com.google.developers.api.GoogleOAuth2;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ChapterSpreadsheet;
 import com.google.developers.event.DevelopersSharedModule;
@@ -57,17 +60,19 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(getCredential());
 
 		/*
 		 * get G+ ID
 		 * https://developers.google.com/+/web/api/rest/latest/people/get
 		 */
-		AuthorizationCodeFlow authFlow = initializeFlow();
-		Credential credential = authFlow.loadCredential(getUserId(req));
+//		AuthorizationCodeFlow authFlow = initializeFlow();
+//		Credential credential = authFlow.loadCredential(getUserId(req));
+		Credential credential = getCredential();
+
 		// Build the Plus object using the credentials
 		Plus plus = new Plus.Builder(transport, jsonFactory, credential)
-				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME).build();
+				.setApplicationName(GoogleOAuth2.APPLICATION_NAME).build();
 		// Make the API call
 		Person profile = plus.people().get("me").execute();
 		final String gplusId = profile.getId();
@@ -129,6 +134,17 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 			} catch (ServiceException e) {
 				logger.error("failed to save refresh token for chapter, " + gplusId, e);
 			}
+		}
+
+		// Get the Datastore Service
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		UserService userService = UserServiceFactory.getUserService();
+		String email = userService.getCurrentUser().getEmail();
+		Query q = new Query("Person").setFilter(new Query.FilterPredicate("name", Query.FilterOperator.EQUAL, email));
+		// Use PreparedQuery interface to retrieve results
+		PreparedQuery pq = datastore.prepare(q);
+		for (Entity result : pq.asIterable()) {
+			datastore.delete(result.getKey());
 		}
 	}
 

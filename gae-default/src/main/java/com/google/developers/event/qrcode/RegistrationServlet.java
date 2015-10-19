@@ -1,5 +1,6 @@
 package com.google.developers.event.qrcode;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
@@ -34,8 +35,7 @@ import java.util.Map;
 public class RegistrationServlet extends OAuth2EntryServlet
 		implements Path, RegisterFormResponseSpreadsheet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(RegistrationServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(RegistrationServlet.class);
 
 	@Inject
 	public RegistrationServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
@@ -46,7 +46,21 @@ public class RegistrationServlet extends OAuth2EntryServlet
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+//		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		// Get the stored credentials using the Authorization Flow
+//		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
+//		Credential credential = authFlow.loadCredential(getUserId(req));
+		Credential credential = getCredential();
+		logger.debug("refresh token: {}", credential.getRefreshToken());
+
+		/*
+		 * TODO https://developers.google.com/api-client-library/java/google-oauth-java-client/oauth2?hl=en#detecting_an_expired_access_token
+		 */
+
+		/*
+		 * http://stackoverflow.com/questions/10827920/google-oauth-refresh-token-is-not-being-received
+		 */
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
 
 		final ActiveEvent activeEvent;
 		try {
@@ -158,7 +172,20 @@ public class RegistrationServlet extends OAuth2EntryServlet
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+//		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
+		// Get the stored credentials using the Authorization Flow
+//		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
+//		Credential credential = authFlow.loadCredential(getUserId(req));
+		Credential credential = getCredential();
+
+		/*
+		 * TODO https://developers.google.com/api-client-library/java/google-oauth-java-client/oauth2?hl=en#detecting_an_expired_access_token
+		 */
+
+		/*
+		 * http://stackoverflow.com/questions/10827920/google-oauth-refresh-token-is-not-being-received
+		 */
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
 
 		final String email = req.getParameter("email");
 		final String qrCode = req.getParameter("qrCode");

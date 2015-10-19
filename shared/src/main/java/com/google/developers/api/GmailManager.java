@@ -29,27 +29,11 @@ import java.util.Properties;
  */
 public class GmailManager extends ClientManager<Gmail> {
 
-	private static GmailManager gmailManager;
-
-	public static GmailManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
-			throws IOException {
-
-		if (gmailManager == null) {
-			synchronized (GmailManager.class) {
-				if (gmailManager == null) {
-					gmailManager = new GmailManager(transport, jsonFactory,
-							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
-				}
-			}
-		}
-		return gmailManager;
-	}
-
 	public GmailManager(HttpTransport transport, JsonFactory jsonFactory,
 						Credential credential) {
 
 		Gmail gmail = new Gmail.Builder(transport, jsonFactory, credential)
-				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME)
+				.setApplicationName(GoogleOAuth2.APPLICATION_NAME)
 				.build();
 
 		setClient(gmail);

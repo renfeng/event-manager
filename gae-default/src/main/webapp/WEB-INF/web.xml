@@ -16,6 +16,9 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
+	<!-- http://stackoverflow.com/questions/32689146/google-app-engine-does-httpsessionlistener-work -->
+	<!-- http://stackoverflow.com/questions/4809882/google-app-engine-how-to-track-httpsession-destroy -->
+
 	<listener>
 		<listener-class>com.google.developers.event.DefaultStartupListener</listener-class>
 	</listener>

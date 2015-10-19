@@ -60,8 +60,9 @@ public class CampaignServlet extends OAuth2EntryServlet
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 
 		// Get the stored credentials using the Authorization Flow
-		AuthorizationCodeFlow authFlow = initializeFlow();
-		Credential credential = authFlow.loadCredential(getUserId(req));
+//		AuthorizationCodeFlow authFlow = initializeFlow();
+//		Credential credential = authFlow.loadCredential(getUserId(req));
+		Credential credential = getCredential();
 
 		ContactManager contactManager = new ContactManager(credential);
 		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);

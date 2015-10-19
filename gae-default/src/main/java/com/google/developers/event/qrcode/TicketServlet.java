@@ -1,7 +1,6 @@
 package com.google.developers.event.qrcode;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
 import com.google.developers.api.CellFeedProcessor;
@@ -68,8 +67,9 @@ public class TicketServlet extends OAuth2EntryServlet
 		final String qrCode = req.getParameter("qrCode");
 
 		// Get the stored credentials using the Authorization Flow
-		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
-		Credential credential = authFlow.loadCredential(getUserId(req));
+//		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
+//		Credential credential = authFlow.loadCredential(getUserId(req));
+		Credential credential = getCredential();
 
 		/*
 		 * TODO https://developers.google.com/api-client-library/java/google-oauth-java-client/oauth2?hl=en#detecting_an_expired_access_token

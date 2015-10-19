@@ -1,5 +1,6 @@
 package com.google.developers.event.http;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
@@ -65,12 +66,11 @@ public class ActivitiesServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		final SpreadsheetManager spreadsheetManager =
-				SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
-		CalendarManager calendarManager =
-				CalendarManager.getGlobalInstance(transport, jsonFactory);
-		GPlusManager gplusManager =
-				GPlusManager.getGlobalInstance(transport, jsonFactory);
+		Credential credential = GoogleOAuth2.getGlobalCredential(transport, jsonFactory);
+
+		final SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
+		CalendarManager calendarManager = new CalendarManager(transport, jsonFactory, credential);
+		GPlusManager gplusManager = new GPlusManager(transport, jsonFactory, credential);
 
 		List<Event> publishedEvents = new ArrayList<>();
 		List<String> eventsNotOnCalendar = new ArrayList<>();

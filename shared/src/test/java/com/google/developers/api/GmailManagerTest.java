@@ -23,9 +23,10 @@ public class GmailManagerTest {
 
 	@Test
 	public void test() throws IOException {
-		GmailManager manager = GmailManager.getGlobalInstance(
-				injector.getInstance(HttpTransport.class),
-				injector.getInstance(JsonFactory.class));
+		HttpTransport transport = injector.getInstance(HttpTransport.class);
+		JsonFactory jsonFactory = injector.getInstance(JsonFactory.class);
+		GmailManager manager = new GmailManager(transport, jsonFactory,
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 		Gmail gmail = manager.getClient();
 		Gmail.Users.Messages.List list = gmail.users().messages().list("me").setQ("from:renfeng.cn@gmail.com ");
 		ListMessagesResponse response = list.execute();

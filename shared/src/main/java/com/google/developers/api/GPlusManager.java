@@ -15,27 +15,11 @@ import java.util.List;
  */
 public class GPlusManager extends ClientManager<Plus> {
 
-	private static GPlusManager gPlusManager;
-
-	public static GPlusManager getGlobalInstance(HttpTransport transport, JsonFactory jsonFactory)
-			throws IOException {
-
-		if (gPlusManager == null) {
-			synchronized (GPlusManager.class) {
-				if (gPlusManager == null) {
-					gPlusManager = new GPlusManager(transport, jsonFactory,
-							GoogleOAuthManager.createCredentialWithRefreshToken(transport, jsonFactory));
-				}
-			}
-		}
-		return gPlusManager;
-	}
-
 	public GPlusManager(HttpTransport transport, JsonFactory jsonFactory, Credential credential) {
 
 		// Create a new authorized API client.
 		Plus plus = new Plus.Builder(transport, jsonFactory, credential)
-				.setApplicationName(GoogleOAuthManager.APPLICATION_NAME)
+				.setApplicationName(GoogleOAuth2.APPLICATION_NAME)
 				.build();
 
 		setClient(plus);

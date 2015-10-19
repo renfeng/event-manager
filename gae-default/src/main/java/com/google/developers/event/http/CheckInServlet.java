@@ -1,7 +1,6 @@
 package com.google.developers.event.http;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
@@ -12,7 +11,6 @@ import com.google.developers.event.MetaSpreadsheet;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.Link;
-import com.google.gdata.data.batch.BatchOperationType;
 import com.google.gdata.data.batch.BatchStatus;
 import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.spreadsheet.CellEntry;
@@ -59,8 +57,9 @@ public class CheckInServlet extends OAuth2EntryServlet
 			throws ServletException, IOException {
 
 		// Get the stored credentials using the Authorization Flow
-		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
-		Credential credential = authFlow.loadCredential(getUserId(req));
+//		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
+//		Credential credential = authFlow.loadCredential(getUserId(req));
+		Credential credential = getCredential();
 
 		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
 
