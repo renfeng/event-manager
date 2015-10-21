@@ -271,7 +271,7 @@
 		<profile>
 			<id>dev</id>
 			<build>
-				<defaultGoal>install</defaultGoal>
+				<defaultGoal>clean install</defaultGoal>
 				<plugins>
 					<plugin>
 						<artifactId>maven-surefire-plugin</artifactId>
