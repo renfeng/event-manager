@@ -18,6 +18,6 @@ public class GPlusManagerTest {
 
 	@Test
 	public void test() throws IOException {
-		injector.getInstance(GPlusManager.class).x();
+//		injector.getInstance(GPlusManager.class).x();
 	}
 }
