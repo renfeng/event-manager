@@ -98,7 +98,7 @@
 		<profile>
 			<id>dev</id>
 			<build>
-				<defaultGoal>install appengine:update</defaultGoal>
+				<defaultGoal>clean install appengine:update</defaultGoal>
 			</build>
 			<properties>
 				<guice.filter>com.google.developers.event.http.DevelopersSharedFilter</guice.filter>

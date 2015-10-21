@@ -90,24 +90,18 @@
 			<build>
 				<defaultGoal>install</defaultGoal>
 			</build>
-			<properties>
-			</properties>
 		</profile>
 		<profile>
 			<id>dev</id>
 			<build>
-				<defaultGoal>install appengine:update</defaultGoal>
+				<defaultGoal>clean install appengine:update</defaultGoal>
 			</build>
-			<properties>
-			</properties>
 		</profile>
 		<profile>
 			<id>beta</id>
 			<build>
 				<defaultGoal>clean install appengine:update</defaultGoal>
 			</build>
-			<properties>
-			</properties>
 		</profile>
 	</profiles>
 

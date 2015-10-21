@@ -21,6 +21,15 @@
 
 	<build>
 		<defaultGoal>compile exec:java</defaultGoal>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>message.properties</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 
 			<!-- phase: prepare-package -->
