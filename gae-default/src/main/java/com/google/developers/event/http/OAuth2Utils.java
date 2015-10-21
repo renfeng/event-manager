@@ -58,6 +58,20 @@ public class OAuth2Utils implements Path, GoogleAPIScope {
 				.setAccessType("offline").build();
 	}
 
+	public GoogleAuthorizationCodeFlow initializeFlowForceApprovalPrompt() throws IOException {
+		/*
+		 * https://developers.google.com/identity/protocols/OAuth2WebServer#offline
+		 * Important: When your application receives a refresh token, it is important to store that refresh token for
+		 * future use. If your application loses the refresh token, it will have to re-prompt the user for consent
+		 * before obtaining another refresh token. If you need to re-prompt the user for consent, include the
+		 * approval_prompt parameter in the authorization code request, and set the value to force.
+		 */
+		return new GoogleAuthorizationCodeFlow.Builder(transport, jsonFactory,
+				DevelopersSharedModule.CLIENT_ID, DevelopersSharedModule.CLIENT_SECRET, SCOPES)
+				.setDataStoreFactory(dataStoreFactory).setApprovalPrompt("force")
+				.setAccessType("offline").build();
+	}
+
 	String getRedirectUri(HttpServletRequest req) {
 		GenericUrl requestUrl = new GenericUrl(req.getRequestURL().toString());
 		requestUrl.setRawPath(OAUTH2CALLBACK);

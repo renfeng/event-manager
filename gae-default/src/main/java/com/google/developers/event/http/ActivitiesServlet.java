@@ -473,7 +473,7 @@ public class ActivitiesServlet extends HttpServlet {
 		}
 		{
 			TopekaCategory category = activeEvent;
-			category.setName("最近的活动");
+//			category.setName("最近的活动");
 			category.setId("tvmovies");
 			category.setTheme("red");
 			categories.add(category);
@@ -515,7 +515,7 @@ public class ActivitiesServlet extends HttpServlet {
 		}
 		{
 			TopekaCategory category = new TopekaCategory();
-			category.setName("知识库");
+//			category.setName("知识库");
 			category.setId("knowledge");
 			category.setTheme("blue");
 			categories.add(category);
