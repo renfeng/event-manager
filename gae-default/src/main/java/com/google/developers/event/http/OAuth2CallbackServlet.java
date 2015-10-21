@@ -18,7 +18,6 @@ import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.AuthorizationCodeResponseUrl;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.appengine.auth.oauth2.AbstractAppEngineAuthorizationCodeCallbackServlet;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.services.plus.Plus;
@@ -56,17 +55,15 @@ public class OAuth2CallbackServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(OAuth2CallbackServlet.class);
 
-	private static final ThreadLocal<HttpServletRequest> requestThreadLocal = new ThreadLocal<>();
-
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
-	private final OAuth2Utils auth2Utils;
+	private final OAuth2Utils oauth2Utils;
 
 	@Inject
 	public OAuth2CallbackServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
-		this.auth2Utils = oauth2Utils;
+		this.oauth2Utils = oauth2Utils;
 	}
 
 	@Override
@@ -172,27 +169,13 @@ public class OAuth2CallbackServlet
 	}
 
 	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		requestThreadLocal.set(req);
-		super.service(req, resp);
-	}
-
-	@Override
 	protected AuthorizationCodeFlow initializeFlow() throws ServletException, IOException {
-		GoogleAuthorizationCodeFlow flow = auth2Utils.initializeFlow();
-
-		String userId = getUserId(requestThreadLocal.get());
-		Credential credential = flow.loadCredential(userId);
-		if (credential == null || credential.getRefreshToken() == null) {
-			flow = auth2Utils.initializeFlowForceApprovalPrompt();
-		}
-
-		return flow;
+		return oauth2Utils.initializeFlow();
 	}
 
 	@Override
 	protected String getRedirectUri(HttpServletRequest req) throws ServletException, IOException {
-		return auth2Utils.getRedirectUri(req);
+		return oauth2Utils.getRedirectUri(req);
 	}
 
 	@Override

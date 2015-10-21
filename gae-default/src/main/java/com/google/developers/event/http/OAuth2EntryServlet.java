@@ -32,6 +32,8 @@ public class OAuth2EntryServlet
 		extends AbstractAppEngineAuthorizationCodeServlet
 		implements SessionKey {
 
+	private static final ThreadLocal<HttpServletRequest> requestThreadLocal = new ThreadLocal<>();
+
 	protected final HttpTransport transport;
 	protected final JsonFactory jsonFactory;
 	protected final OAuth2Utils oauth2Utils;
@@ -74,8 +76,23 @@ public class OAuth2EntryServlet
 	}
 
 	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		requestThreadLocal.set(req);
+		super.service(req, resp);
+	}
+
+	@Override
 	protected GoogleAuthorizationCodeFlow initializeFlow() throws ServletException, IOException {
-		return oauth2Utils.initializeFlow();
+
+		GoogleAuthorizationCodeFlow flow = oauth2Utils.initializeFlow();
+
+		String userId = getUserId(requestThreadLocal.get());
+		Credential credential = flow.loadCredential(userId);
+		if (credential == null || credential.getRefreshToken() == null) {
+			flow = oauth2Utils.initializeFlowForceApprovalPrompt();
+		}
+
+		return flow;
 	}
 
 	@Override
