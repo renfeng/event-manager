@@ -32,8 +32,6 @@ import java.util.List;
 public class OAuth2Utils implements Path, GoogleAPIScope {
 
 	/*
-	 * TODO add gmail api, and port the appscript for sending qr code
-	 *
 	 * https://developers.google.com/oauthplayground/
 	 */
 	private static final List<String> SCOPES = Arrays.asList(
@@ -44,8 +42,7 @@ public class OAuth2Utils implements Path, GoogleAPIScope {
 	private final DataStoreFactory dataStoreFactory;
 
 	@Inject
-	public OAuth2Utils(
-			HttpTransport transport, JsonFactory jsonFactory, DataStoreFactory dataStoreFactory) {
+	public OAuth2Utils(HttpTransport transport, JsonFactory jsonFactory, DataStoreFactory dataStoreFactory) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.dataStoreFactory = dataStoreFactory;

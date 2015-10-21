@@ -3,6 +3,8 @@ package com.google.developers.event.http;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.campaign.CampaignServlet;
+import com.google.developers.event.checkin.LabelServlet;
+import com.google.developers.event.checkin.LogoServlet;
 import com.google.developers.event.qrcode.RegistrationServlet;
 import com.google.developers.event.qrcode.TicketServlet;
 import com.google.gdata.util.ServiceException;

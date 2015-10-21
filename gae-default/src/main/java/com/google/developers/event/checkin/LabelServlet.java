@@ -1,12 +1,15 @@
-package com.google.developers.event.http;
+package com.google.developers.event.checkin;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.DriveManager;
-import com.google.developers.api.GoogleOAuth2;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
+import com.google.developers.event.http.DefaultServletModule;
+import com.google.developers.event.http.OAuth2Utils;
+import com.google.developers.event.http.Path;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -26,23 +29,26 @@ import java.io.IOException;
 @Singleton
 public class LabelServlet extends HttpServlet implements Path {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(LabelServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(LabelServlet.class);
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
+	private final OAuth2Utils oauth2Utils;
 
 	@Inject
-	public LabelServlet(HttpTransport transport, JsonFactory jsonFactory) {
+	public LabelServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
+		this.oauth2Utils = oauth2Utils;
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		Credential credential = GoogleOAuth2.getGlobalCredential(transport, jsonFactory);
+//		Credential credential = GoogleOAuth2.getGlobalCredential(transport, jsonFactory);
+		Credential credential = oauth2Utils.initializeFlow().loadCredential(
+				UserServiceFactory.getUserService().getCurrentUser().getEmail());
 
 		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
 		DriveManager driveManager = new DriveManager(transport, jsonFactory, credential);
