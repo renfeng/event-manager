@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<parent>
+		<artifactId>event-manager-parent</artifactId>
+		<groupId>com.google.developers</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>event-manager-standalone</artifactId>
+
+	<packaging>war</packaging>
+
+	<name>event-manager-gae-default</name>
+
+	<description>standalone web app</description>
+
+	<url>http://developers.dushu.hu/</url>
+
+	<prerequisites>
+		<maven>2.2.1</maven>
+	</prerequisites>
+
+	<build>
+		<defaultGoal>compile war:exploded tomcat6:run-war-only</defaultGoal>
+		<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
+		<finalName>standalone</finalName>
+		<plugins>
+
+			<!-- inherited -->
+			<plugin>
+				<artifactId>maven-help-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+			</plugin>
+
+			<!-- phase: compile -->
+
+			<!-- phase: process-classes -->
+
+			<!-- phase: test -->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-surefire-plugin</artifactId>
+				<version>2.13</version> <configuration> <test>TestAll</test> </configuration>
+				</plugin> -->
+
+			<!-- phase: test -->
+
+			<!-- phase: prepare-package -->
+
+			<!-- phase: package -->
+
+			<!-- phase: pre-integration-test -->
+
+			<!-- phase: invoked manually -->
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat6-maven-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>run-war-only</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+
+					<path>${context}</path>
+
+					<!-- <port>8080</port> -->
+					<!-- <ajpPort>9005</ajpPort> -->
+					<!-- <httpsPort>8443</httpsPort> -->
+
+					<!-- https://issues.apache.org/jira/browse/MTOMCAT-175 -->
+					<warDirectory>${project.build.directory}/${project.build.finalName}</warDirectory>
+
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-servlet</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+
+		<!-- testing -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+	</dependencies>
+
+	<properties>
+		<!-- ROOT results double slashes at the beginning of path -->
+		<!--<context>/</context>-->
+		<context>/check-in</context>
+	</properties>
+
+</project>

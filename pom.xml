@@ -353,22 +353,22 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-calendar</artifactId>
-				<version>v3-rev148-1.20.0</version>
+				<version>v3-rev149-1.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-drive</artifactId>
-				<version>v2-rev189-1.20.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.apis</groupId>
-				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev284-1.20.0</version>
+				<version>v2-rev190-1.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-gmail</artifactId>
-				<version>v1-rev33-1.20.0</version>
+				<version>v1-rev34-1.20.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.apis</groupId>
+				<artifactId>google-api-services-plus</artifactId>
+				<version>v1-rev286-1.20.0</version>
 			</dependency>
 
 			<dependency>
@@ -386,6 +386,12 @@
 						<groupId>org.apache.httpcomponents</groupId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>3.13</version>
 			</dependency>
 
 			<!-- <dependency> <groupId>javax.servlet</groupId> <artifactId>servlet-api</artifactId>

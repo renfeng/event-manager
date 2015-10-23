@@ -1,0 +1,101 @@
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building backlog-web 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-help-plugin:2.2:describe (default-cli) @ backlog-web ---
+[INFO] org.apache.tomcat.maven:tomcat6-maven-plugin:2.2
+
+Name: Apache Tomcat Maven Plugin :: Tomcat 6.x
+Description: The Tomcat Maven Plugin provides goals to manipulate WAR
+  projects within the Tomcat 6.x servlet container.
+Group Id: org.apache.tomcat.maven
+Artifact Id: tomcat6-maven-plugin
+Version: 2.2
+Goal Prefix: tomcat6
+
+This plugin has 20 goals:
+
+tomcat6:deploy
+  Description: Deploy a WAR to Tomcat.
+
+tomcat6:deploy-only
+  Description: Deploy a WAR to Tomcat without forking the package lifecycle.
+
+tomcat6:exploded
+  Description: Deploy an exploded WAR to Tomcat.
+
+tomcat6:help
+  Description: Display help information on tomcat6-maven-plugin.
+    Call mvn tomcat6:help -Ddetail=true -Dgoal=<goal-name> to display parameter
+    details.
+
+tomcat6:info
+  Description: Lists information about the Tomcat version, OS, and JVM
+    properties.
+
+tomcat6:inplace
+  Description: Deploy a WAR in-place to Tomcat.
+
+tomcat6:list
+  Description: Lists all the currently deployed web applications in Tomcat.
+
+tomcat6:redeploy
+  Description: Redeploy a WAR in Tomcat. (Alias for the deploy goal with its
+    update parameter set to true.)
+
+tomcat6:redeploy-only
+  Description: Redeploy a WAR in Tomcat without forking the package
+    lifecycle. (Alias for the deploy-only goal with its update parameter set to
+    true.)
+
+tomcat6:reload
+  Description: Reload a WAR in Tomcat.
+
+tomcat6:resources
+  Description: Lists JNDI resources in Tomcat.
+
+tomcat6:roles
+  Description: Lists security roles in Tomcat.
+
+tomcat6:run
+  Description: Runs the current project as a dynamic web application using an
+    embedded Tomcat server.
+
+tomcat6:run-war
+  Description: Runs the current project as a packaged web application using
+    an embedded Tomcat server.
+
+tomcat6:run-war-only
+  Description: Same as run-war goal without forking the package cycle.
+
+tomcat6:sessions
+  Description: Lists session information for a WAR in Tomcat.
+
+tomcat6:shutdown
+  Description: Shuts down all possibly started embedded Tomcat servers. This
+    will be automatically done through a shutdown hook or you may call this
+    Mojo to shut them down explictly.
+    
+    By default the shutdown goal is not bound to any phase. For integration
+    tests you might want to bind it to post-integration-test.
+
+tomcat6:start
+  Description: Start a WAR in Tomcat.
+
+tomcat6:stop
+  Description: Stop a WAR in Tomcat.
+
+tomcat6:undeploy
+  Description: Undeploy a WAR from Tomcat.
+
+For more information, run 'mvn help:describe [...] -Ddetail'
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1.792s
+[INFO] Finished at: Sat Jul 04 17:19:45 CST 2015
+[INFO] Final Memory: 8M/153M
+[INFO] ------------------------------------------------------------------------
