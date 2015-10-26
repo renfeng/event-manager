@@ -14,6 +14,7 @@ public class StandaloneServletModule extends ServletModule {
 		 */
 //		serve(UnauthorizedServlet.URL_PATTERN).with(UnauthorizedServlet.class);
 
+		serve("/api/setup").with(SetupServlet.class);
 		serve("/api/check-in").with(CheckInServlet.class);
 	}
 }

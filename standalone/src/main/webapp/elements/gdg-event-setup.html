@@ -1,0 +1,15 @@
+<link rel="import" href="../components/iron-ajax/iron-ajax.html"/>
+
+<dom-module id="gdg-event-setup">
+	<template>
+		<iron-ajax id="setupAjax" auto url="/api/setup" last-response="{{setup}}"></iron-ajax>
+
+	</template>
+	<script>
+		(function(){
+			Polymer({
+				is: "gdg-event-setup"
+			});
+		})();
+	</script>
+</dom-module>

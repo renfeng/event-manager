@@ -1,0 +1,33 @@
+<link rel="import" href="../components/iron-ajax/iron-ajax.html"/>
+<link rel="import" href="../components/paper-input/paper-input.html"/>
+<link rel="import" href="../components/paper-button/paper-button.html"/>
+<link rel="import" href="../components/paper-toast/paper-toast.html"/>
+
+<dom-module id="gdg-event-check-in">
+	<template>
+		<paper-input id="emailInput" label="Email" value="{{email}}"></paper-input>
+		<paper-button raised on-tap="checkIn">Check-in</paper-button>
+		<iron-ajax id="checkInAjax" url="/api/check-in" method="POST"
+				   contentType="application/x-www-form-urlencoded"
+				   on-response="checkInSuccessful" on-error="checkInFailed"></iron-ajax>
+		<paper-toast id="toastSuccess" text="Check-in successful."></paper-toast>
+		<paper-toast id="toastFailure" text="Check-in failed."></paper-toast>
+	</template>
+	<script>
+		(function(){
+			Polymer({
+				is: "gdg-event-check-in",
+				checkIn: function() {
+					this.$.checkInAjax.body = "email=" + email;
+					this.$.checkInAjax.generateRequest();
+				},
+				checkInSuccessful: function() {
+					this.$.toastSuccess.show();
+				},
+				checkInFailed: function() {
+					this.$.toastFailure.show();
+				}
+			});
+		})();
+	</script>
+</dom-module>
