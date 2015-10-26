@@ -347,7 +347,8 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 		this.eventPointOfContact = eventPointOfContact;
 	}
 
-	public String getTemplateCache(DriveManager driveManager, HttpTransport transport) throws IOException {
+	public String getTemplateCache(DriveManager driveManager, HttpTransport transport, String accessToken)
+			throws IOException {
 
 		if (templateCache == null) {
 			String templateURL = getTicketEmailTemplate();
@@ -357,6 +358,12 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 
 			HttpRequestFactory factory = transport.createRequestFactory();
 			HttpRequest request = factory.buildGetRequest(new GenericUrl(downloadUrl));
+
+			/*
+			 * https://developers.google.com/drive/web/manage-downloads
+			 */
+			request.getHeaders().setAuthorization("Bearer " + accessToken);
+
 			HttpResponse response = request.execute();
 
 			logger.debug("default character set: {}", Charset.defaultCharset());

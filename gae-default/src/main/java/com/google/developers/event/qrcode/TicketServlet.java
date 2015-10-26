@@ -69,7 +69,7 @@ public class TicketServlet extends OAuth2EntryServlet
 		// Get the stored credentials using the Authorization Flow
 //		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
 //		Credential credential = authFlow.loadCredential(getUserId(req));
-		Credential credential = getCredential();
+		final Credential credential = getCredential();
 
 		/*
 		 * TODO https://developers.google.com/api-client-library/java/google-oauth-java-client/oauth2?hl=en#detecting_an_expired_access_token
@@ -147,7 +147,8 @@ public class TicketServlet extends OAuth2EntryServlet
 						/*
 						 * inline images
 						 */
-						String body = activeEvent.getTemplateCache(driveManager, transport);
+						String body = activeEvent.getTemplateCache(
+								driveManager, transport, credential.getAccessToken());
 //						String body = "<H1>Hello</H1><img src=\"cid:logoBlob\">";
 						body = body.replaceAll("[$][{]Logo[}]", "<img src='cid:logoBlob'/>");
 						body = body.replaceAll("[$][{]nickname[}]", nick);
