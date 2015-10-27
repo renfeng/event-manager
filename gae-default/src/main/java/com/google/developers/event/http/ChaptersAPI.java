@@ -18,13 +18,13 @@ import java.util.List;
  * Created by renfeng on 7/19/15.
  */
 @Singleton
-public class ChaptersServlet extends HttpServlet {
+public class ChaptersAPI extends HttpServlet {
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 
 	@Inject
-	public ChaptersServlet(HttpTransport transport, JsonFactory jsonFactory) {
+	public ChaptersAPI(HttpTransport transport, JsonFactory jsonFactory) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 	}

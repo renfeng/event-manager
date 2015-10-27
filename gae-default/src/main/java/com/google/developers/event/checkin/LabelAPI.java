@@ -21,33 +21,32 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 /**
  * Created by renfeng on 6/22/15.
  */
 @Singleton
-public class LogoServlet extends HttpServlet implements Path {
+public class LabelAPI extends HttpServlet implements Path {
 
-	private static final Logger logger = LoggerFactory.getLogger(LogoServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(LabelAPI.class);
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final OAuth2Utils oauth2Utils;
 
 	@Inject
-	public LogoServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
+	public LabelAPI(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.oauth2Utils = oauth2Utils;
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 //		Credential credential = GoogleOAuth2.getGlobalCredential(transport, jsonFactory);
-		// Get the stored credentials using the Authorization Flow
 		Credential credential = oauth2Utils.initializeFlow().loadCredential(
 				UserServiceFactory.getUserService().getCurrentUser().getEmail());
 
@@ -57,16 +56,19 @@ public class LogoServlet extends HttpServlet implements Path {
 		ActiveEvent activeEvent;
 		try {
 			activeEvent = DefaultServletModule.getActiveEvent(
-					req, spreadsheetManager, CHECK_IN_URL);
+					req, spreadsheetManager, CHECK_IN_PAGE_URL);
 			if (activeEvent == null) {
-				req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
+				/*
+				 * TODO default label
+				 */
+//				req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
 				return;
 			}
 		} catch (ServiceException e) {
 			throw new ServletException(e);
 		}
 
-		IOUtils.copy(new ByteArrayInputStream(activeEvent.getLogoCache(driveManager)),
+		IOUtils.copy(driveManager.getClient().files().get(activeEvent.getLabel()).executeMediaAsInputStream(),
 				resp.getOutputStream());
 	}
 }

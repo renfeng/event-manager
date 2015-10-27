@@ -2,11 +2,17 @@ package com.google.developers.event.http;
 
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
-import com.google.developers.event.campaign.CampaignServlet;
-import com.google.developers.event.checkin.LabelServlet;
-import com.google.developers.event.checkin.LogoServlet;
-import com.google.developers.event.qrcode.RegistrationServlet;
-import com.google.developers.event.qrcode.TicketServlet;
+import com.google.developers.event.campaign.CampaignAPI;
+import com.google.developers.event.campaign.CampaignPage;
+import com.google.developers.event.checkin.CheckInAPI;
+import com.google.developers.event.checkin.CheckInPage;
+import com.google.developers.event.checkin.LabelAPI;
+import com.google.developers.event.checkin.LogoAPI;
+import com.google.developers.event.eventbrite.EventBriteAPI;
+import com.google.developers.event.eventbrite.EventBritePage;
+import com.google.developers.event.qrcode.RegistrationAPI;
+import com.google.developers.event.qrcode.TicketAPI;
+import com.google.developers.event.qrcode.TicketPage;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.servlet.ServletModule;
 
@@ -28,23 +34,29 @@ public class DefaultServletModule extends ServletModule implements Path {
 		 */
 //		serve("/api/check-in").with(CheckInServlet.class);
 
-		serve("/api/label").with(LabelServlet.class);
-		serve("/api/logo").with(LogoServlet.class);
-		serve("/api/chapters").with(ChaptersServlet.class);
-		serve("/api/events").with(EventsServlet.class);
-		serve("/api/activities").with(ActivitiesServlet.class);
-		serve("/api/participants").with(RegistrationServlet.class);
-		serve("/api/user").with(UserServlet.class);
+		serve("/api/label").with(LabelAPI.class);
+		serve("/api/logo").with(LogoAPI.class);
+		serve("/api/chapters").with(ChaptersAPI.class);
+		serve("/api/events").with(EventsAPI.class);
+		serve("/api/activities").with(ActivitiesAPI.class);
+		serve("/api/participants").with(RegistrationAPI.class);
+		serve("/api/user").with(UserAPI.class);
 
-		serve(OAUTH2ENTRY).with(OAuth2EntryServlet.class);
-		serve(OAUTH2CALLBACK).with(OAuth2CallbackServlet.class);
-		serve(OAUTH2REVOKE).with(OAuth2RevokeServlet.class);
+		serve("/api/check-in").with(CheckInAPI.class);
+		serve("/api/ticket").with(TicketAPI.class);
+		serve("/api/campaign").with(CampaignAPI.class);
+		serve("/api/eventbrite").with(EventBriteAPI.class);
 
-		serve(EVENTS_URL + "*").with(EventsServlet.class);
+		serve(EVENTS_API_URL + "*").with(EventsAPI.class);
 
-		serveRegex("/api/check-in|" + CHECK_IN_URL + "[0-9a-z]+").with(CheckInServlet.class);
-		serveRegex("/api/ticket|" + TICKET_URL + "[0-9a-z]+").with(TicketServlet.class);
-		serveRegex("/api/campaign|" + CAMPAIGN_URL + "[0-9a-z]+").with(CampaignServlet.class);
+		serve(OAUTH2ENTRY_PAGE_URL).with(OAuth2EntryPage.class);
+		serve(OAUTH2CALLBACK_PAGE_URL).with(OAuth2CallbackPage.class);
+		serve(OAUTH2REVOKE_PAGE_URL).with(OAuth2RevokePage.class);
+
+		serveRegex(CHECK_IN_PAGE_URL + "[0-9a-z]+").with(CheckInPage.class);
+		serveRegex(TICKET_PAGE_URL + "[0-9a-z]+").with(TicketPage.class);
+		serveRegex(CAMPAIGN_PAGE_URL + "[0-9a-z]+").with(CampaignPage.class);
+		serveRegex(EVENT_BRITE_PAGE_URL + "[0-9a-z]+").with(EventBritePage.class);
 	}
 
 	public static ActiveEvent getActiveEvent(

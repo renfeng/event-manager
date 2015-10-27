@@ -9,7 +9,7 @@ import org.junit.Test;
 /**
  * Created by renfeng on 7/23/15.
  */
-public class ActivitiesServletTest {
+public class ActivitiesAPITest {
 
 	@Test
 	public void test(){

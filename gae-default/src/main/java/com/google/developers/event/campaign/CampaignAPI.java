@@ -1,6 +1,5 @@
 package com.google.developers.event.campaign;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -11,7 +10,7 @@ import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.CampaignSpreadsheet;
 import com.google.developers.event.ParticipantStatistics;
 import com.google.developers.event.http.DefaultServletModule;
-import com.google.developers.event.http.OAuth2EntryServlet;
+import com.google.developers.event.http.OAuth2EntryPage;
 import com.google.developers.event.http.OAuth2Utils;
 import com.google.developers.event.http.Path;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
@@ -41,19 +40,14 @@ import java.util.Map;
  * Created by renfeng on 10/13/15.
  */
 @Singleton
-public class CampaignServlet extends OAuth2EntryServlet
+public class CampaignAPI extends OAuth2EntryPage
 		implements Path, CampaignSpreadsheet {
 
-	private static final Logger logger = LoggerFactory.getLogger(CampaignServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(CampaignAPI.class);
 
 	@Inject
-	public CampaignServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
+	public CampaignAPI(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		super(transport, jsonFactory, oauth2Utils);
-	}
-
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		req.getRequestDispatcher(CAMPAIGN_URL + "index.html").forward(req, resp);
 	}
 
 	@Override
@@ -68,7 +62,7 @@ public class CampaignServlet extends OAuth2EntryServlet
 		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(credential);
 
 		try {
-			ActiveEvent activeEvent = DefaultServletModule.getActiveEvent(req, spreadsheetManager, CAMPAIGN_URL);
+			ActiveEvent activeEvent = DefaultServletModule.getActiveEvent(req, spreadsheetManager, CAMPAIGN_PAGE_URL);
 			if (activeEvent == null) {
 				resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;

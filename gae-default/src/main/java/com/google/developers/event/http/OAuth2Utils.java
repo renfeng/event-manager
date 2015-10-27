@@ -71,7 +71,7 @@ public class OAuth2Utils implements Path, GoogleAPIScope {
 
 	String getRedirectUri(HttpServletRequest req) {
 		GenericUrl requestUrl = new GenericUrl(req.getRequestURL().toString());
-		requestUrl.setRawPath(OAUTH2CALLBACK);
+		requestUrl.setRawPath(OAUTH2CALLBACK_PAGE_URL);
 		return requestUrl.build();
 	}
 }

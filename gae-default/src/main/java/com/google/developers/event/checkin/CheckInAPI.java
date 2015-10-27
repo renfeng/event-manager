@@ -1,4 +1,4 @@
-package com.google.developers.event.http;
+package com.google.developers.event.checkin;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
@@ -9,6 +9,10 @@ import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.MetaSpreadsheet;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
+import com.google.developers.event.http.DefaultServletModule;
+import com.google.developers.event.http.OAuth2EntryPage;
+import com.google.developers.event.http.OAuth2Utils;
+import com.google.developers.event.http.Path;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.batch.BatchStatus;
@@ -35,21 +39,14 @@ import java.util.*;
  * Created by renfeng on 6/17/15.
  */
 @Singleton
-public class CheckInServlet extends OAuth2EntryServlet
+public class CheckInAPI extends OAuth2EntryPage
 		implements Path, MetaSpreadsheet, RegisterFormResponseSpreadsheet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(CheckInServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(CheckInAPI.class);
 
 	@Inject
-	public CheckInServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
+	public CheckInAPI(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		super(transport, jsonFactory, oauth2Utils);
-	}
-
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		req.getRequestDispatcher(CHECK_IN_URL + "index.html").forward(req, resp);
 	}
 
 	@Override
@@ -66,7 +63,7 @@ public class CheckInServlet extends OAuth2EntryServlet
 		final ActiveEvent activeEvent;
 		try {
 			activeEvent = DefaultServletModule.getActiveEvent(
-					req, spreadsheetManager, CHECK_IN_URL);
+					req, spreadsheetManager, CHECK_IN_PAGE_URL);
 			if (activeEvent == null) {
 				//req.getRequestDispatcher("/images/gdg-suzhou-museum-transparent.png").forward(req, resp);
 				resp.setStatus(HttpServletResponse.SC_FORBIDDEN);

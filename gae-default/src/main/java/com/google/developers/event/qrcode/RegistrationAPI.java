@@ -9,7 +9,7 @@ import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.developers.event.http.DefaultServletModule;
-import com.google.developers.event.http.OAuth2EntryServlet;
+import com.google.developers.event.http.OAuth2EntryPage;
 import com.google.developers.event.http.OAuth2Utils;
 import com.google.developers.event.http.Path;
 import com.google.gdata.data.spreadsheet.CellEntry;
@@ -32,13 +32,13 @@ import java.util.Map;
  * Created by frren on 2015-09-29.
  */
 @Singleton
-public class RegistrationServlet extends OAuth2EntryServlet
+public class RegistrationAPI extends OAuth2EntryPage
 		implements Path, RegisterFormResponseSpreadsheet {
 
-	private static final Logger logger = LoggerFactory.getLogger(RegistrationServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(RegistrationAPI.class);
 
 	@Inject
-	public RegistrationServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
+	public RegistrationAPI(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		super(transport, jsonFactory, oauth2Utils);
 	}
 
@@ -65,7 +65,7 @@ public class RegistrationServlet extends OAuth2EntryServlet
 		final ActiveEvent activeEvent;
 		try {
 			activeEvent = DefaultServletModule.getActiveEvent(
-					req, spreadsheetManager, TICKET_URL);
+					req, spreadsheetManager, TICKET_PAGE_URL);
 			if (activeEvent == null) {
 				throw new ServletException("missing active event");
 			}
@@ -193,7 +193,7 @@ public class RegistrationServlet extends OAuth2EntryServlet
 		final ActiveEvent activeEvent;
 		try {
 			activeEvent = DefaultServletModule.getActiveEvent(
-					req, spreadsheetManager, TICKET_URL);
+					req, spreadsheetManager, TICKET_PAGE_URL);
 			if (activeEvent == null) {
 				throw new ServletException("missing active event");
 			}

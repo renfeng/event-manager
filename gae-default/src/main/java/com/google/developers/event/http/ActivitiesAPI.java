@@ -40,10 +40,10 @@ import java.util.regex.Matcher;
  * Created by renfeng on 7/20/15.
  */
 @Singleton
-public class ActivitiesServlet extends HttpServlet {
+public class ActivitiesAPI extends HttpServlet {
 
 	private static final Logger logger = LoggerFactory
-			.getLogger(ActivitiesServlet.class);
+			.getLogger(ActivitiesAPI.class);
 
 	/*
 	 * e.g. Wed, August 5, 8:00 PM
@@ -57,7 +57,7 @@ public class ActivitiesServlet extends HttpServlet {
 	private final HttpTransport transport;
 
 	@Inject
-	public ActivitiesServlet(HttpTransport transport, JsonFactory jsonFactory) {
+	public ActivitiesAPI(HttpTransport transport, JsonFactory jsonFactory) {
 		this.jsonFactory = jsonFactory;
 		this.transport = transport;
 	}

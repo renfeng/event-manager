@@ -49,18 +49,18 @@ import java.util.Map;
  * @author Nick Miceli
  */
 @Singleton
-public class OAuth2CallbackServlet
+public class OAuth2CallbackPage
 		extends AbstractAppEngineAuthorizationCodeCallbackServlet
 		implements Path, ChapterSpreadsheet {
 
-	private static final Logger logger = LoggerFactory.getLogger(OAuth2CallbackServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(OAuth2CallbackPage.class);
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final OAuth2Utils oauth2Utils;
 
 	@Inject
-	public OAuth2CallbackServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
+	public OAuth2CallbackPage(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.oauth2Utils = oauth2Utils;
@@ -147,7 +147,7 @@ public class OAuth2CallbackServlet
 		HttpSession session = req.getSession();
 		String redirUrl = (String) session.getAttribute(SessionKey.OAUTH2_ORIGIN);
 		if (redirUrl == null) {
-			redirUrl = OAUTH2ENTRY;
+			redirUrl = OAUTH2ENTRY_PAGE_URL;
 		} else {
 			session.removeAttribute(SessionKey.OAUTH2_ORIGIN);
 		}

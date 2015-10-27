@@ -18,13 +18,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Singleton
-public class EventsServlet extends HttpServlet {
+public class EventsAPI extends HttpServlet {
 
 	private final HttpRequestFactory factory;
 	private final JsonFactory jsonFactory;
 
 	@Inject
-	public EventsServlet(HttpTransport transport, JsonFactory jsonFactory) {
+	public EventsAPI(HttpTransport transport, JsonFactory jsonFactory) {
 		factory = transport.createRequestFactory();
 		this.jsonFactory = jsonFactory;
 	}
@@ -44,8 +44,8 @@ public class EventsServlet extends HttpServlet {
 
 		String uri = req.getRequestURI();
 		String eventId = uri.substring(uri
-				.indexOf(DefaultServletModule.EVENTS_URL)
-				+ DefaultServletModule.EVENTS_URL.length());
+				.indexOf(DefaultServletModule.EVENTS_API_URL)
+				+ DefaultServletModule.EVENTS_API_URL.length());
 
 		/*
 		 * https://developers.google.com/events/5099753932062720/

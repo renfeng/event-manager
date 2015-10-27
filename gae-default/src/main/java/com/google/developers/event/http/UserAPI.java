@@ -17,12 +17,12 @@ import java.io.IOException;
  * Created by renfeng on 10/16/15.
  */
 @Singleton
-public class UserServlet extends HttpServlet {
+public class UserAPI extends HttpServlet {
 
 	private final JsonFactory jsonFactory;
 
 	@Inject
-	public UserServlet(JsonFactory jsonFactory) {
+	public UserAPI(JsonFactory jsonFactory) {
 		this.jsonFactory = jsonFactory;
 	}
 

@@ -35,11 +35,11 @@ import java.util.Map;
  * Created by renfeng on 8/3/15.
  */
 @Singleton
-public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServlet
+public class OAuth2RevokePage extends AbstractAppEngineAuthorizationCodeServlet
 		implements ChapterSpreadsheet {
 
 	private static final Logger logger = LoggerFactory
-			.getLogger(OAuth2RevokeServlet.class);
+			.getLogger(OAuth2RevokePage.class);
 
 	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
@@ -47,7 +47,7 @@ public class OAuth2RevokeServlet extends AbstractAppEngineAuthorizationCodeServl
 	private final DataStoreFactory dataStoreFactory;
 
 	@Inject
-	public OAuth2RevokeServlet(
+	public OAuth2RevokePage(
 			HttpTransport transport, JsonFactory jsonFactory,
 			OAuth2Utils oauth2Utils, DataStoreFactory dataStoreFactory) {
 		this.transport = transport;

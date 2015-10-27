@@ -28,7 +28,7 @@ import java.io.PrintWriter;
  * @author Nick Miceli
  */
 @Singleton
-public class OAuth2EntryServlet
+public class OAuth2EntryPage
 		extends AbstractAppEngineAuthorizationCodeServlet
 		implements SessionKey {
 
@@ -39,7 +39,7 @@ public class OAuth2EntryServlet
 	protected final OAuth2Utils oauth2Utils;
 
 	@Inject
-	public OAuth2EntryServlet(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
+	public OAuth2EntryPage(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.transport = transport;
 		this.jsonFactory = jsonFactory;
 		this.oauth2Utils = oauth2Utils;
