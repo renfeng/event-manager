@@ -1,0 +1,23 @@
+<link rel="import" href="../components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../components/paper-button/paper-button.html">
+<link rel="import" href="../components/paper-input/paper-input.html">
+
+<dom-module id="gdg-event-campaign">
+	<template>
+		<iron-ajax id="importAjax" url="/api/eventbrite" method="POST"
+				   contentType="application/x-www-form-urlencoded"></iron-ajax>
+		<paper-input value="{{eventId}}"></paper-input>
+		<paper-button raised on-tap="import">Import</paper-button>
+	</template>
+	<script>
+	(function() {
+		Polymer({
+			is: "gdg-event-campaign",
+			import: function() {
+				this.$.importAjax.body = "eid=" + this.eventId;
+				this.$.importAjax.generateRequest();
+			}
+		});
+	})();
+	</script>
+</dom-module>
