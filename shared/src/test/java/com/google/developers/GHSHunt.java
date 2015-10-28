@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class GHSHunt {
 
-	public static void main(String... args) throws UnknownHostException {
+	public static void main(String... args) {
 		if (args.length == 0) {
 			return;
 		}
@@ -20,13 +20,19 @@ public class GHSHunt {
 		List<String> hostAddressList = new ArrayList<>();
 		Security.setProperty("networkaddress.cache.ttl", "0");
 		while (true) {
-			InetAddress address = InetAddress.getByName(host);
-			String hostAddress = address.getHostAddress();
-			if (hostAddressList.contains(hostAddress)) {
-				continue;
+			try {
+				InetAddress address = InetAddress.getByName(host);
+				String hostAddress = address.getHostAddress();
+				if (hostAddressList.contains(hostAddress)) {
+					continue;
+				}
+				System.out.println(hostAddress + " " + new Date());
+				hostAddressList.add(hostAddress);
+			} catch (UnknownHostException ex) {
+				/*
+				 * ignore
+				 */
 			}
-			System.out.println(hostAddress + " " + new Date());
-			hostAddressList.add(hostAddress);
 		}
 	}
 }
