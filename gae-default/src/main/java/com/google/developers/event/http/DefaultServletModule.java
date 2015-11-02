@@ -1,5 +1,6 @@
 package com.google.developers.event.http;
 
+import com.google.api.server.spi.SystemServiceServlet;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.campaign.CampaignAPI;
@@ -14,10 +15,12 @@ import com.google.developers.event.qrcode.RegistrationAPI;
 import com.google.developers.event.qrcode.TicketAPI;
 import com.google.developers.event.qrcode.TicketPage;
 import com.google.gdata.util.ServiceException;
+import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class DefaultServletModule extends ServletModule implements Path {
 
@@ -48,6 +51,18 @@ public class DefaultServletModule extends ServletModule implements Path {
 		serve("/api/eventbrite").with(EventBriteAPI.class);
 
 		serve(EVENTS_API_URL + "*").with(EventsAPI.class);
+
+		{
+			HashMap<String, String> params = new HashMap<>();
+
+			/*
+			 * comma delimited fqn of classes
+			 */
+			params.put("services", HelloWorldEndpoints.class.getCanonicalName());
+
+			serve("/_ah/spi/*").with(SystemServiceServlet.class, params);
+			bind(SystemServiceServlet.class).in(Singleton.class);
+		}
 
 		serve(OAUTH2ENTRY_PAGE_URL).with(OAuth2EntryPage.class);
 		serve(OAUTH2CALLBACK_PAGE_URL).with(OAuth2CallbackPage.class);
