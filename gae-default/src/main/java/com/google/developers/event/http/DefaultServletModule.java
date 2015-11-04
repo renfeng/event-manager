@@ -11,6 +11,8 @@ import com.google.developers.event.checkin.LabelAPI;
 import com.google.developers.event.checkin.LogoAPI;
 import com.google.developers.event.eventbrite.EventBriteAPI;
 import com.google.developers.event.eventbrite.EventBritePage;
+import com.google.developers.event.mail.BounceHandlerServlet;
+import com.google.developers.event.mail.MailReceiverServlet;
 import com.google.developers.event.qrcode.RegistrationAPI;
 import com.google.developers.event.qrcode.TicketAPI;
 import com.google.developers.event.qrcode.TicketPage;
@@ -63,6 +65,9 @@ public class DefaultServletModule extends ServletModule implements Path {
 			serve("/_ah/spi/*").with(SystemServiceServlet.class, params);
 			bind(SystemServiceServlet.class).in(Singleton.class);
 		}
+
+		serve("/_ah/mail/*").with(MailReceiverServlet.class);
+		serve("/_ah/bounce").with(BounceHandlerServlet.class);
 
 		serve(OAUTH2ENTRY_PAGE_URL).with(OAuth2EntryPage.class);
 		serve(OAUTH2CALLBACK_PAGE_URL).with(OAuth2CallbackPage.class);
