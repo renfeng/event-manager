@@ -13,7 +13,7 @@
 
 	<name>event-manager-shared</name>
 
-	<url>http://developers.dushu.hu/</url>
+	<url>https://developers.google.com/</url>
 
 	<prerequisites>
 		<maven>2.2.1</maven>

@@ -197,7 +197,7 @@
 							<!-- http://docs.oracle.com/javase/8/docs/technotes/guides/jpda/conninv.html#Invocation -->
 							<jvmFlag>-Xdebug</jvmFlag>
 							<!--<jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>-->
-							<jvmFlag>-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>
+							<jvmFlag>-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</jvmFlag>
 
 							<jvmFlag>-Dhttp.proxyHost=${env.PROXY_HOST}</jvmFlag>
 							<jvmFlag>-Dhttp.proxyPort=${env.PROXY_PORT}</jvmFlag>
@@ -354,33 +354,33 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-calendar</artifactId>
-				<version>v3-rev151-1.20.0</version>
+				<version>v3-rev154-1.21.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-drive</artifactId>
-				<version>v2-rev191-1.20.0</version>
+				<version>v2-rev194-1.21.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-gmail</artifactId>
-				<version>v1-rev34-1.20.0</version>
+				<version>v1-rev34-1.21.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev291-1.20.0</version>
+				<version>v1-rev304-1.21.0</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.google.api-client</groupId>
 				<artifactId>google-api-client-appengine</artifactId>
-				<version>1.20.0</version>
+				<version>1.21.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.http-client</groupId>
 				<artifactId>google-http-client-appengine</artifactId>
-				<version>1.20.0</version>
+				<version>1.21.0</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>httpclient</artifactId>
@@ -446,12 +446,12 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-jdk14</artifactId>
-				<version>1.7.12</version>
+				<version>1.7.13</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>jcl-over-slf4j</artifactId>
-				<version>1.7.12</version>
+				<version>1.7.13</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>

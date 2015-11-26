@@ -17,7 +17,7 @@
 
 	<description>default module for gae</description>
 
-	<url>http://developers.dushu.hu/</url>
+	<url>https://developers.google.com/</url>
 
 	<prerequisites>
 		<maven>2.2.1</maven>

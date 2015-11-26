@@ -1,4 +1,4 @@
-package com.google.developers.event.http;
+package com.google.training.helloworld;
 
 import com.google.api.server.spi.Constant;
 

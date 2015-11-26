@@ -1,4 +1,4 @@
-package com.google.developers.event.http;
+package com.google.training.helloworld;
 
 public class HelloClass {
     public String message = "Hello World";

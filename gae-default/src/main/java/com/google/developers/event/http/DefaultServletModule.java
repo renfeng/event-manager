@@ -19,6 +19,7 @@ import com.google.developers.event.qrcode.TicketPage;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
+import com.google.training.helloworld.HelloWorldEndpoints;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
