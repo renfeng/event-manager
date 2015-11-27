@@ -13,13 +13,7 @@ import com.google.developers.event.http.DefaultServletModule;
 import com.google.developers.event.http.OAuth2EntryPage;
 import com.google.developers.event.http.OAuth2Utils;
 import com.google.developers.event.http.Path;
-import com.google.gdata.client.spreadsheet.SpreadsheetService;
-import com.google.gdata.data.Link;
-import com.google.gdata.data.batch.BatchStatus;
-import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.spreadsheet.CellEntry;
-import com.google.gdata.data.spreadsheet.CellFeed;
-import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -33,7 +27,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Created by renfeng on 6/17/15.
@@ -97,10 +94,6 @@ public class CheckInAPI extends OAuth2EntryPage
 							activeEvent.getEvent());
 		}
 
-		long startTime = System.currentTimeMillis();
-		CellFeed batchRequest = new CellFeed();
-		final List<CellEntry> entries = batchRequest.getEntries();
-
 		final String uuid = req.getParameter("uuid");
 		final ThreadLocal<String> emailThreadLocal = new ThreadLocal<>();
 		final ThreadLocal<String> nameThreadLocal = new ThreadLocal<>();
@@ -156,8 +149,8 @@ public class CheckInAPI extends OAuth2EntryPage
 						dateFormat.setTimeZone(TimeZone.getTimeZone(timestampTimezone));
 					}
 
-					updateCell(entries, checkInCell, dateFormat.format(new Date()));
-					updateCell(entries, clientIpCell, req.getRemoteAddr());
+					updateCell(checkInCell, dateFormat.format(new Date()));
+					updateCell(clientIpCell, req.getRemoteAddr());
 
 					return false;
 				}
@@ -168,45 +161,18 @@ public class CheckInAPI extends OAuth2EntryPage
 			}
 		};
 		try {
-			cellFeedProcessor.processForUpdate(
+			boolean isSuccess = cellFeedProcessor.processForUpdate(
 					spreadsheetManager.getWorksheet(registerURL),
 					registerNameColumn, registerEmailColumn,
 					QR_CODE_COLUMN, CHECK_IN_COLUMN, CLIENT_IP_COLUMN);
-
-			if (errorThreadLocal.get() == null) {
-				if (emailThreadLocal.get() != null) {
-					WorksheetEntry sheet = spreadsheetManager.getWorksheet(registerURL);
-
-					/*
-					 * batchLink will be null for list feed
-					 */
-					URL cellFeedUrl = sheet.getCellFeedUrl();
-					SpreadsheetService ssSvc = spreadsheetManager.getService();
-					CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
-					Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
-					CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
-
-					// Check the results
-					boolean isSuccess = true;
-					for (CellEntry entry : batchResponse.getEntries()) {
-						String batchId = BatchUtils.getBatchId(entry);
-						if (!BatchUtils.isSuccess(entry)) {
-							isSuccess = false;
-							BatchStatus status = BatchUtils.getBatchStatus(entry);
-							logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
-							break;
-						}
+			if (isSuccess) {
+				if (errorThreadLocal.get() == null) {
+					if (emailThreadLocal.get() == null) {
+						errorThreadLocal.set("Invalid QR code");
 					}
-
-					logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
-					logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
-
-					if (!isSuccess) {
-						errorThreadLocal.set("Check-in failed");
-					}
-				} else {
-					errorThreadLocal.set("Invalid QR code");
 				}
+			} else {
+				errorThreadLocal.set("Check-in failed");
 			}
 		} catch (ServiceException e) {
 			errorThreadLocal.set(e.getResponseBody());

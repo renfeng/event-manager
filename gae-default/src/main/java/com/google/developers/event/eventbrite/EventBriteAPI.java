@@ -13,12 +13,7 @@ import com.google.developers.event.http.DefaultServletModule;
 import com.google.developers.event.http.OAuth2EntryPage;
 import com.google.developers.event.http.OAuth2Utils;
 import com.google.developers.event.http.Path;
-import com.google.gdata.client.spreadsheet.SpreadsheetService;
-import com.google.gdata.data.Link;
-import com.google.gdata.data.batch.BatchStatus;
-import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.spreadsheet.CellEntry;
-import com.google.gdata.data.spreadsheet.CellFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
@@ -76,10 +71,6 @@ public class EventBriteAPI extends OAuth2EntryPage
 			sheet.setRowCount(Math.min(activities.size(), MAX_CELLS / sheet.getColCount()));
 			sheet.update();
 
-			long startTime = System.currentTimeMillis();
-			CellFeed batchRequest = new CellFeed();
-			final List<CellEntry> entries = batchRequest.getEntries();
-
 			CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 				Map<String, CellEntry> cellMap = new HashMap<>();
@@ -89,12 +80,12 @@ public class EventBriteAPI extends OAuth2EntryPage
 				protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL) throws IOException, ServiceException {
 
 					ParticipantStatistics participant = activities.get(i);
-					updateCell(entries, cellMap.get(NICK), participant.getNickname());
-					updateCell(entries, cellMap.get(EMAIL), participant.getEmail());
+					updateCell(cellMap.get(NICK), participant.getNickname());
+					updateCell(cellMap.get(EMAIL), participant.getEmail());
 
 					String gplusID = participant.getGplusID();
 					if (gplusID != null) {
-						updateCell(entries, cellMap.get(GPLUS), gplusID.startsWith("+") ? "'" + gplusID : gplusID);
+						updateCell(cellMap.get(GPLUS), gplusID.startsWith("+") ? "'" + gplusID : gplusID);
 					}
 
 					i++;
@@ -110,33 +101,6 @@ public class EventBriteAPI extends OAuth2EntryPage
 			};
 			processor.processForUpdate(sheet, NICK, EMAIL, EMAIL_SENT, EMAIL_REPLIED, EMAIL_BOUNCED, GPLUS,
 					GPLUS_EVENT_INVITED, GPLUS_EVENT_ACCEPTED, GPLUS_EVENT_MAYBE, GPLUS_EVENT_DENIED);
-
-
-		/*
-		 * batchLink will be null for list feed
-		 */
-			URL cellFeedUrl = sheet.getCellFeedUrl();
-			SpreadsheetService ssSvc = spreadsheetManager.getService();
-			CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
-			Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
-			CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
-
-			// Check the results
-			boolean isSuccess = true;
-			for (CellEntry entry : batchResponse.getEntries()) {
-				String batchId = BatchUtils.getBatchId(entry);
-				if (!BatchUtils.isSuccess(entry)) {
-					isSuccess = false;
-					BatchStatus status = BatchUtils.getBatchStatus(entry);
-					logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
-					break;
-				}
-			}
-
-			logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
-			logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
-
-			logger.info("contact rows updated: " + (processor.getRow() - 1));
 		} catch (ServiceException e) {
 			throw new ServletException(e);
 		}

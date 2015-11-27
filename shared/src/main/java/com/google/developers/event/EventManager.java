@@ -397,8 +397,6 @@ public class EventManager implements MetaSpreadsheet {
 		long startTime = System.currentTimeMillis();
 		CellFeed batchRequest = new CellFeed();
 
-		final List<CellEntry> entries = batchRequest.getEntries();
-
 		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			int activitiesIndex = 0;
@@ -424,7 +422,7 @@ public class EventManager implements MetaSpreadsheet {
 
 				String nickname = p.getNickname();
 				if (nickname != null) {
-					updateCell(entries, cellMap.get("nickname"), nickname);
+					updateCell(cellMap.get("nickname"), nickname);
 				}
 
 				String gplusID = p.getGplusID();
@@ -433,15 +431,15 @@ public class EventManager implements MetaSpreadsheet {
 						gplusID = "'" + gplusID;
 					}
 				}
-				updateCell(entries, cellMap.get("gplusID"), gplusID);
+				updateCell(cellMap.get("gplusID"), gplusID);
 
-				updateCell(entries, cellMap.get("streak"), count + "");
+				updateCell(cellMap.get("streak"), count + "");
 
-				updateCell(entries, cellMap.get("fromDate"), DATE_FORMAT.format(latestStreak.getFromDate()));
-				updateCell(entries, cellMap.get("toDate"), DATE_FORMAT.format(latestStreak.getToDate()));
+				updateCell(cellMap.get("fromDate"), DATE_FORMAT.format(latestStreak.getFromDate()));
+				updateCell(cellMap.get("toDate"), DATE_FORMAT.format(latestStreak.getToDate()));
 
-				updateCell(entries, cellMap.get("id"), p.getContactID());
-				updateCell(entries, cellMap.get("cardinal"), (getRow() - 1) + "");
+				updateCell(cellMap.get("id"), p.getContactID());
+				updateCell(cellMap.get("cardinal"), (getRow() - 1) + "");
 
 				/*
 				 * the input value will be converted to the following
@@ -456,14 +454,14 @@ public class EventManager implements MetaSpreadsheet {
 //				updateCell(entries, cellMap.get("hasGplus"),
 //						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
 					int columnOffset = columnMap.get("gplusID") - columnMap.get("hasGplus");
-					updateCell(entries, cellMap.get("hasGplus"),
+					updateCell(cellMap.get("hasGplus"),
 							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
 				}
 				{
 //				updateCell(entries, cellMap.get("gplusCount"),
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
-					updateCell(entries, cellMap.get("gplusCount"),
+					updateCell(cellMap.get("gplusCount"),
 							getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
 
@@ -559,10 +557,6 @@ public class EventManager implements MetaSpreadsheet {
 		sheet.setRowCount(Math.min(activitiesWithCredit.size(), MAX_CELLS / sheet.getColCount()));
 		sheet = sheet.update();
 
-		long startTime = System.currentTimeMillis();
-		CellFeed batchRequest = new CellFeed();
-		final List<CellEntry> entries = batchRequest.getEntries();
-
 		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			int activitiesIndex = 0;
@@ -582,7 +576,7 @@ public class EventManager implements MetaSpreadsheet {
 					if (nickname.startsWith("+")) {
 						nickname = "'" + nickname;
 					}
-					updateCell(entries, cellMap.get("nickname"), nickname);
+					updateCell(cellMap.get("nickname"), nickname);
 				}
 
 				String gplusID = p.getGplusID();
@@ -591,14 +585,14 @@ public class EventManager implements MetaSpreadsheet {
 						gplusID = "'" + gplusID;
 					}
 				}
-				updateCell(entries, cellMap.get("gplusID"), gplusID);
+				updateCell(cellMap.get("gplusID"), gplusID);
 
-				updateCell(entries, cellMap.get("credit"), credit + "");
-				updateCell(entries, cellMap.get("fromDate"), DATE_FORMAT.format(p.getFromDate()));
-				updateCell(entries, cellMap.get("toDate"), DATE_FORMAT.format(p.getToDate()));
+				updateCell(cellMap.get("credit"), credit + "");
+				updateCell(cellMap.get("fromDate"), DATE_FORMAT.format(p.getFromDate()));
+				updateCell(cellMap.get("toDate"), DATE_FORMAT.format(p.getToDate()));
 
-				updateCell(entries, cellMap.get("id"), p.getContactID());
-				updateCell(entries, cellMap.get("cardinal"), (getRow() - 1) + "");
+				updateCell(cellMap.get("id"), p.getContactID());
+				updateCell(cellMap.get("cardinal"), (getRow() - 1) + "");
 
 				/*
 				 * the input value will be converted to the following
@@ -613,14 +607,14 @@ public class EventManager implements MetaSpreadsheet {
 //				updateCell(entries, cellMap.get("hasGplus"),
 //						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
 					int columnOffset = columnMap.get("gplusID") - columnMap.get("hasGplus");
-					updateCell(entries, cellMap.get("hasGplus"),
+					updateCell(cellMap.get("hasGplus"),
 							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
 				}
 				{
 //				updateCell(entries, cellMap.get("gplusCount"),
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
-					updateCell(entries, cellMap.get("gplusCount"),
+					updateCell(cellMap.get("gplusCount"),
 							getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
 
@@ -644,34 +638,6 @@ public class EventManager implements MetaSpreadsheet {
 			}
 		};
 		processor.processForUpdate(sheet, columnNames);
-
-		/*
-		 * batchLink will be null for list feed
-		 */
-		URL cellFeedUrl = sheet.getCellFeedUrl();
-		SpreadsheetService ssSvc = spreadsheetManager.getService();
-		CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
-		Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
-		CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
-
-		// Check the results
-		boolean isSuccess = true;
-		for (CellEntry entry : batchResponse.getEntries()) {
-			String batchId = BatchUtils.getBatchId(entry);
-			if (!BatchUtils.isSuccess(entry)) {
-				isSuccess = false;
-				BatchStatus status = BatchUtils.getBatchStatus(entry);
-				logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
-				break;
-			}
-		}
-
-		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
-		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
-
-//		sheet.setRowCount(processor.getRow());
-//		sheet.update();
-		logger.info("credit ranking rows updated: " + (processor.getRow() - 1));
 	}
 
 	public void updateEventScore() throws IOException, ServiceException {
@@ -704,10 +670,6 @@ public class EventManager implements MetaSpreadsheet {
 		sheet.setRowCount(Math.min(scoreMap.size(), MAX_CELLS / sheet.getColCount()));
 		sheet = sheet.update();
 
-		long startTime = System.currentTimeMillis();
-		CellFeed batchRequest = new CellFeed();
-		final List<CellEntry> entries = batchRequest.getEntries();
-
 		CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
 			int eventIndex = 0;
@@ -721,8 +683,8 @@ public class EventManager implements MetaSpreadsheet {
 
 				Map.Entry<String, EventScore> s = scoreRanking.get(eventIndex);
 
-				updateCell(entries, cellMap.get("Name"), s.getKey());
-				updateCell(entries, cellMap.get("Score"), s.getValue().getValue() + "");
+				updateCell(cellMap.get("Name"), s.getKey());
+				updateCell(cellMap.get("Score"), s.getValue().getValue() + "");
 
 				logger.debug("updating event score: " + eventIndex + ", " + s);
 
@@ -744,33 +706,5 @@ public class EventManager implements MetaSpreadsheet {
 			}
 		};
 		processor.processForUpdate(sheet, "Name", "Score", "Organizer");
-
-		/*
-		 * batchLink will be null for list feed
-		 */
-		URL cellFeedUrl = sheet.getCellFeedUrl();
-		SpreadsheetService ssSvc = spreadsheetManager.getService();
-		CellFeed cellFeed = ssSvc.getFeed(cellFeedUrl, CellFeed.class);
-		Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
-		CellFeed batchResponse = ssSvc.batch(new URL(batchLink.getHref()), batchRequest);
-
-		// Check the results
-		boolean isSuccess = true;
-		for (CellEntry entry : batchResponse.getEntries()) {
-			String batchId = BatchUtils.getBatchId(entry);
-			if (!BatchUtils.isSuccess(entry)) {
-				isSuccess = false;
-				BatchStatus status = BatchUtils.getBatchStatus(entry);
-				logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
-				break;
-			}
-		}
-
-		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
-		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
-
-//		sheet.setRowCount(processor.getRow());
-//		sheet.update();
-		logger.info("event score rows updated: " + (processor.getRow() - 1));
 	}
 }

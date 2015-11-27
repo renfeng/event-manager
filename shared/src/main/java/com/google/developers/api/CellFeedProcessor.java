@@ -3,11 +3,14 @@ package com.google.developers.api;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.batch.BatchOperationType;
+import com.google.gdata.data.batch.BatchStatus;
 import com.google.gdata.data.batch.BatchUtils;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,6 +23,8 @@ import java.util.regex.Pattern;
  */
 public abstract class CellFeedProcessor {
 
+	private static final Logger logger = LoggerFactory.getLogger(CellFeedProcessor.class);
+
 	private static final Pattern cellIDPattern = Pattern.compile("R([0-9]+)C([0-9]+)");
 //		Pattern titlePattern = Pattern.compile("([A-Z]+)([0-9]+)");
 
@@ -27,15 +32,23 @@ public abstract class CellFeedProcessor {
 
 	private int row;
 
+	URL cellFeedURL;
+	CellFeed batchRequest;
+
+	/*
+	 * TODO tune the batch size
+	 */
+	int batchSize = 2000;
+
 	public CellFeedProcessor(SpreadsheetService spreadsheetService) {
 		this.spreadsheetService = spreadsheetService;
 	}
 
-	public void processForUpdate(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
+	public boolean processForUpdate(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
 
 		boolean stoppedOnDemand = false;
 
-		URL cellFeedURL = sheet.getCellFeedUrl();
+		cellFeedURL = sheet.getCellFeedUrl();
 
 		List<String> columnNames = new ArrayList<>(Arrays.asList(columns));
 
@@ -125,12 +138,15 @@ public abstract class CellFeedProcessor {
 				int column = Integer.parseInt(matcher.group(2));
 				int row = Integer.parseInt(matcher.group(1));
 				if (row != this.row) {
-						/*
-						 * now I've read all the data I need in a row
-						 */
+					/*
+					 * now I've read all the data I need in a row
+					 */
 					if (!processDataRow(valueMap, cellFeedURL)) {
 						stoppedOnDemand = true;
 						break;
+					}
+					if (!submitBatch(false)) {
+						return false;
 					}
 
 					valueMap = new HashMap<>();
@@ -153,7 +169,13 @@ public abstract class CellFeedProcessor {
 			if (!stoppedOnDemand) {
 				processDataRow(valueMap, cellFeedURL);
 			}
+
+			if (!submitBatch(true)) {
+				return false;
+			}
 		}
+
+		return true;
 	}
 
 	public void process(WorksheetEntry sheet, String... columns) throws IOException, ServiceException {
@@ -221,9 +243,9 @@ public abstract class CellFeedProcessor {
 			int row = Integer.parseInt(matcher.group(1));
 
 			if (row != this.row) {
-						/*
-						 * now all the cells in a row is collected
-						 */
+				/*
+				 * now all the cells in a row is collected
+				 */
 				if (!processDataRow(valueMap, cellFeedURL)) {
 					stoppedOnDemand = true;
 					break;
@@ -267,7 +289,7 @@ public abstract class CellFeedProcessor {
 	protected abstract boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 			throws IOException, ServiceException;
 
-	protected void updateCell(List<CellEntry> entries, CellEntry cellEntry, String value) {
+	protected void updateCell(CellEntry cellEntry, String value) {
 
 		String inputValue = cellEntry.getCell().getInputValue();
 		if (diff(inputValue, value)) {
@@ -277,13 +299,56 @@ public abstract class CellFeedProcessor {
 			BatchUtils.setBatchId(batchEntry, batchEntry.getId());
 			BatchUtils.setBatchOperationType(batchEntry, BatchOperationType.UPDATE);
 
-			entries.add(batchEntry);
+			if (batchRequest == null) {
+				batchRequest = new CellFeed();
+			}
+			batchRequest.getEntries().add(batchEntry);
 		}
+	}
+
+	private boolean submitBatch(boolean force) throws IOException, ServiceException {
+
+		if (batchRequest == null) {
+			return true;
+		}
+
+		if (!force && batchRequest.getEntries().size() < batchSize) {
+			return true;
+		}
+
+		long startTime = System.currentTimeMillis();
+
+		/*
+		 * batchLink will be null for list feed
+		 */
+		CellFeed cellFeed = spreadsheetService.getFeed(cellFeedURL, CellFeed.class);
+		Link batchLink = cellFeed.getLink(Link.Rel.FEED_BATCH, Link.Type.ATOM);
+		CellFeed batchResponse = spreadsheetService.batch(new URL(batchLink.getHref()), batchRequest);
+
+		// Check the results
+		boolean isSuccess = true;
+		for (CellEntry entry : batchResponse.getEntries()) {
+			String batchId = BatchUtils.getBatchId(entry);
+			if (!BatchUtils.isSuccess(entry)) {
+				isSuccess = false;
+				BatchStatus status = BatchUtils.getBatchStatus(entry);
+				logger.debug("{} failed ({}) {}", batchId, status.getReason(), status.getContent());
+				break;
+			}
+		}
+
+		logger.debug(isSuccess ? "Batch operations successful." : "Batch operations failed");
+		logger.debug("{} ms elapsed", System.currentTimeMillis() - startTime);
+
+		logger.info("rows updated: " + (getRow() - 1));
+
+		batchRequest = null;
+
+		return isSuccess;
 	}
 
 	protected boolean diff(String oldInputValue, String newInputValue) {
 		return (newInputValue != null && !newInputValue.equals(oldInputValue)) ||
 				(newInputValue == null && oldInputValue != null && oldInputValue.length() > 0);
 	}
-
 }
