@@ -71,9 +71,11 @@ public class MailReceiverServlet extends HttpServlet {
 			 */
 			logger.info("content type: " + message.getContentType());
 			if (message.getContentType().startsWith("text/plain")) {
-
+			}else if (message.getContentType().startsWith("multipart/related")){
+				/*
+				 * contains embedded image
+				 */
 			} else {
-
 			}
 
 			/*
@@ -86,12 +88,10 @@ public class MailReceiverServlet extends HttpServlet {
 				for (int i = 0; i < parts.getCount(); i++) {
 					BodyPart bodyPart = parts.getBodyPart(i);
 					logger.info(bodyPart.toString());
+					logger.info("part " + i + ", content type: " + bodyPart.getContentType());
+					logger.info("part " + i + ", content: " + bodyPart.getContent());
 					if (bodyPart instanceof MimeBodyPart) {
 						MimeBodyPart p = (MimeBodyPart) bodyPart;
-						logger.info("part " + i + ", content type: "
-								+ p.getContentType());
-						logger.info("part " + i + ", content: "
-								+ p.getContent());
 						if (p.getContentType().startsWith("text/plain")) {
 
 							/*
@@ -99,6 +99,11 @@ public class MailReceiverServlet extends HttpServlet {
 							 */
 
 							break;
+						} else if (p.getContentType().startsWith("multipart/alternative")) {
+						} else if (p.getContentType().startsWith("image/jpeg")) {
+							/*
+							 * TODO save image to g+
+							 */
 						}
 					}
 				}
@@ -106,7 +111,6 @@ public class MailReceiverServlet extends HttpServlet {
 				/*
 				 * FIXME if content type = text/plain
 				 */
-				logger.info("content: " + content);
 			}
 
 			logger.info("content id: " + message.getContentID());

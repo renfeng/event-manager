@@ -197,7 +197,7 @@
 							<!-- http://docs.oracle.com/javase/8/docs/technotes/guides/jpda/conninv.html#Invocation -->
 							<jvmFlag>-Xdebug</jvmFlag>
 							<!--<jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>-->
-							<jvmFlag>-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</jvmFlag>
+							<jvmFlag>-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>
 
 							<jvmFlag>-Dhttp.proxyHost=${env.PROXY_HOST}</jvmFlag>
 							<jvmFlag>-Dhttp.proxyPort=${env.PROXY_PORT}</jvmFlag>
@@ -487,9 +487,6 @@
 
 	<!-- https://maven.apache.org/settings.html#Properties -->
 	<properties>
-
-		<!-- this is your Project ID. See https://console.developers.google.com -->
-		<appengine.app.id>s~effective-forge-706</appengine.app.id>
 
 		<appengine.module.ranking>event-manager-ranking</appengine.module.ranking>
 		<appengine.target.version>1.9.28</appengine.target.version>
