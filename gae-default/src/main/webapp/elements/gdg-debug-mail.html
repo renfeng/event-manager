@@ -1,0 +1,29 @@
+<link rel="import" href="../components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../components/iron-autogrow-textarea/iron-autogrow-textarea.html">
+<link rel="import" href="../components/paper-button/paper-button.html">
+
+<dom-module id="gdg-debug-mail">
+	<template>
+		<iron-ajax auto id="lastAjax" url="/_ah/mail/" method="GET" handle-as="text"
+				   last-response="{{requestBody}}" on-response="onLastMail"></iron-ajax>
+		<iron-ajax id="sendAjax" url="/_ah/mail/debug@${appengine.app.id}.appspotmail.com" method="POST"
+				   contentType="application/x-www-form-urlencoded" body="[[requestBody]]"></iron-ajax>
+		<iron-autogrow-textarea bind-value="{{requestBody}}"></iron-autogrow-textarea>
+		<paper-button raised on-tap="send">Send</paper-button>
+	</template>
+	<script>
+	(function() {
+		Polymer({
+			is: "gdg-debug-mail",
+			requestBody: "",
+			send: function() {
+				this.$.sendAjax.generateRequest();
+			},
+			onLastMail: function(e, request) {
+				console.log(e.detail.response);
+				//this.requestBody = e.detail.response;
+			}
+		});
+	})();
+	</script>
+</dom-module>

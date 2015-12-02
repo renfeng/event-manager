@@ -1,13 +1,13 @@
 package com.google.developers.event.mail;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.JsonGenerator;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
@@ -19,7 +19,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -31,98 +33,88 @@ public class MailReceiverServlet extends HttpServlet {
 
 	private static final String PREFIX = "/_ah/mail/";
 
+	private final JsonFactory jsonFactory;
+
+	String requestBody;
+
+	@Inject
+	public MailReceiverServlet(JsonFactory jsonFactory) {
+		this.jsonFactory = jsonFactory;
+	}
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
+		/*
+		 * the address is not available in the path. use to address, instead.
+		 */
 		String path = req.getServletPath();
+		logger.info("path: " + path);
 		int beginIndex = path.indexOf(PREFIX) + PREFIX.length();
 		String address = path.substring(beginIndex);
-		logger.info(address);
+		logger.info("address: " + address);
+
+		StringWriter writer = new StringWriter();
+		JsonGenerator generator = jsonFactory.createJsonGenerator(writer);
+		generator.writeStartObject();
 
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 		try {
-			MimeMessage message = new MimeMessage(session, req.getInputStream());
+			requestBody = IOUtils.toString(req.getInputStream());
+			logger.info("request body: " + requestBody);
+			MimeMessage message = new MimeMessage(session, new ByteArrayInputStream(requestBody.getBytes("UTF-8")));
 
 			/*
 			 * from
 			 */
-			Address[] from = message.getFrom();
-			logger.info("from: " + Arrays.toString(from));
+			generator.writeFieldName("from");
+			generator.writeString(Arrays.toString(message.getFrom()));
 
 			/*
 			 * to
+			 *
+			 * TODO only read the first to address
 			 */
-			logger.info("to: "
-					+ Arrays.toString(message.getRecipients(RecipientType.TO)));
-			logger.info("cc: "
-					+ Arrays.toString(message.getRecipients(RecipientType.CC)));
-			logger.info("bcc: "
-					+ Arrays.toString(message.getRecipients(RecipientType.BCC)));
+			generator.writeFieldName("to");
+			generator.writeString(Arrays.toString(message.getRecipients(RecipientType.TO)));
+			generator.writeFieldName("cc");
+			generator.writeString(Arrays.toString(message.getRecipients(RecipientType.CC)));
+			generator.writeFieldName("bcc");
+			generator.writeString(Arrays.toString(message.getRecipients(RecipientType.BCC)));
 
 			/*
 			 * subject
 			 */
-			logger.info("subject: " + message.getSubject());
-
-			/*
-			 * content type
-			 */
-			logger.info("content type: " + message.getContentType());
-			if (message.getContentType().startsWith("text/plain")) {
-			}else if (message.getContentType().startsWith("multipart/related")){
-				/*
-				 * contains embedded image
-				 */
-			} else {
-			}
+			generator.writeFieldName("subject");
+			generator.writeString(message.getSubject());
 
 			/*
 			 * content
 			 */
-			Object content = message.getContent();
-			logger.info("content: " + content);
-			if (content instanceof MimeMultipart) {
-				MimeMultipart parts = (MimeMultipart) content;
-				for (int i = 0; i < parts.getCount(); i++) {
-					BodyPart bodyPart = parts.getBodyPart(i);
-					logger.info(bodyPart.toString());
-					logger.info("part " + i + ", content type: " + bodyPart.getContentType());
-					logger.info("part " + i + ", content: " + bodyPart.getContent());
-					if (bodyPart instanceof MimeBodyPart) {
-						MimeBodyPart p = (MimeBodyPart) bodyPart;
-						if (p.getContentType().startsWith("text/plain")) {
+			extract(message.getContentType(), message.getContent(), generator);
 
-							/*
-							 * FIXME parse the command
-							 */
+			/*
+			 * these are null. always?
+			 */
+			generator.writeFieldName("content-id");
+			generator.writeString(message.getContentID());
+			generator.writeFieldName("content-language");
+			generator.writeString(Arrays.toString(message.getContentLanguage()));
+			generator.writeFieldName("content-md5");
+			generator.writeString(message.getContentMD5());
+			generator.writeFieldName("description");
+			generator.writeString(message.getDescription());
+			generator.writeFieldName("disposition");
+			generator.writeString(message.getDisposition());
+			generator.writeFieldName("encoding");
+			generator.writeString(message.getEncoding());
+			generator.writeFieldName("filename");
+			generator.writeString(message.getFileName());
 
-							break;
-						} else if (p.getContentType().startsWith("multipart/alternative")) {
-						} else if (p.getContentType().startsWith("image/jpeg")) {
-							/*
-							 * TODO save image to g+
-							 */
-						}
-					}
-				}
-			} else {
-				/*
-				 * FIXME if content type = text/plain
-				 */
-			}
-
-			logger.info("content id: " + message.getContentID());
-			logger.info("content languages: "
-					+ Arrays.toString(message.getContentLanguage()));
-			logger.info("content md5: " + message.getContentMD5());
-
-			logger.info("description: " + message.getDescription());
-			logger.info("disposition: " + message.getDisposition());
-			logger.info("encoding: " + message.getEncoding());
-			logger.info("filename: " + message.getFileName());
-			logger.info("message id: " + message.getMessageID());
+			generator.writeFieldName("message-id");
+			generator.writeString(message.getMessageID());
 
 			/*
 			 * TODO enqueue a task
@@ -134,12 +126,71 @@ public class MailReceiverServlet extends HttpServlet {
 //			}
 
 		} catch (MessagingException e) {
+			logger.error("Error processing inbound message", e);
 			throw new ServletException("Error processing inbound message", e);
 		} catch (IOException e) {
+			logger.error("Error processing inbound message", e);
 			throw new ServletException("Error processing inbound message", e);
 		}
+
+		generator.writeEndObject();
+		generator.close();
+
+		/*
+		 * FIXME persisnt the email as json
+		 */
+		logger.info("email received: " + writer.toString());
 
 		return;
 	}
 
+	private void extract(String contentType, Object content, JsonGenerator generator) throws MessagingException, IOException {
+
+		generator.writeFieldName(contentType);
+		if (content instanceof MimeMultipart) {
+			generator.writeStartArray();
+			MimeMultipart parts = (MimeMultipart) content;
+			for (int i = 0; i < parts.getCount(); i++) {
+				BodyPart bodyPart = parts.getBodyPart(i);
+				logger.info(bodyPart.toString());
+				if (bodyPart instanceof MimeBodyPart) {
+					MimeBodyPart p = (MimeBodyPart) bodyPart;
+					/*
+					 * multipart/alternative
+					 * image/jpeg; name="IMG_20151128_182644.jpg"
+					 */
+					logger.info("part " + i + ", content type: " + p.getContentType());
+					logger.info("part " + i + ", content: " + p.getContent());
+					generator.writeStartObject();
+					extract(p.getContentType(), p.getContent(), generator);
+					generator.writeEndObject();
+//					if (p.getContentType().equals("multipart/alternative")) {
+//
+//					} else if (p.getContentType().startsWith("text/plain")) {
+//
+//					/*
+//					 * FIXME parse the content
+//					 */
+//
+//						//break;
+//					}
+				} else {
+					logger.warn("unhandled {}", bodyPart);
+				}
+			}
+			generator.writeEndArray();
+		} else {
+			/*
+			 * FIXME if content type = text/plain
+			 */
+			generator.writeString(content.toString());
+		}
+	}
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		if (requestBody != null) {
+			resp.getWriter().write(requestBody);
+		}
+	}
 }

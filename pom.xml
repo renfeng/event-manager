@@ -148,6 +148,7 @@
 									<include>WEB-INF/cron.xml</include>
 									<include>WEB-INF/queue.xml</include>
 									<include>WEB-INF/web.xml</include>
+									<include>elements/gdg-debug-mail.html</include>
 								</includes>
 							</resource>
 						</webResources>
@@ -184,7 +185,7 @@
 					<artifactId>appengine-maven-plugin</artifactId>
 
 					<!-- <version>${appengine.target.version}</version> -->
-					<version>1.9.28</version>
+					<version>1.9.30</version>
 					<configuration>
 
 						<!-- com.google.appengine.DevAppServerRunner -->
@@ -354,7 +355,7 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-calendar</artifactId>
-				<version>v3-rev154-1.21.0</version>
+				<version>v3-rev155-1.21.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
@@ -369,7 +370,7 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev304-1.21.0</version>
+				<version>v1-rev306-1.21.0</version>
 			</dependency>
 
 			<dependency>
@@ -489,7 +490,7 @@
 	<properties>
 
 		<appengine.module.ranking>event-manager-ranking</appengine.module.ranking>
-		<appengine.target.version>1.9.28</appengine.target.version>
+		<appengine.target.version>1.9.30</appengine.target.version>
 
 		<!-- <encoding>UTF-8</encoding> -->
 		<maven.compiler.source>1.7</maven.compiler.source>
