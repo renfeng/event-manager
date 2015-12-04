@@ -8,7 +8,7 @@
 				   last-response="{{requestBody}}" on-response="onLastMail"></iron-ajax>
 		<iron-ajax id="sendAjax" url="/_ah/mail/debug@${appengine.app.id}.appspotmail.com" method="POST"
 				   contentType="application/x-www-form-urlencoded" body="[[requestBody]]"></iron-ajax>
-		<iron-autogrow-textarea bind-value="{{requestBody}}"></iron-autogrow-textarea>
+		<iron-autogrow-textarea bind-value="{{requestBody}}" style="width: 100%;"></iron-autogrow-textarea>
 		<paper-button raised on-tap="send">Send</paper-button>
 	</template>
 	<script>

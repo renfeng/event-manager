@@ -2,6 +2,7 @@ package com.google.developers.event.mail;
 
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
+import com.google.gdata.util.common.util.Base64;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.apache.commons.io.IOUtils;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Properties;
@@ -63,7 +65,7 @@ public class MailReceiverServlet extends HttpServlet {
 		Session session = Session.getDefaultInstance(props, null);
 		try {
 			requestBody = IOUtils.toString(req.getInputStream());
-			logger.info("request body: " + requestBody);
+			//logger.info("request body: " + requestBody);
 			MimeMessage message = new MimeMessage(session, new ByteArrayInputStream(requestBody.getBytes("UTF-8")));
 
 			/*
@@ -179,10 +181,17 @@ public class MailReceiverServlet extends HttpServlet {
 				}
 			}
 			generator.writeEndArray();
+		} else if (content instanceof String) {
+			generator.writeString(content.toString());
+		} else if (content instanceof InputStream) {
+			if (contentType.startsWith("image/")) {
+				/*
+				 * save to g+
+				 */
+			} else {
+				generator.writeString(Base64.encode(IOUtils.toByteArray((InputStream) content)));
+			}
 		} else {
-			/*
-			 * FIXME if content type = text/plain
-			 */
 			generator.writeString(content.toString());
 		}
 	}
