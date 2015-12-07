@@ -3,7 +3,7 @@ X-Received: by 10.107.11.79 with SMTP id v76mr12026297ioi.0.1449186439387;
 Return-Path: <renfeng.cn@gmail.com>
 Received: from mail-vk0-x232.google.com (mail-vk0-x232.google.com. [2607:f8b0:400c:c05::232])
         by gmr-mx.google.com with ESMTPS id i128si522048vki.0.2015.12.03.15.47.19
-        for <test123@effective-forge-706.appspotmail.com>
+        for <cr2p8mnc7e8m1lhldoftasn4sec@effective-forge-706.appspotmail.com>
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
         Thu, 03 Dec 2015 15:47:19 -0800 (PST)
 Received-SPF: pass (google.com: domain of renfeng.cn@gmail.com designates 2607:f8b0:400c:c05::232 as permitted sender) client-ip=2607:f8b0:400c:c05::232;
@@ -13,7 +13,7 @@ Authentication-Results: gmr-mx.google.com;
 Authentication-Results: mx.google.com;
        dkim=pass header.i=@gmail.com
 Received: by vkay187 with SMTP id y187so55755947vka.3
-        for <test123@effective-forge-706.appspotmail.com>; Thu, 03 Dec 2015 15:47:19 -0800 (PST)
+        for <cr2p8mnc7e8m1lhldoftasn4sec@effective-forge-706.appspotmail.com>; Thu, 03 Dec 2015 15:47:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
@@ -43,7 +43,7 @@ Date: Fri, 4 Dec 2015 07:47:18 +0800
 Message-ID: <CAC0fJiA8rbhfKfpqx+0ZoAf2zwoSPsZGAC6NPzD_LTfy5wqNsA@mail.gmail.com>
 Subject: Re: x
 From: "Frank R." <renfeng.cn@gmail.com>
-To: test123@effective-forge-706.appspotmail.com
+To: cr2p8mnc7e8m1lhldoftasn4sec@effective-forge-706.appspotmail.com
 Content-Type: multipart/related; boundary=001a1143e186e868c6052607022d
 
 --001a1143e186e868c6052607022d

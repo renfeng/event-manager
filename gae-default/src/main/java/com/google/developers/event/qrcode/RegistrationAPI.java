@@ -4,12 +4,12 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.SpreadsheetManager;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.developers.event.http.DefaultServletModule;
-import com.google.developers.event.http.OAuth2EntryPage;
 import com.google.developers.event.http.OAuth2Utils;
 import com.google.developers.event.http.Path;
 import com.google.gdata.data.spreadsheet.CellEntry;
@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -32,25 +33,28 @@ import java.util.Map;
  * Created by frren on 2015-09-29.
  */
 @Singleton
-public class RegistrationAPI extends OAuth2EntryPage
+public class RegistrationAPI extends HttpServlet
 		implements Path, RegisterFormResponseSpreadsheet {
 
 	private static final Logger logger = LoggerFactory.getLogger(RegistrationAPI.class);
 
+	private final HttpTransport transport;
+	private final JsonFactory jsonFactory;
+	private final OAuth2Utils oauth2Utils;
+
 	@Inject
 	public RegistrationAPI(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
-		super(transport, jsonFactory, oauth2Utils);
+		this.transport = transport;
+		this.jsonFactory = jsonFactory;
+		this.oauth2Utils = oauth2Utils;
 	}
 
 	@Override
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-//		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
-		// Get the stored credentials using the Authorization Flow
-//		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
-//		Credential credential = authFlow.loadCredential(getUserId(req));
-		Credential credential = getCredential();
+		final Credential credential = oauth2Utils.initializeFlow().loadCredential(
+				UserServiceFactory.getUserService().getCurrentUser().getEmail());
 		logger.debug("refresh token: {}", credential.getRefreshToken());
 
 		/*
@@ -172,11 +176,8 @@ public class RegistrationAPI extends OAuth2EntryPage
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-//		SpreadsheetManager spreadsheetManager = SpreadsheetManager.getGlobalInstance(transport, jsonFactory);
-		// Get the stored credentials using the Authorization Flow
-//		GoogleAuthorizationCodeFlow authFlow = initializeFlow();
-//		Credential credential = authFlow.loadCredential(getUserId(req));
-		Credential credential = getCredential();
+		final Credential credential = oauth2Utils.initializeFlow().loadCredential(
+				UserServiceFactory.getUserService().getCurrentUser().getEmail());
 
 		/*
 		 * TODO https://developers.google.com/api-client-library/java/google-oauth-java-client/oauth2?hl=en#detecting_an_expired_access_token

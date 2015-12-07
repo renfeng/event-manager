@@ -401,7 +401,6 @@ public class EventManager implements MetaSpreadsheet {
 
 			int activitiesIndex = 0;
 
-			Map<String, CellEntry> cellMap = new HashMap<>();
 			Map<String, Integer> columnMap = new HashMap<>();
 
 			@Override
@@ -422,7 +421,7 @@ public class EventManager implements MetaSpreadsheet {
 
 				String nickname = p.getNickname();
 				if (nickname != null) {
-					updateCell(cellMap.get("nickname"), nickname);
+					updateCell("nickname", nickname);
 				}
 
 				String gplusID = p.getGplusID();
@@ -431,15 +430,15 @@ public class EventManager implements MetaSpreadsheet {
 						gplusID = "'" + gplusID;
 					}
 				}
-				updateCell(cellMap.get("gplusID"), gplusID);
+				updateCell("gplusID", gplusID);
 
-				updateCell(cellMap.get("streak"), count + "");
+				updateCell("streak", count + "");
 
-				updateCell(cellMap.get("fromDate"), DATE_FORMAT.format(latestStreak.getFromDate()));
-				updateCell(cellMap.get("toDate"), DATE_FORMAT.format(latestStreak.getToDate()));
+				updateCell("fromDate", DATE_FORMAT.format(latestStreak.getFromDate()));
+				updateCell("toDate", DATE_FORMAT.format(latestStreak.getToDate()));
 
-				updateCell(cellMap.get("id"), p.getContactID());
-				updateCell(cellMap.get("cardinal"), (getRow() - 1) + "");
+				updateCell("id", p.getContactID());
+				updateCell("cardinal", (getRow() - 1) + "");
 
 				/*
 				 * the input value will be converted to the following
@@ -454,29 +453,20 @@ public class EventManager implements MetaSpreadsheet {
 //				updateCell(entries, cellMap.get("hasGplus"),
 //						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
 					int columnOffset = columnMap.get("gplusID") - columnMap.get("hasGplus");
-					updateCell(cellMap.get("hasGplus"),
-							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
+					updateCell("hasGplus", "=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
 				}
 				{
 //				updateCell(entries, cellMap.get("gplusCount"),
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
-					updateCell(cellMap.get("gplusCount"),
-							getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
+					updateCell("gplusCount", getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
 
 				logger.debug("updating streak: " + activitiesIndex + ", " + p);
 
 				activitiesIndex++;
 
-				cellMap = new HashMap<>();
-
 				return true;
-			}
-
-			@Override
-			protected void processDataColumn(CellEntry cell, String columnName) {
-				cellMap.put(columnName, cell);
 			}
 
 			@Override
@@ -561,7 +551,6 @@ public class EventManager implements MetaSpreadsheet {
 
 			int activitiesIndex = 0;
 
-			Map<String, CellEntry> cellMap = new HashMap<>();
 			Map<String, Integer> columnMap = new HashMap<>();
 
 			@Override
@@ -576,7 +565,7 @@ public class EventManager implements MetaSpreadsheet {
 					if (nickname.startsWith("+")) {
 						nickname = "'" + nickname;
 					}
-					updateCell(cellMap.get("nickname"), nickname);
+					updateCell("nickname", nickname);
 				}
 
 				String gplusID = p.getGplusID();
@@ -585,14 +574,14 @@ public class EventManager implements MetaSpreadsheet {
 						gplusID = "'" + gplusID;
 					}
 				}
-				updateCell(cellMap.get("gplusID"), gplusID);
+				updateCell("gplusID", gplusID);
 
-				updateCell(cellMap.get("credit"), credit + "");
-				updateCell(cellMap.get("fromDate"), DATE_FORMAT.format(p.getFromDate()));
-				updateCell(cellMap.get("toDate"), DATE_FORMAT.format(p.getToDate()));
+				updateCell("credit", credit + "");
+				updateCell("fromDate", DATE_FORMAT.format(p.getFromDate()));
+				updateCell("toDate", DATE_FORMAT.format(p.getToDate()));
 
-				updateCell(cellMap.get("id"), p.getContactID());
-				updateCell(cellMap.get("cardinal"), (getRow() - 1) + "");
+				updateCell("id", p.getContactID());
+				updateCell("cardinal", (getRow() - 1) + "");
 
 				/*
 				 * the input value will be converted to the following
@@ -607,29 +596,20 @@ public class EventManager implements MetaSpreadsheet {
 //				updateCell(entries, cellMap.get("hasGplus"),
 //						"=if(B" + (getRow() + 1) + "<>\"\",\"Yes\",\"\")");
 					int columnOffset = columnMap.get("gplusID") - columnMap.get("hasGplus");
-					updateCell(cellMap.get("hasGplus"),
-							"=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
+					updateCell("hasGplus", "=if(R[0]C[" + columnOffset + "]<>\"\",\"1\",\"\")");
 				}
 				{
 //				updateCell(entries, cellMap.get("gplusCount"),
 //						getRow() == 1 ? "1" : "=I" + getRow() + "+if(B" + (getRow() + 1) + "<>\"\",1,0)");
 					int columnOffset = columnMap.get("hasGplus") - columnMap.get("gplusCount");
-					updateCell(cellMap.get("gplusCount"),
-							getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
+					updateCell("gplusCount", getRow() == 2 ? "1" : "=R[-1]C[0]+R[0]C[" + columnOffset + "]");
 				}
 
 				logger.debug("updating credit: " + activitiesIndex + ", " + p);
 
 				activitiesIndex++;
 
-				cellMap = new HashMap<>();
-
 				return true;
-			}
-
-			@Override
-			protected void processDataColumn(CellEntry cell, String columnName) {
-				cellMap.put(columnName, cell);
 			}
 
 			@Override
@@ -674,7 +654,6 @@ public class EventManager implements MetaSpreadsheet {
 
 			int eventIndex = 0;
 
-			Map<String, CellEntry> cellMap = new HashMap<>();
 			Map<String, Integer> columnMap = new HashMap<>();
 
 			@Override
@@ -683,21 +662,14 @@ public class EventManager implements MetaSpreadsheet {
 
 				Map.Entry<String, EventScore> s = scoreRanking.get(eventIndex);
 
-				updateCell(cellMap.get("Name"), s.getKey());
-				updateCell(cellMap.get("Score"), s.getValue().getValue() + "");
+				updateCell("Name", s.getKey());
+				updateCell("Score", s.getValue().getValue() + "");
 
 				logger.debug("updating event score: " + eventIndex + ", " + s);
 
 				eventIndex++;
 
-				cellMap = new HashMap<>();
-
 				return true;
-			}
-
-			@Override
-			protected void processDataColumn(CellEntry cell, String columnName) {
-				cellMap.put(columnName, cell);
 			}
 
 			@Override

@@ -7,6 +7,11 @@
 	<!-- buildNumber will be substituted by maven -->
 	<display-name>${project.name} (${buildNumber})</display-name>
 
+	<context-param>
+		<param-name>appengine.app.id</param-name>
+		<param-value>${appengine.app.id}</param-value>
+	</context-param>
+
 	<filter>
 		<filter-name>guiceFilter</filter-name>
 		<filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
@@ -30,17 +35,17 @@
 
 	<!-- https://developers.google.com/appengine/docs/java/config/webxml#Secure_URLs -->
 	<!-- this is for forcing https -->
-<!--
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>everything</web-resource-name>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
--->
+	<!--
+		<security-constraint>
+			<web-resource-collection>
+				<web-resource-name>everything</web-resource-name>
+				<url-pattern>/*</url-pattern>
+			</web-resource-collection>
+			<user-data-constraint>
+				<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+			</user-data-constraint>
+		</security-constraint>
+	-->
 
 	<security-constraint>
 		<web-resource-collection>
@@ -71,12 +76,12 @@
 			<web-resource-name>authenticated</web-resource-name>
 			<url-pattern>/authenticated/*</url-pattern>
 		</web-resource-collection>
-<!--
-		<web-resource-collection>
-			<web-resource-name>spreadsheet</web-resource-name>
-			<url-pattern>/spreadsheet/*</url-pattern>
-		</web-resource-collection>
--->
+		<!--
+				<web-resource-collection>
+					<web-resource-name>spreadsheet</web-resource-name>
+					<url-pattern>/spreadsheet/*</url-pattern>
+				</web-resource-collection>
+		-->
 		<auth-constraint>
 			<role-name>*</role-name>
 		</auth-constraint>

@@ -34,6 +34,11 @@ public interface GoogleAPIScope {
 	 */
 
 	/*
+	 * https://developers.google.com/picasa-web/docs/2.0/developers_guide_protocol#OAuth2Authorizing
+	 */
+	String PICASA = "https://picasaweb.google.com/data/";
+
+	/*
 	 * TODO Calendar API v3
 	 */
 }

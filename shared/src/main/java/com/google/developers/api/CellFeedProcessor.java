@@ -31,6 +31,7 @@ public abstract class CellFeedProcessor {
 	private final SpreadsheetService spreadsheetService;
 
 	private int row;
+	Map<String, CellEntry> cellMap;
 
 	URL cellFeedURL;
 	CellFeed batchRequest;
@@ -106,6 +107,7 @@ public abstract class CellFeedProcessor {
 
 		if (columnNameMap.size() > 0) {
 			row = 2;
+			cellMap = new HashMap<>();
 			Map<String, String> valueMap = new HashMap<>();
 
 			CellFeed batchRequest = new CellFeed();
@@ -149,12 +151,14 @@ public abstract class CellFeedProcessor {
 						return false;
 					}
 
-					valueMap = new HashMap<>();
 					this.row = row;
+					cellMap = new HashMap<>();
+					valueMap = new HashMap<>();
 				}
 
 				String columnName = columnNameMap.get(column);
 				if (columnName != null) {
+					cellMap.put(columnName, cellEntry);
 					processDataColumn(cellEntry, columnName);
 
 					String value = cellEntry.getCell().getValue();
@@ -280,17 +284,22 @@ public abstract class CellFeedProcessor {
 		return row;
 	}
 
-	protected void processDataColumn(CellEntry cell, String columnName) {
+	protected void processDataColumn(CellEntry cellEntry, String columnName) {
 	}
 
+	/**
+	 * @param column     starts from 1, matching that of A1 scheme
+	 * @param columnName
+	 */
 	protected void processHeaderColumn(int column, String columnName) {
 	}
 
 	protected abstract boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 			throws IOException, ServiceException;
 
-	protected void updateCell(CellEntry cellEntry, String value) {
+	protected void updateCell(String column, String value) {
 
+		CellEntry cellEntry = cellMap.get(column);
 		String inputValue = cellEntry.getCell().getInputValue();
 		if (diff(inputValue, value)) {
 			CellEntry batchEntry = new CellEntry(cellEntry);

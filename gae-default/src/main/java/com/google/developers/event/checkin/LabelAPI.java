@@ -46,7 +46,6 @@ public class LabelAPI extends HttpServlet implements Path {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-//		Credential credential = GoogleOAuth2.getGlobalCredential(transport, jsonFactory);
 		Credential credential = oauth2Utils.initializeFlow().loadCredential(
 				UserServiceFactory.getUserService().getCurrentUser().getEmail());
 

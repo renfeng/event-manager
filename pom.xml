@@ -144,11 +144,11 @@
 								<directory>src/main/webapp</directory>
 								<filtering>true</filtering>
 								<includes>
+									<include>elements/gdg-debug-mail.html</include>
 									<include>WEB-INF/appengine-web.xml</include>
 									<include>WEB-INF/cron.xml</include>
 									<include>WEB-INF/queue.xml</include>
 									<include>WEB-INF/web.xml</include>
-									<include>elements/gdg-debug-mail.html</include>
 								</includes>
 							</resource>
 						</webResources>

@@ -13,7 +13,6 @@ import com.google.developers.event.http.DefaultServletModule;
 import com.google.developers.event.http.OAuth2EntryPage;
 import com.google.developers.event.http.OAuth2Utils;
 import com.google.developers.event.http.Path;
-import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
@@ -27,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,29 +71,23 @@ public class CampaignAPI extends OAuth2EntryPage
 
 			CellFeedProcessor processor = new CellFeedProcessor(spreadsheetManager.getService()) {
 
-				Map<String, CellEntry> cellMap = new HashMap<>();
 				int i;
 
 				@Override
 				protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL) throws IOException, ServiceException {
 
 					ParticipantStatistics participant = activities.get(i);
-					updateCell(cellMap.get(NICK), participant.getNickname());
-					updateCell(cellMap.get(EMAIL), participant.getEmail());
+					updateCell(NICK, participant.getNickname());
+					updateCell(EMAIL, participant.getEmail());
 
 					String gplusID = participant.getGplusID();
 					if (gplusID != null) {
-						updateCell(cellMap.get(GPLUS), gplusID.startsWith("+") ? "'" + gplusID : gplusID);
+						updateCell(GPLUS, gplusID.startsWith("+") ? "'" + gplusID : gplusID);
 					}
 
 					i++;
 
 					return true;
-				}
-
-				@Override
-				protected void processDataColumn(CellEntry cell, String columnName) {
-					cellMap.put(columnName, cell);
 				}
 
 			};
