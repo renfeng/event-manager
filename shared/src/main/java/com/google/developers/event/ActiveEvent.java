@@ -375,8 +375,8 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 	}
 
 	public void updateCache() {
-		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
 		if (this.getGplusEventUrl() != null) {
+			MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
 			syncCache.put(this.getGplusEventUrl(), this);
 		}
 	}
