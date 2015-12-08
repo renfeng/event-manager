@@ -48,7 +48,8 @@ public class EventManager implements MetaSpreadsheet {
 			String spreadsheetKey, String eventName, String activity, int cutoffYear, int cutoffMonth, int cutoffDay)
 			throws IOException, ServiceException, ParseException {
 
-		ContactManager contactManager = new ContactManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		ContactManager contactManager = new ContactManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 
 		/*
 		 * separated the date of registration, check-in and feedback
@@ -78,7 +79,8 @@ public class EventManager implements MetaSpreadsheet {
 			}
 		}
 
-		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 		List<EventParticipant> participants = spreadsheetManager.getEventParticipants(
 				spreadsheetKey, cutoffDate, columnMap);
 
@@ -99,10 +101,11 @@ public class EventManager implements MetaSpreadsheet {
 	public void importContactsFromSpreadsheet(String spreadsheet)
 			throws IOException, ServiceException, ParseException {
 
-		ContactManager contactManager = new ContactManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		ContactManager contactManager = new ContactManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 
-		SpreadsheetManager spreadsheetManager =
-				new SpreadsheetManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 		List<EventParticipant> participants = spreadsheetManager.getGoogleGroupsMember(spreadsheet);
 
 		contactManager.dedupeGroups();
@@ -121,9 +124,10 @@ public class EventManager implements MetaSpreadsheet {
 
 	public void importContactsFromSpreadsheets() throws IOException, ServiceException {
 
-		final SpreadsheetManager spreadsheetManager =
-				new SpreadsheetManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
-		final ContactManager contactManager = new ContactManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		final SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		final ContactManager contactManager = new ContactManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 
 		contactManager.dedupeGroups();
 
@@ -290,7 +294,8 @@ public class EventManager implements MetaSpreadsheet {
 
 	public void updateRanking() throws IOException, ServiceException {
 
-		ContactManager contactManager = new ContactManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		ContactManager contactManager = new ContactManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 
 		/*
 		 * cutoff date: a year ago
@@ -321,8 +326,8 @@ public class EventManager implements MetaSpreadsheet {
 	public void updateStreakRanking(List<ParticipantStatistics> activities)
 			throws IOException, ServiceException {
 
-		SpreadsheetManager spreadsheetManager =
-				new SpreadsheetManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 
 		final List<ParticipantStatistics> activitiesWithStreak = new ArrayList<>();
 		for (ParticipantStatistics p : activities) {
@@ -508,8 +513,8 @@ public class EventManager implements MetaSpreadsheet {
 	public void updateCreditRanking(List<ParticipantStatistics> activities)
 			throws IOException, ServiceException {
 
-		SpreadsheetManager spreadsheetManager =
-				new SpreadsheetManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 
 		final List<ParticipantStatistics> activitiesWithCredit = new ArrayList<>();
 		for (ParticipantStatistics p : activities) {
@@ -622,9 +627,10 @@ public class EventManager implements MetaSpreadsheet {
 
 	public void updateEventScore() throws IOException, ServiceException {
 
-		SpreadsheetManager spreadsheetManager =
-				new SpreadsheetManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
-		ContactManager contactManager = new ContactManager(GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		ContactManager contactManager = new ContactManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 
 		/*
 		 * cutoff date: a year ago

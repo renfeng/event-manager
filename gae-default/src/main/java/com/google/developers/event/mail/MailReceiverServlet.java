@@ -36,7 +36,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
@@ -51,14 +50,13 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 			.getLogger(MailReceiverServlet.class);
 
 	private static final String PREFIX = "/_ah/mail/";
-
-	private final HttpTransport transport;
-	private final JsonFactory jsonFactory;
-
 	/*
 	 * image/jpeg; name="IMG_20151128_182644.jpg"
 	 */
 	private static final Pattern IMAGE_MIME_PATTERN = Pattern.compile("(image/[^;]+); name=\"([^\"]+)\"");
+
+	private final HttpTransport transport;
+	private final JsonFactory jsonFactory;
 
 	@Inject
 	public MailReceiverServlet(HttpTransport transport, JsonFactory jsonFactory) {
