@@ -247,6 +247,14 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 	private void extract(String contentType, Object content, JsonGenerator generator, PicasawebManager picasawebManager)
 			throws MessagingException, IOException, ServiceException {
 
+		/*
+		 * multipart/related; boundary=001a1143e186e868c6052607022d
+		 * multipart/alternative; boundary=001a1143e186e868c1052607022c
+		 * text/plain; charset=UTF-8
+		 * text/html; charset=UTF-8
+		 * image/jpeg; name="IMG_20151128_182644.jpg"
+		 * TODO trim boundary, charset, and name (recoverable from picasaweb) off
+		 */
 		generator.writeFieldName(contentType);
 		if (content instanceof MimeMultipart) {
 			/*

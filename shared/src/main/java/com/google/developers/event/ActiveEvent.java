@@ -351,23 +351,27 @@ public class ActiveEvent implements Serializable, MetaSpreadsheet {
 			throws IOException {
 
 		if (templateCache == null) {
-			String templateURL = getTicketEmailTemplate();
-			File file = driveManager.getClient().files().get(templateURL).execute();
-			String downloadUrl = file.getExportLinks().get("text/plain");
-			System.out.println(downloadUrl);
+			String template = getTicketEmailTemplate();
+			if (template.startsWith("{")) {
+				templateCache = template;
+			} else {
+				File file = driveManager.getClient().files().get(template).execute();
+				String downloadUrl = file.getExportLinks().get("text/plain");
+				System.out.println(downloadUrl);
 
-			HttpRequestFactory factory = transport.createRequestFactory();
-			HttpRequest request = factory.buildGetRequest(new GenericUrl(downloadUrl));
+				HttpRequestFactory factory = transport.createRequestFactory();
+				HttpRequest request = factory.buildGetRequest(new GenericUrl(downloadUrl));
 
-			/*
-			 * https://developers.google.com/drive/web/manage-downloads
-			 */
-			request.getHeaders().setAuthorization("Bearer " + accessToken);
+				/*
+				 * https://developers.google.com/drive/web/manage-downloads
+				 */
+				request.getHeaders().setAuthorization("Bearer " + accessToken);
 
-			HttpResponse response = request.execute();
+				HttpResponse response = request.execute();
 
-			logger.debug("default character set: {}", Charset.defaultCharset());
-			templateCache = IOUtils.toString(response.getContent(), "UTF-8");
+				logger.debug("default character set: {}", Charset.defaultCharset());
+				templateCache = IOUtils.toString(response.getContent(), "UTF-8");
+			}
 			updateCache();
 		}
 

@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
-import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -84,8 +83,7 @@ public class TicketAPI extends HttpServlet
 
 		final ActiveEvent activeEvent;
 		try {
-			activeEvent = DefaultServletModule.getActiveEvent(
-					req, spreadsheetManager, TICKET_PAGE_URL);
+			activeEvent = DefaultServletModule.getActiveEvent(req, spreadsheetManager, TICKET_PAGE_URL);
 			if (activeEvent == null) {
 				throw new ServletException("missing active event");
 			}
@@ -93,8 +91,8 @@ public class TicketAPI extends HttpServlet
 			throw new ServletException(e);
 		}
 
-		String registerURL = activeEvent.getRegisterResponsesURL();
-		if (registerURL == null) {
+		String registerResponsesURL = activeEvent.getRegisterResponsesURL();
+		if (registerResponsesURL == null) {
 			throw new ServletException(
 					"Missing URL to the register form responses of event, " + activeEvent.getEvent());
 		}
@@ -144,62 +142,25 @@ public class TicketAPI extends HttpServlet
 					String uuid = Float.toHexString(new Random().nextFloat());
 
 					try {
+						Properties props = new Properties();
+						Session session = Session.getDefaultInstance(props, null);
+						MimeMessage email = new MimeMessage(session);
+
+						InternetAddress fromAddress = new InternetAddress("suzhou.gdg@gmail.com");
+						InternetAddress toAddress = new InternetAddress(valueMap.get(registerEmailColumn));
+						InternetAddress ccAddress = new InternetAddress(activeEvent.getTicketEmailCc());
+
+						email.setFrom(fromAddress);
+						email.addRecipient(javax.mail.Message.RecipientType.TO, toAddress);
+						email.addRecipient(javax.mail.Message.RecipientType.CC, ccAddress);
+						email.setSubject(subject, "UTF-8");
+
 						/*
 						 * inline images
 						 */
 						String body = activeEvent.getTemplateCache(
 								driveManager, transport, credential.getAccessToken());
-//						String body = "<H1>Hello</H1><img src=\"cid:logoBlob\">";
-						body = body.replaceAll("[$][{]Logo[}]", "<img src='cid:logoBlob'/>");
-						body = body.replaceAll("[$][{]nickname[}]", nick);
-						body = body.replaceAll("[$][{]QR code[}]", "<img src='cid:qrCodeBlob'/>");
-						String from = "suzhou.gdg@gmail.com";
-						String to = valueMap.get(registerEmailColumn);
-
-						Properties props = new Properties();
-						Session session = Session.getDefaultInstance(props, null);
-
-						MimeMessage email = new MimeMessage(session);
-						InternetAddress tAddress = new InternetAddress(to);
-						InternetAddress fAddress = new InternetAddress(from);
-
-						email.setFrom(fAddress);
-						email.addRecipient(javax.mail.Message.RecipientType.TO, tAddress);
-						email.setSubject(subject, "UTF-8");
-
-						Multipart multipart = new MimeMultipart("related");
-						{
-							MimeBodyPart mimeBodyPart = new MimeBodyPart();
-							mimeBodyPart.setContent(body, "text/html; charset=UTF-8");
-							multipart.addBodyPart(mimeBodyPart);
-						}
-						{
-							/*
-							 * TODO determine the mine type through drive api
-							 */
-							MimeBodyPart mimeBodyPart = new MimeBodyPart();
-							mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
-									activeEvent.getLogoCache(driveManager), "image/png")));
-							mimeBodyPart.setContentID("<logoBlob>");
-							mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
-
-							multipart.addBodyPart(mimeBodyPart);
-						}
-						{
-							HttpRequestFactory factory = transport.createRequestFactory();
-							HttpRequest request = factory.buildGetRequest(new GenericUrl(
-									"http://chart.apis.google.com/chart?cht=qr&chs=300x300&chld=H|0&chl=" + uuid));
-							HttpResponse response = request.execute();
-
-							MimeBodyPart mimeBodyPart = new MimeBodyPart();
-							mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
-									response.getContent(), "image/png")));
-							mimeBodyPart.setContentID("<qrCodeBlob>");
-							mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
-
-							multipart.addBodyPart(mimeBodyPart);
-						}
-						email.setContent(multipart);
+						buildMimeMessage(nick, uuid, body, email);
 
 						gmailManager.sendMessage("me", email);
 
@@ -212,9 +173,60 @@ public class TicketAPI extends HttpServlet
 
 				return true;
 			}
+
+			private void buildMimeMessage(String nick, String uuid, String body, MimeMessage email)
+					throws MessagingException, IOException {
+
+				if (body.startsWith("{")) {
+					/*
+					 * TODO parse content out of json
+					 */
+//					JsonParser parser = jsonFactory.createJsonParser(body);
+//					JsonToken token = parser.nextToken();
+					email.setContent("TODO", "text/plain");
+				} else {
+					MimeMultipart multipart = new MimeMultipart("related");
+					{
+						MimeBodyPart mimeBodyPart = new MimeBodyPart();
+						//String body = "<H1>Hello</H1><img src=\"cid:logoBlob\">";
+						body = body.replaceAll("[$][{]Logo[}]", "<img src='cid:logoBlob'/>");
+						body = body.replaceAll("[$][{]nickname[}]", nick);
+						body = body.replaceAll("[$][{]QR code[}]", "<img src='cid:qrCodeBlob'/>");
+						mimeBodyPart.setContent(body, "text/html; charset=UTF-8");
+						multipart.addBodyPart(mimeBodyPart);
+					}
+					{
+					/*
+					 * TODO determine the mine type through drive api
+					 */
+						MimeBodyPart mimeBodyPart = new MimeBodyPart();
+						mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
+								activeEvent.getLogoCache(driveManager), "image/png")));
+						mimeBodyPart.setContentID("<logoBlob>");
+						mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
+
+						multipart.addBodyPart(mimeBodyPart);
+					}
+					{
+						HttpRequestFactory factory = transport.createRequestFactory();
+						HttpRequest request = factory.buildGetRequest(new GenericUrl(
+								"http://chart.apis.google.com/chart?cht=qr&chs=300x300&chld=H|0&chl=" + uuid));
+						HttpResponse response = request.execute();
+
+						MimeBodyPart mimeBodyPart = new MimeBodyPart();
+						mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
+								response.getContent(), "image/png")));
+						mimeBodyPart.setContentID("<qrCodeBlob>");
+						mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
+
+						multipart.addBodyPart(mimeBodyPart);
+					}
+					email.setContent(multipart);
+				}
+			}
 		};
 		try {
-			cellFeedProcessor.processForUpdate(spreadsheetManager.getWorksheet(registerURL),
+			cellFeedProcessor.processForUpdate(spreadsheetManager.getWorksheet(registerResponsesURL),
 					registerNameColumn, registerEmailColumn, QR_CODE_COLUMN);
 		} catch (ServiceException ex) {
 			/*
