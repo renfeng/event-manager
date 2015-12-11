@@ -17,6 +17,7 @@ import com.google.gdata.util.common.util.Base64;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,17 +67,6 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		PicasawebManager picasawebManager = new PicasawebManager(
-				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
-		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
-				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
-
-		final String gplusEventUrl;
-		final String subject;
-		final Address[] to;
-		final Address[] cc;
-		final Address[] bcc;
-
 		/*
 		 * the address is not available in the path. use to address, instead.
 		 */
@@ -88,6 +76,15 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 		String address = path.substring(beginIndex);
 		logger.info("address: " + address);
 
+		String requestBody = IOUtils.toString(req.getInputStream());
+
+		PicasawebManager picasawebManager = new PicasawebManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
+				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+
+		final List<String> urlList = new ArrayList<>();
+
 		StringWriter writer = new StringWriter();
 		JsonGenerator generator = jsonFactory.createJsonGenerator(writer);
 		generator.writeStartObject();
@@ -95,12 +92,25 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 		try {
-			String requestBody = IOUtils.toString(req.getInputStream());
 			MemcacheService cache = MemcacheServiceFactory.getMemcacheService();
 			cache.put(this.getClass().getCanonicalName(), requestBody);
 
 			//logger.info("request body: " + requestBody);
 			MimeMessage message = new MimeMessage(session, new ByteArrayInputStream(requestBody.getBytes("UTF-8")));
+
+			Address[] to = message.getRecipients(RecipientType.TO);
+			Address[] cc = message.getRecipients(RecipientType.CC);
+			Address[] bcc = message.getRecipients(RecipientType.BCC);
+			String messageId = message.getMessageID();
+
+			/*
+			 * collect the event id
+			 */
+			String suffix = "@" + getServletContext().getInitParameter("appengine.app.id") + ".appspotmail.com";
+
+			String toList = StringUtils.join(collect(urlList, suffix, to), ",");
+			String ccList = StringUtils.join(collect(urlList, suffix, cc), ",");
+			String bccList = StringUtils.join(collect(urlList, suffix, bcc), ",");
 
 			generator.writeFieldName("size");
 			generator.writeNumber(message.getSize());
@@ -108,78 +118,59 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 			generator.writeFieldName("from");
 			generator.writeString(Arrays.toString(message.getFrom()));
 
-			to = message.getRecipients(RecipientType.TO);
-			generator.writeFieldName("to");
-			generator.writeString(Arrays.toString(to));
+			if (!toList.isEmpty()) {
+				generator.writeFieldName("to");
+				generator.writeString(toList);
+			}
 
-			cc = message.getRecipients(RecipientType.CC);
-			generator.writeFieldName("cc");
-			generator.writeString(Arrays.toString(cc));
+			if (!ccList.isEmpty()) {
+				generator.writeFieldName("cc");
+				generator.writeString(ccList);
+			}
 
 			/*
 			 * won't see other bcc recipients
 			 */
-			bcc = message.getRecipients(RecipientType.BCC);
-			generator.writeFieldName("bcc");
-			generator.writeString(Arrays.toString(bcc));
-
-			/*
-			 * only read the first to address
-			 *
-			 * TODO what if the first is not the intended?
-			 * TODO support multiple events?
-			 */
-			if (to == null || to.length == 0) {
-				throw new ServletException("missing email address");
+			if (!bccList.isEmpty()) {
+				generator.writeFieldName("bcc");
+				generator.writeString(StringUtils.join(bcc, ","));
 			}
-			if (to.length > 1) {
-				throw new ServletException("unsupported multiple email addresses");
-			}
-
-			String target = to[0].toString();
-
-			String appid = getServletContext().getInitParameter("appengine.app.id");
-			if (!target.endsWith("@" + appid + ".appspotmail.com")) {
-				/*
-				 * ignore the to address as it must comes from bcc
-				 */
-				target = bcc[0].toString();
-			}
-
-			gplusEventUrl = "https://plus.google.com/events/" + target.substring(0, target.indexOf("@"));
 
 			/*
 			 * subject
 			 */
-			subject = message.getSubject();
+			String subject = message.getSubject();
 			generator.writeFieldName("subject");
 			generator.writeString(subject);
 
 			/*
 			 * content
 			 */
-			extract(message.getContentType(), message.getContent(), generator, picasawebManager);
+			extract(message.getContentType(), message.getContent(), generator, picasawebManager, messageId);
 
 			/*
 			 * these are null. always?
 			 */
-			generator.writeFieldName("content-id");
-			generator.writeString(message.getContentID());
-			generator.writeFieldName("content-language");
-			generator.writeString(Arrays.toString(message.getContentLanguage()));
-			generator.writeFieldName("content-md5");
-			generator.writeString(message.getContentMD5());
-			generator.writeFieldName("description");
-			generator.writeString(message.getDescription());
-			generator.writeFieldName("disposition");
-			generator.writeString(message.getDisposition());
-			generator.writeFieldName("encoding");
-			generator.writeString(message.getEncoding());
-			generator.writeFieldName("filename");
-			generator.writeString(message.getFileName());
+//			generator.writeFieldName("content-id");
+//			generator.writeString(message.getContentID());
+//			generator.writeFieldName("content-language");
+//			generator.writeString(Arrays.toString(message.getContentLanguage()));
+//			generator.writeFieldName("content-md5");
+//			generator.writeString(message.getContentMD5());
+//			generator.writeFieldName("description");
+//			generator.writeString(message.getDescription());
+//			generator.writeFieldName("disposition");
+//			generator.writeString(message.getDisposition());
+//			generator.writeFieldName("encoding");
+//			generator.writeString(message.getEncoding());
+//			generator.writeFieldName("filename");
+//			generator.writeString(message.getFileName());
 
+			/*
+			 * TODO put message id to picasaweb photo description
+			 */
 			generator.writeFieldName("message-id");
-			generator.writeString(message.getMessageID());
+			generator.writeString(messageId);
 
 			/*
 			 * TODO enqueue a task
@@ -213,21 +204,14 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 			protected boolean processDataRow(Map<String, String> valueMap, URL cellFeedURL)
 					throws IOException, ServiceException {
 
-				if (gplusEventUrl.equals(valueMap.get(GPLUS_EVENT))) {
+				String url = valueMap.get(GPLUS_EVENT);
+				if (urlList.contains(url)) {
 					updateCell(TICKET_EMAIL_TEMPLATE, json);
-					updateCell(TICKET_EMAIL_SUBJECT, subject);
 
-					/*
-					 * TODO join the strings
-					 */
-					updateCell(TICKET_EMAIL_CC, Arrays.toString(cc));
-
-					/*
-					 * TODO how to define bcc
-					 */
-//					updateCell(TICKET_EMAIL_BCC, "");
-
-					return false;
+					urlList.remove(url);
+					if (urlList.isEmpty()) {
+						return false;
+					}
 				}
 
 				return true;
@@ -236,15 +220,29 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 		try {
 			cellFeedProcessor.processForUpdate(
 					spreadsheetManager.getWorksheet(DevelopersSharedModule.getMessage("metaSpreadsheet")),
-					GPLUS_EVENT, TICKET_EMAIL_TEMPLATE, TICKET_EMAIL_SUBJECT, TICKET_EMAIL_CC, TICKET_EMAIL_BCC);
+					GPLUS_EVENT, TICKET_EMAIL_TEMPLATE);
 		} catch (ServiceException e) {
 			throw new ServletException(e);
 		}
-
-		return;
 	}
 
-	private void extract(String contentType, Object content, JsonGenerator generator, PicasawebManager picasawebManager)
+	private ArrayList<Address> collect(List<String> gplusEventUrl, String suffix, Address[] source) {
+		ArrayList<Address> filter = new ArrayList<>();
+		if (source != null) {
+			for (Address a : source) {
+				String email = a.toString();
+				if (email.endsWith(suffix)) {
+					gplusEventUrl.add("https://plus.google.com/events/" + email.substring(0, email.indexOf("@")));
+				} else {
+					filter.add(a);
+				}
+			}
+		}
+		return filter;
+	}
+
+	private void extract(String contentType, Object content, JsonGenerator generator,
+						 PicasawebManager picasawebManager, String messageId)
 			throws MessagingException, IOException, ServiceException {
 
 		/*
@@ -255,7 +253,7 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 		 * image/jpeg; name="IMG_20151128_182644.jpg"
 		 * TODO trim boundary, charset, and name (recoverable from picasaweb) off
 		 */
-		generator.writeFieldName(contentType);
+		generator.writeFieldName(contentType.split(";")[0]);
 		if (content instanceof MimeMultipart) {
 			/*
 			 * multipart/related
@@ -271,7 +269,7 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 					logger.info("part " + i + ", content type: " + p.getContentType());
 					logger.info("part " + i + ", content: " + p.getContent());
 					generator.writeStartObject();
-					extract(p.getContentType(), p.getContent(), generator, picasawebManager);
+					extract(p.getContentType(), p.getContent(), generator, picasawebManager, messageId);
 					generator.writeEndObject();
 //					if (p.getContentType().equals("multipart/alternative")) {
 //
@@ -309,7 +307,7 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 				if (matcher.matches()) {
 					String type = matcher.group(1);
 					String filename = matcher.group(2);
-					PhotoEntry photo = picasawebManager.upload((InputStream) content, type, filename);
+					PhotoEntry photo = picasawebManager.upload((InputStream) content, type, filename, messageId);
 //					System.out.println("Title: " + photo.getTitle().getPlainText());
 //					System.out.println("Description: " + photo.getDescription().getPlainText());
 //					System.out.println("ID: " + photo.getId());

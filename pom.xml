@@ -355,12 +355,12 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-calendar</artifactId>
-				<version>v3-rev155-1.21.0</version>
+				<version>v3-rev156-1.21.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-drive</artifactId>
-				<version>v2-rev195-1.21.0</version>
+				<version>v2-rev196-1.21.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.apis</groupId>
@@ -370,7 +370,7 @@
 			<dependency>
 				<groupId>com.google.apis</groupId>
 				<artifactId>google-api-services-plus</artifactId>
-				<version>v1-rev308-1.21.0</version>
+				<version>v1-rev311-1.21.0</version>
 			</dependency>
 
 			<dependency>

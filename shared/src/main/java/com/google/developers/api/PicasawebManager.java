@@ -39,7 +39,8 @@ public class PicasawebManager extends ServiceManager<PicasawebService> {
 		setService(service);
 	}
 
-	public PhotoEntry upload(InputStream stream, String type, String title) throws IOException, ServiceException {
+	public PhotoEntry upload(InputStream stream, String type, String title, String description)
+			throws IOException, ServiceException {
 
 		{
 			URL feedUrl = new URL("https://picasaweb.google.com/data/feed/api/" +
@@ -55,6 +56,7 @@ public class PicasawebManager extends ServiceManager<PicasawebService> {
 
 		PhotoEntry photo = new PhotoEntry();
 		photo.setTitle(new PlainTextConstruct(title));
+		photo.setDescription(new PlainTextConstruct(description));
 		photo.setClient(GoogleOAuth2.APPLICATION_NAME);
 
 		MediaStreamSource myMedia = new MediaStreamSource(stream, type);
