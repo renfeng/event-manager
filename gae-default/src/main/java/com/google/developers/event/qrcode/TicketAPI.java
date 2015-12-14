@@ -4,12 +4,8 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonParser;
-import com.google.api.client.json.JsonToken;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.developers.api.CellFeedProcessor;
-import com.google.developers.api.DriveManager;
-import com.google.developers.api.GmailManager;
-import com.google.developers.api.SpreadsheetManager;
+import com.google.developers.api.*;
 import com.google.developers.event.ActiveEvent;
 import com.google.developers.event.RegisterFormResponseSpreadsheet;
 import com.google.developers.event.http.DefaultServletModule;
@@ -27,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -39,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -177,28 +175,121 @@ public class TicketAPI extends HttpServlet
 			}
 
 			private void buildMimeMessage(String nick, String uuid, String body, MimeMessage email)
-					throws MessagingException, IOException {
+					throws MessagingException, IOException, ServiceException {
 
 				if (body.startsWith("{")) {
 					/*
 					 * TODO parse content out of json
 					 */
-//					JsonParser parser = jsonFactory.createJsonParser(body);
+//					String from;
+//					String subject;
+//					String text;
+//					String html;
+					JsonParser parser = jsonFactory.createJsonParser(body);
 //					JsonToken token = parser.nextToken();
-//					if (token==JsonToken.START_OBJECT) {
+//					if (token == JsonToken.START_OBJECT) {
 //						token = parser.nextToken();
-//						String field = null;
-//						while (token != null) {
-//							switch (token) {
-//								case FIELD_NAME:
-//									field = parser.getText();
-//									if (field.equals("size"))
-//									break;
-//								case VALUE_STRING:
-//									break;
+//						while (token != JsonToken.END_OBJECT) {
+//							/*
+//							 * token must be a field name
+//							 */
+//							if (token != JsonToken.FIELD_NAME) {
+//								throw new RuntimeException("field name expected");
 //							}
+//
+//							String field = parser.getText();
+//							if (field.equals("size")) {
+//								token = parser.nextToken();
+//								if (token == JsonToken.VALUE_NUMBER_INT) {
+//									/*
+//									 * ignore
+//									 */
+//								}
+//							} else if (field.equals("from")) {
+//								token = parser.nextToken();
+//								if (token == JsonToken.VALUE_STRING) {
+//									from = parser.getText();
+//								}
+//							} else if (field.equals("subject")) {
+//								token = parser.nextToken();
+//								if (token == JsonToken.VALUE_STRING) {
+//									from = parser.getText();
+//								}
+//							} else if (field.equals("multipart/related")) {
+//								token = parser.nextToken();
+//								if (token != JsonToken.START_ARRAY) {
+//									throw new RuntimeException("array expected for multipart/related");
+//								}
+//								token = parser.nextToken();
+//								while (token != JsonToken.END_ARRAY) {
+//									if (token != JsonToken.START_OBJECT) {
+//										throw new RuntimeException("object expected for multipart/related");
+//									}
+//
+//								}
+//							} else if (field.equals("message-id")) {
+//								token = parser.nextToken();
+//								if (token == JsonToken.VALUE_STRING) {
+//									/*
+//									 * ignore
+//									 */
+//								}
+//							}
+//
+//							token = parser.nextToken();
 //						}
 //					}
+					EmailJson json = parser.parse(EmailJson.class);
+					email.setSubject(json.getSubject());
+					email.setFrom(new InternetAddress("suzhou.gdg@gmail.com"));
+
+					List<MimePartJson> relatedJson = json.getMultipartRelated();
+					if (relatedJson != null) {
+						Multipart multipartRelated = new MimeMultipart("related");
+						for (MimePartJson r : relatedJson) {
+							MimePartJson alternativeJson = r.getMultipartAlternative();
+							if (alternativeJson != null) {
+								MimeMultipart multipartAlternative = new MimeMultipart("alternative");
+								String text = alternativeJson.getText();
+								if (text != null) {
+									MimeBodyPart part = new MimeBodyPart();
+									//part.setText(text, "text/plain; charset=UTF-8");
+									part.setContent(text, "text/plain; charset=UTF-8");
+									multipartAlternative.addBodyPart(part);
+								}
+
+								String html = alternativeJson.getHtml();
+								if (html != null) {
+									MimeBodyPart part = new MimeBodyPart();
+									part.setContent(html, "text/html; charset=UTF-8");
+									multipartAlternative.addBodyPart(part);
+								}
+
+								MimeBodyPart alternativeBodyPart = new MimeBodyPart();
+								alternativeBodyPart.setContent(multipartAlternative);
+								multipartRelated.addBodyPart(alternativeBodyPart);
+							}
+
+							InlineImage jpg = r.getJpg();
+							if (jpg != null) {
+								PicasawebManager picasawebManager = new PicasawebManager(
+										GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+								String url = picasawebManager.getPhotoUrl(jpg.getgPhotoId());
+
+								HttpRequestFactory factory = transport.createRequestFactory();
+								HttpRequest request = factory.buildGetRequest(new GenericUrl(url));
+								HttpResponse response = request.execute();
+
+								MimeBodyPart part = new MimeBodyPart();
+								part.setContentID(jpg.getCid());
+								part.setDataHandler(new DataHandler(new ByteArrayDataSource(
+										response.getContent(), response.getContentType())));
+								multipartRelated.addBodyPart(part);
+							}
+						}
+						email.setContent(multipartRelated);
+					}
+
 					email.setContent("TODO", "text/plain");
 				} else {
 					MimeMultipart multipart = new MimeMultipart("related");

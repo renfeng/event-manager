@@ -1,4 +1,4 @@
-package com.google.developers.event;
+package com.google.developers.event.qrcode;
 
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -9,6 +9,8 @@ import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.GoogleOAuth2;
 import com.google.developers.api.PicasawebManager;
 import com.google.developers.api.SpreadsheetManager;
+import com.google.developers.event.DevelopersSharedModule;
+import com.google.developers.event.MetaSpreadsheet;
 import com.google.gdata.data.photos.PhotoEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.gdata.util.common.util.Base64;
@@ -124,7 +126,7 @@ public class EmailManager implements MetaSpreadsheet {
 		/*
 		 * content
 		 */
-		extract(message.getContentType(), message.getContent(), generator, picasawebManager, messageId);
+		extract(null, message.getContentType(), message.getContent(), generator, picasawebManager, messageId);
 
 		/*
 		 * these are null. always?
@@ -198,7 +200,7 @@ public class EmailManager implements MetaSpreadsheet {
 		return filter;
 	}
 
-	private void extract(String contentType, Object content, JsonGenerator generator,
+	private void extract(String contentId, String contentType, Object content, JsonGenerator generator,
 						 PicasawebManager picasawebManager, String messageId)
 			throws MessagingException, IOException, ServiceException {
 
@@ -223,21 +225,13 @@ public class EmailManager implements MetaSpreadsheet {
 				logger.info(bodyPart.toString());
 				if (bodyPart instanceof MimeBodyPart) {
 					MimeBodyPart p = (MimeBodyPart) bodyPart;
+					logger.info("part " + i + ", content id: " + p.getContentID());
 					logger.info("part " + i + ", content type: " + p.getContentType());
 					logger.info("part " + i + ", content: " + p.getContent());
 					generator.writeStartObject();
-					extract(p.getContentType(), p.getContent(), generator, picasawebManager, messageId);
+					extract(p.getContentID(), p.getContentType(), p.getContent(), generator,
+							picasawebManager, messageId);
 					generator.writeEndObject();
-//					if (p.getContentType().equals("multipart/alternative")) {
-//
-//					} else if (p.getContentType().startsWith("text/plain")) {
-//
-//					/*
-//					 * FIXME parse the content
-//					 */
-//
-//						//break;
-//					}
 				} else {
 					logger.warn("unhandled {}", bodyPart);
 				}
@@ -272,7 +266,15 @@ public class EmailManager implements MetaSpreadsheet {
 //					System.out.println("Geo Location: " + photo.getGeoLocation());
 //					System.out.println("Media Thumbnail: " + photo.getMediaThumbnails().get(0).getUrl());
 
+					/*
+					 * assumes all inline objects are image stored on picacaweb
+					 */
+					generator.writeStartObject();
+					generator.writeFieldName("cid");
+					generator.writeString(contentId);
+					generator.writeFieldName("gPhotoId");
 					generator.writeString(photo.getGphotoId());
+					generator.writeEndObject();
 				} else {
 					generator.writeString("TODO");
 				}

@@ -31,6 +31,7 @@ public class PicasawebManagerTest {
 		HttpRequestFactory factory = transport.createRequestFactory();
 		HttpRequest request = factory.buildGetRequest(new GenericUrl(url));
 		HttpResponse response = request.execute();
+		System.out.println(response.getContentType());
 		response.download(new FileOutputStream("/tmp/x.jpg"));
 	}
 }

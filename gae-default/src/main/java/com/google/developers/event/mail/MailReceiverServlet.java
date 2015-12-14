@@ -2,7 +2,7 @@ package com.google.developers.event.mail;
 
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.developers.event.EmailManager;
+import com.google.developers.event.qrcode.EmailManager;
 import com.google.developers.event.MetaSpreadsheet;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
