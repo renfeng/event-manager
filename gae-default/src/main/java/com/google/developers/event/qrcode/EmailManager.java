@@ -212,31 +212,51 @@ public class EmailManager implements MetaSpreadsheet {
 		 * image/jpeg; name="IMG_20151128_182644.jpg"
 		 * TODO trim boundary, charset, and name (recoverable from picasaweb) off
 		 */
-		generator.writeFieldName(contentType.split(";")[0]);
+		String field = contentType.split(";")[0];
+
+		generator.writeFieldName(field);
 		if (content instanceof MimeMultipart) {
-			/*
-			 * multipart/related
-			 * multipart/alternative
-			 */
-			generator.writeStartArray();
-			MimeMultipart parts = (MimeMultipart) content;
-			for (int i = 0; i < parts.getCount(); i++) {
-				BodyPart bodyPart = parts.getBodyPart(i);
-				logger.info(bodyPart.toString());
-				if (bodyPart instanceof MimeBodyPart) {
-					MimeBodyPart p = (MimeBodyPart) bodyPart;
-					logger.info("part " + i + ", content id: " + p.getContentID());
-					logger.info("part " + i + ", content type: " + p.getContentType());
-					logger.info("part " + i + ", content: " + p.getContent());
-					generator.writeStartObject();
-					extract(p.getContentID(), p.getContentType(), p.getContent(), generator,
-							picasawebManager, messageId);
-					generator.writeEndObject();
-				} else {
-					logger.warn("unhandled {}", bodyPart);
+			if ("multipart/related".equals(field)) {
+				generator.writeStartArray();
+				MimeMultipart parts = (MimeMultipart) content;
+				for (int i = 0; i < parts.getCount(); i++) {
+					BodyPart bodyPart = parts.getBodyPart(i);
+					logger.info(bodyPart.toString());
+					if (bodyPart instanceof MimeBodyPart) {
+						MimeBodyPart p = (MimeBodyPart) bodyPart;
+						logger.info("part " + i + ", content id: " + p.getContentID());
+						logger.info("part " + i + ", content type: " + p.getContentType());
+						logger.info("part " + i + ", content: " + p.getContent());
+						generator.writeStartObject();
+						extract(p.getContentID(), p.getContentType(), p.getContent(), generator,
+								picasawebManager, messageId);
+						generator.writeEndObject();
+					} else {
+						logger.warn("unhandled {}", bodyPart);
+					}
 				}
+				generator.writeEndArray();
+			} else if ("multipart/alternative".equals(field)) {
+				generator.writeStartObject();
+				MimeMultipart parts = (MimeMultipart) content;
+				for (int i = 0; i < parts.getCount(); i++) {
+					BodyPart bodyPart = parts.getBodyPart(i);
+					logger.info(bodyPart.toString());
+					if (bodyPart instanceof MimeBodyPart) {
+						MimeBodyPart p = (MimeBodyPart) bodyPart;
+						logger.info("part " + i + ", content id: " + p.getContentID());
+						logger.info("part " + i + ", content type: " + p.getContentType());
+						logger.info("part " + i + ", content: " + p.getContent());
+						extract(p.getContentID(), p.getContentType(), p.getContent(), generator,
+								picasawebManager, messageId);
+					} else {
+						logger.warn("unhandled {}", bodyPart);
+					}
+				}
+				generator.writeEndObject();
+			} else {
+				generator.writeString("unsupported multipart");
 			}
-			generator.writeEndArray();
 		} else if (content instanceof String) {
 			generator.writeString(content.toString());
 		} else if (content instanceof InputStream) {
@@ -276,7 +296,7 @@ public class EmailManager implements MetaSpreadsheet {
 					generator.writeString(photo.getGphotoId());
 					generator.writeEndObject();
 				} else {
-					generator.writeString("TODO");
+					generator.writeString("unsupported image type");
 				}
 
 			} else if (contentType.startsWith("video/")) {

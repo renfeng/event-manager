@@ -136,9 +136,6 @@ public class TicketAPI extends HttpServlet
 
 					String nick = valueMap.get(registerNameColumn);
 
-					String subject = activeEvent.getTicketEmailSubject();
-					subject = subject.replaceAll("[$][{]nickname[}]", nick);
-
 					String uuid = Float.toHexString(new Random().nextFloat());
 
 					try {
@@ -146,21 +143,34 @@ public class TicketAPI extends HttpServlet
 						Session session = Session.getDefaultInstance(props, null);
 						MimeMessage email = new MimeMessage(session);
 
-						InternetAddress fromAddress = new InternetAddress("suzhou.gdg@gmail.com");
-						InternetAddress toAddress = new InternetAddress(valueMap.get(registerEmailColumn));
-						InternetAddress ccAddress = new InternetAddress(activeEvent.getTicketEmailCc());
+						String subject = activeEvent.getTicketEmailSubject();
+						email.setSubject(subject.replaceAll("[$][{]nickname[}]", nick), "UTF-8");
 
-						email.setFrom(fromAddress);
-						email.addRecipient(javax.mail.Message.RecipientType.TO, toAddress);
-						email.addRecipient(javax.mail.Message.RecipientType.CC, ccAddress);
-						email.setSubject(subject, "UTF-8");
+						email.setFrom(new InternetAddress("suzhou.gdg@gmail.com"));
+
+						String to = valueMap.get(registerEmailColumn);
+						email.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
+
+						String cc = activeEvent.getTicketEmailCc();
+						if (cc != null) {
+							email.addRecipient(javax.mail.Message.RecipientType.CC, new InternetAddress(cc));
+						}
+
+						String bcc = activeEvent.getTicketEmailBcc();
+						if (bcc != null) {
+							email.addRecipient(javax.mail.Message.RecipientType.BCC, new InternetAddress(bcc));
+						}
 
 						/*
 						 * inline images
 						 */
 						String body = activeEvent.getTemplateCache(
 								driveManager, transport, credential.getAccessToken());
-						buildMimeMessage(nick, uuid, body, email);
+						if (body.startsWith("{")) {
+							buildMimeMessage(to, nick, body, email);
+						} else {
+							buildMimeMessageLegacy(nick, uuid, body, email);
+						}
 
 						gmailManager.sendMessage("me", email);
 
@@ -174,162 +184,148 @@ public class TicketAPI extends HttpServlet
 				return true;
 			}
 
-			private void buildMimeMessage(String nick, String uuid, String body, MimeMessage email)
-					throws MessagingException, IOException, ServiceException {
+			private void buildMimeMessageLegacy(String nick, String uuid, String body,
+												MimeMessage email) throws MessagingException, IOException {
 
-				if (body.startsWith("{")) {
-					/*
-					 * TODO parse content out of json
-					 */
-//					String from;
-//					String subject;
-//					String text;
-//					String html;
-					JsonParser parser = jsonFactory.createJsonParser(body);
-//					JsonToken token = parser.nextToken();
-//					if (token == JsonToken.START_OBJECT) {
-//						token = parser.nextToken();
-//						while (token != JsonToken.END_OBJECT) {
-//							/*
-//							 * token must be a field name
-//							 */
-//							if (token != JsonToken.FIELD_NAME) {
-//								throw new RuntimeException("field name expected");
-//							}
-//
-//							String field = parser.getText();
-//							if (field.equals("size")) {
-//								token = parser.nextToken();
-//								if (token == JsonToken.VALUE_NUMBER_INT) {
-//									/*
-//									 * ignore
-//									 */
-//								}
-//							} else if (field.equals("from")) {
-//								token = parser.nextToken();
-//								if (token == JsonToken.VALUE_STRING) {
-//									from = parser.getText();
-//								}
-//							} else if (field.equals("subject")) {
-//								token = parser.nextToken();
-//								if (token == JsonToken.VALUE_STRING) {
-//									from = parser.getText();
-//								}
-//							} else if (field.equals("multipart/related")) {
-//								token = parser.nextToken();
-//								if (token != JsonToken.START_ARRAY) {
-//									throw new RuntimeException("array expected for multipart/related");
-//								}
-//								token = parser.nextToken();
-//								while (token != JsonToken.END_ARRAY) {
-//									if (token != JsonToken.START_OBJECT) {
-//										throw new RuntimeException("object expected for multipart/related");
-//									}
-//
-//								}
-//							} else if (field.equals("message-id")) {
-//								token = parser.nextToken();
-//								if (token == JsonToken.VALUE_STRING) {
-//									/*
-//									 * ignore
-//									 */
-//								}
-//							}
-//
-//							token = parser.nextToken();
-//						}
-//					}
-					EmailJson json = parser.parse(EmailJson.class);
-					email.setSubject(json.getSubject());
-					email.setFrom(new InternetAddress("suzhou.gdg@gmail.com"));
+				/*
+				 * set subject internally
+				 */
+//				String subject = activeEvent.getTicketEmailSubject();
+//				email.setSubject(subject.replaceAll("[$][{]nickname[}]", nick), "UTF-8");
 
-					List<MimePartJson> relatedJson = json.getMultipartRelated();
-					if (relatedJson != null) {
-						Multipart multipartRelated = new MimeMultipart("related");
-						for (MimePartJson r : relatedJson) {
-							MimePartJson alternativeJson = r.getMultipartAlternative();
-							if (alternativeJson != null) {
-								MimeMultipart multipartAlternative = new MimeMultipart("alternative");
-								String text = alternativeJson.getText();
-								if (text != null) {
-									MimeBodyPart part = new MimeBodyPart();
-									//part.setText(text, "text/plain; charset=UTF-8");
-									part.setContent(text, "text/plain; charset=UTF-8");
-									multipartAlternative.addBodyPart(part);
-								}
+				/*
+				 * set cc internally
+				 */
+//				InternetAddress ccAddress = new InternetAddress(activeEvent.getTicketEmailCc());
+//				email.addRecipient(javax.mail.Message.RecipientType.CC, ccAddress);
 
-								String html = alternativeJson.getHtml();
-								if (html != null) {
-									MimeBodyPart part = new MimeBodyPart();
-									part.setContent(html, "text/html; charset=UTF-8");
-									multipartAlternative.addBodyPart(part);
-								}
-
-								MimeBodyPart alternativeBodyPart = new MimeBodyPart();
-								alternativeBodyPart.setContent(multipartAlternative);
-								multipartRelated.addBodyPart(alternativeBodyPart);
-							}
-
-							InlineImage jpg = r.getJpg();
-							if (jpg != null) {
-								PicasawebManager picasawebManager = new PicasawebManager(
-										GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
-								String url = picasawebManager.getPhotoUrl(jpg.getgPhotoId());
-
-								HttpRequestFactory factory = transport.createRequestFactory();
-								HttpRequest request = factory.buildGetRequest(new GenericUrl(url));
-								HttpResponse response = request.execute();
-
-								MimeBodyPart part = new MimeBodyPart();
-								part.setContentID(jpg.getCid());
-								part.setDataHandler(new DataHandler(new ByteArrayDataSource(
-										response.getContent(), response.getContentType())));
-								multipartRelated.addBodyPart(part);
-							}
-						}
-						email.setContent(multipartRelated);
-					}
-
-					email.setContent("TODO", "text/plain");
-				} else {
-					MimeMultipart multipart = new MimeMultipart("related");
-					{
-						MimeBodyPart mimeBodyPart = new MimeBodyPart();
-						//String body = "<H1>Hello</H1><img src=\"cid:logoBlob\">";
-						body = body.replaceAll("[$][{]Logo[}]", "<img src='cid:logoBlob'/>");
-						body = body.replaceAll("[$][{]nickname[}]", nick);
-						body = body.replaceAll("[$][{]QR code[}]", "<img src='cid:qrCodeBlob'/>");
-						mimeBodyPart.setContent(body, "text/html; charset=UTF-8");
-						multipart.addBodyPart(mimeBodyPart);
-					}
-					{
+				MimeMultipart multipart = new MimeMultipart("related");
+				{
+					MimeBodyPart mimeBodyPart = new MimeBodyPart();
+					//String body = "<H1>Hello</H1><img src=\"cid:logoBlob\">";
+					body = body.replaceAll("[$][{]Logo[}]", "<img src='cid:logoBlob'/>");
+					body = body.replaceAll("[$][{]nickname[}]", nick);
+					body = body.replaceAll("[$][{]QR code[}]", "<img src='cid:qrCodeBlob'/>");
+					mimeBodyPart.setContent(body, "text/html; charset=UTF-8");
+					multipart.addBodyPart(mimeBodyPart);
+				}
+				{
 					/*
 					 * TODO determine the mine type through drive api
 					 */
-						MimeBodyPart mimeBodyPart = new MimeBodyPart();
-						mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
-								activeEvent.getLogoCache(driveManager), "image/png")));
-						mimeBodyPart.setContentID("<logoBlob>");
-						mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
+					MimeBodyPart mimeBodyPart = new MimeBodyPart();
+					mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
+							activeEvent.getLogoCache(driveManager), "image/png")));
+					mimeBodyPart.setContentID("<logoBlob>");
+					mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
 
-						multipart.addBodyPart(mimeBodyPart);
-					}
-					{
-						HttpRequestFactory factory = transport.createRequestFactory();
-						HttpRequest request = factory.buildGetRequest(new GenericUrl(
-								"http://chart.apis.google.com/chart?cht=qr&chs=300x300&chld=H|0&chl=" + uuid));
-						HttpResponse response = request.execute();
+					multipart.addBodyPart(mimeBodyPart);
+				}
+				{
+					HttpRequestFactory factory = transport.createRequestFactory();
+					HttpRequest request = factory.buildGetRequest(new GenericUrl(
+							"http://chart.apis.google.com/chart?cht=qr&chs=300x300&chld=H|0&chl=" + uuid));
+					HttpResponse response = request.execute();
 
-						MimeBodyPart mimeBodyPart = new MimeBodyPart();
-						mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
-								response.getContent(), "image/png")));
-						mimeBodyPart.setContentID("<qrCodeBlob>");
-						mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
+					MimeBodyPart mimeBodyPart = new MimeBodyPart();
+					mimeBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(
+							response.getContent(), "image/png")));
+					mimeBodyPart.setContentID("<qrCodeBlob>");
+					mimeBodyPart.setDisposition(MimeBodyPart.INLINE);
 
-						multipart.addBodyPart(mimeBodyPart);
+					multipart.addBodyPart(mimeBodyPart);
+				}
+				email.setContent(multipart);
+			}
+
+			private void buildMimeMessage(String to, String nick, String body, MimeMessage email)
+					throws MessagingException, IOException, ServiceException {
+
+				JsonParser parser = jsonFactory.createJsonParser(body);
+				EmailJson json = parser.parse(EmailJson.class);
+
+				/*
+				 * don't worry about the subject set by an external editor
+				 */
+//				String subject = json.getSubject();
+//				email.setSubject(subject.replaceAll("[$][{]nickname[}]", nick));
+
+				/*
+				 * usually, won't be able to set cc
+				 */
+//				InternetAddress ccAddress = new InternetAddress(json.getCc());
+//				email.addRecipient(javax.mail.Message.RecipientType.CC, ccAddress);
+
+				List<MimePartJson> relatedJson = json.getMultipartRelated();
+				if (relatedJson != null && relatedJson.size() > 0) {
+					Multipart multipart = new MimeMultipart("related");
+					for (MimePartJson r : relatedJson) {
+						buildMultipart(to, nick, multipart, r);
 					}
 					email.setContent(multipart);
 				}
+
+				MimePartJson alternativeJson = json.getMultipartAlternative();
+				if (alternativeJson != null) {
+					Multipart multipart = new MimeMultipart("alternative");
+					buildMultipart(to, nick, multipart, alternativeJson);
+					email.setContent(multipart);
+				}
+			}
+
+			private void buildMultipart(String to, String nick, Multipart multipart, MimePartJson json)
+					throws MessagingException, IOException, ServiceException {
+
+				MimePartJson alternativeJson = json.getMultipartAlternative();
+				if (alternativeJson != null) {
+					MimeBodyPart part = new MimeBodyPart();
+
+					MimeMultipart multipartAlternative = new MimeMultipart("alternative");
+					buildMultipart(to, nick, multipartAlternative, alternativeJson);
+					part.setContent(multipartAlternative);
+
+					multipart.addBodyPart(part);
+				}
+
+				String text = json.getText();
+				if (text != null) {
+					MimeBodyPart part = new MimeBodyPart();
+					//part.setText(text, "text/plain; charset=UTF-8");
+					text = text.replaceAll("[$][{]nickname[}]", nick);
+					text = text.replaceAll("[$][{]to[}]", to);
+					part.setContent(text, "text/plain; charset=UTF-8");
+					multipart.addBodyPart(part);
+				}
+
+				String html = json.getHtml();
+				if (html != null) {
+					MimeBodyPart part = new MimeBodyPart();
+					html = html.replaceAll("[$][{]nickname[}]", nick);
+					html = html.replaceAll("[$][{]to[}]", to);
+					part.setContent(html, "text/html; charset=UTF-8");
+					multipart.addBodyPart(part);
+				}
+
+				InlineImage jpg = json.getJpg();
+				if (jpg != null) {
+					PicasawebManager picasawebManager = new PicasawebManager(
+							GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
+					String url = picasawebManager.getPhotoUrl(jpg.getgPhotoId());
+
+					HttpRequestFactory factory = transport.createRequestFactory();
+					HttpRequest request = factory.buildGetRequest(new GenericUrl(url));
+					HttpResponse response = request.execute();
+
+					MimeBodyPart part = new MimeBodyPart();
+					part.setContentID(jpg.getCid());
+					part.setDataHandler(new DataHandler(new ByteArrayDataSource(
+							response.getContent(), response.getContentType())));
+					multipart.addBodyPart(part);
+				}
+
+						/*
+						 * TODO other image formats
+						 */
 			}
 		};
 		try {
@@ -339,7 +335,7 @@ public class TicketAPI extends HttpServlet
 			/*
 			 * jsoup to extract text
 			 *
-			 * TODO show the html to user (insert into <head> tag, <base href="https://www.google.com"/>)
+			 * TODO show the html to user (also, insert into <head> tag, <base href="https://www.google.com"/>)
 			 */
 			String message;
 			if (ex.getResponseBody() != null &&

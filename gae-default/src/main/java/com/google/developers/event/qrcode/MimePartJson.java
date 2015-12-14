@@ -2,6 +2,7 @@ package com.google.developers.event.qrcode;
 
 import com.google.api.client.util.Key;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
 public class MimePartJson {
 
 	@Key("multipart/related")
-	private List<MimePartJson> multipartRelated;
+	private List<MimePartJson> multipartRelated = new ArrayList<>();
 
 	@Key("multipart/alternative")
 	private MimePartJson multipartAlternative;
