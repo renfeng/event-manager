@@ -3,6 +3,8 @@ package com.google.developers.event.qrcode;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.*;
 import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.JsonParser;
+import com.google.api.client.json.JsonToken;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.developers.api.CellFeedProcessor;
 import com.google.developers.api.DriveManager;
@@ -183,6 +185,20 @@ public class TicketAPI extends HttpServlet
 					 */
 //					JsonParser parser = jsonFactory.createJsonParser(body);
 //					JsonToken token = parser.nextToken();
+//					if (token==JsonToken.START_OBJECT) {
+//						token = parser.nextToken();
+//						String field = null;
+//						while (token != null) {
+//							switch (token) {
+//								case FIELD_NAME:
+//									field = parser.getText();
+//									if (field.equals("size"))
+//									break;
+//								case VALUE_STRING:
+//									break;
+//							}
+//						}
+//					}
 					email.setContent("TODO", "text/plain");
 				} else {
 					MimeMultipart multipart = new MimeMultipart("related");
