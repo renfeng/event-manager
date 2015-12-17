@@ -969,6 +969,7 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		 * get gplus id
 		 */
 		String gplusId = null;
+		String gmail = null;
 		String emailAddress = null;
 		for (Email email : entry.getEmailAddresses()) {
 			emailAddress = email.getAddress();
@@ -978,12 +979,21 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 			 */
 			emailAddress = normalizeEmailAddress(emailAddress);
 
+			if (emailAddress.endsWith("@gmail.com")) {
+				gmail = emailAddress;
+			}
+
 			gplusId = peopleHaveyouGplusIdMap.get(emailAddress);
-			if (gplusId != null) {
+
+			if (gplusId != null && gmail != null) {
 				break;
 			}
 		}
 		if (gplusId == null) {
+			if (gmail != null) {
+				emailAddress = gmail;
+			}
+
 			logger.info("retrieving G+ ID from Google Contacts API");
 			for (Website w : entry.getWebsites()) {
 				String href = w.getHref();

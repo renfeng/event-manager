@@ -323,9 +323,12 @@ public class TicketAPI extends HttpServlet
 					multipart.addBodyPart(part);
 				}
 
-						/*
-						 * TODO other image formats
-						 */
+				/*
+				 * TODO other image formats
+				 *
+				 * TODO Email Tracking - Measurement Protocol | Analytics Measurement Protocol | Google Developers
+				 * https://developers.google.com/analytics/devguides/collection/protocol/v1/email
+				 */
 			}
 		};
 		try {

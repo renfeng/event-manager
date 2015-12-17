@@ -1,7 +1,6 @@
 package com.google.developers.event.qrcode;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonGenerator;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -38,13 +37,11 @@ public class RegistrationAPI extends HttpServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(RegistrationAPI.class);
 
-	private final HttpTransport transport;
 	private final JsonFactory jsonFactory;
 	private final OAuth2Utils oauth2Utils;
 
 	@Inject
-	public RegistrationAPI(HttpTransport transport, JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
-		this.transport = transport;
+	public RegistrationAPI(JsonFactory jsonFactory, OAuth2Utils oauth2Utils) {
 		this.jsonFactory = jsonFactory;
 		this.oauth2Utils = oauth2Utils;
 	}
