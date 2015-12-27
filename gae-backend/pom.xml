@@ -9,11 +9,11 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>event-manager-gae-ranking</artifactId>
+	<artifactId>event-manager-gae-backend</artifactId>
 
 	<packaging>war</packaging>
 
-	<name>event-manager-gae-ranking</name>
+	<name>event-manager-gae-backend</name>
 
 	<description></description>
 
@@ -51,7 +51,7 @@
 		<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
 		<!-- <defaultGoal>appengine:start_module_version</defaultGoal> -->
 
-		<finalName>gae-ranking</finalName>
+		<finalName>gae-backend</finalName>
 
 		<plugins>
 
@@ -89,7 +89,7 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<build>
-				<defaultGoal>install</defaultGoal>
+				<defaultGoal>appengine:devserver</defaultGoal>
 			</build>
 			<properties>
 				<guice.filter>com.google.developers.event.http.DevelopersSharedFilter</guice.filter>
@@ -121,14 +121,5 @@
 			<artifactId>event-manager-shared</artifactId>
 		</dependency>
 	</dependencies>
-
-	<!-- mvn site -->
-	<reporting>
-		<plugins>
-			<!-- not supports java 7? -->
-			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.6</version> </plugin> -->
-		</plugins>
-	</reporting>
 
 </project>

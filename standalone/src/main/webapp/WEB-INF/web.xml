@@ -1,42 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app id="wormhole" version="2.5"
-         xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-    <!-- buildNumber will be substituted by maven -->
-    <display-name>${project.name} (${buildNumber})</display-name>
+	<!-- buildNumber will be substituted by maven -->
+	<display-name>${project.name} (${buildNumber})</display-name>
 
-    <filter>
-        <filter-name>guiceFilter</filter-name>
-        <filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>guiceFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
+	<filter>
+		<filter-name>guiceFilter</filter-name>
+		<filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>guiceFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 
-    <listener>
-        <listener-class>com.google.developers.event.StandaloneStartupListener</listener-class>
-    </listener>
+	<listener>
+		<listener-class>com.google.developers.event.StandaloneStartupListener</listener-class>
+	</listener>
 
-    <session-config>
-        <session-timeout>1</session-timeout>
-    </session-config>
+	<session-config>
+		<session-timeout>1</session-timeout>
+	</session-config>
 
-    <error-page>
-        <exception-type>java.lang.Exception</exception-type>
-        <location>/api/5xx/</location>
-    </error-page>
+	<error-page>
+		<exception-type>java.lang.Exception</exception-type>
+		<location>/api/5xx/</location>
+	</error-page>
 
-    <!-- <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>securedapp</web-resource-name>
-            <url-pattern>/*</url-pattern>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint> -->
+	<!-- <security-constraint>
+		<web-resource-collection>
+			<web-resource-name>securedapp</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint> -->
 
 </web-app>

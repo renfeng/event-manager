@@ -12,7 +12,7 @@
     </module>
     <module>
         <web>
-            <web-uri>event-manager-gae-ranking-0.0.1-SNAPSHOT.war</web-uri>
+            <web-uri>event-manager-gae-backend-0.0.1-SNAPSHOT.war</web-uri>
             <context-root>ranking</context-root>
         </web>
     </module>

@@ -88,7 +88,7 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<build>
-				<defaultGoal>install</defaultGoal>
+				<defaultGoal>appengine:devserver</defaultGoal>
 			</build>
 		</profile>
 		<profile>

@@ -14,11 +14,6 @@ import java.io.IOException;
 @Singleton
 public class UnauthorizedServlet extends HttpServlet {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 2426034482959015155L;
-
 	private final JsonFactory jsonFactory;
 
 	@Inject

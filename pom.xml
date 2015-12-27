@@ -313,7 +313,7 @@
 	<modules>
 		<module>shared</module>
 		<module>gae-default</module>
-		<module>gae-ranking</module>
+		<module>gae-backend</module>
 		<module>standalone</module>
 	</modules>
 

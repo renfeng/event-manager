@@ -16,11 +16,6 @@ import java.io.IOException;
 public class ModuleStartServlet extends HttpServlet implements
 		LifecycleManager.ShutdownHook {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 3709624036810142372L;
-
 	private static final Logger logger = LoggerFactory
 			.getLogger(ModuleStartServlet.class);
 
