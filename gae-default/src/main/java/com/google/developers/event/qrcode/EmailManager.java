@@ -29,7 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,8 +41,7 @@ import java.util.regex.Pattern;
  */
 public class EmailManager implements MetaSpreadsheet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(EmailManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(EmailManager.class);
 
 	/*
 	 * image/jpeg; name="IMG_20151128_182644.jpg"
@@ -58,6 +60,12 @@ public class EmailManager implements MetaSpreadsheet {
 	public void receive(String requestBody, String appId)
 			throws IOException, MessagingException, ServiceException {
 
+		/*
+		 * this is for debugging
+		 */
+		MemcacheService cache = MemcacheServiceFactory.getMemcacheService();
+		cache.put(this.getClass().getCanonicalName(), requestBody);
+
 		PicasawebManager picasawebManager = new PicasawebManager(
 				GoogleOAuth2.getGlobalCredential(transport, jsonFactory));
 		SpreadsheetManager spreadsheetManager = new SpreadsheetManager(
@@ -72,11 +80,13 @@ public class EmailManager implements MetaSpreadsheet {
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 
-		MemcacheService cache = MemcacheServiceFactory.getMemcacheService();
-		cache.put(this.getClass().getCanonicalName(), requestBody);
-
 		//logger.info("request body: " + requestBody);
 		MimeMessage message = new MimeMessage(session, new ByteArrayInputStream(requestBody.getBytes("UTF-8")));
+
+		/*
+		 * TODO check if from address is privileged
+		 */
+		Address[] from = message.getFrom();
 
 		Address[] to = message.getRecipients(Message.RecipientType.TO);
 		Address[] cc = message.getRecipients(Message.RecipientType.CC);
@@ -96,7 +106,7 @@ public class EmailManager implements MetaSpreadsheet {
 		generator.writeNumber(message.getSize());
 
 		generator.writeFieldName("from");
-		generator.writeString(Arrays.toString(message.getFrom()));
+		generator.writeString(StringUtils.join(from, ","));
 
 		if (!toList.isEmpty()) {
 			generator.writeFieldName("to");

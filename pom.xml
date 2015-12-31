@@ -206,8 +206,8 @@
 							<jvmFlag>-Dhttps.proxyPort=${env.PROXY_PORT}</jvmFlag>
 
 							<!-- https://github.com/HotswapProjects/HotswapAgent -->
-							<!--<jvmFlag>-XXaltjvm=dcevm</jvmFlag>-->
-							<!--<jvmFlag>-javaagent:/opt/hotswap-agent.jar</jvmFlag>-->
+							<jvmFlag>-XXaltjvm=dcevm</jvmFlag>
+							<jvmFlag>-javaagent:/opt/hotswap-agent.jar</jvmFlag>
 
 							<!-- hrd -->
 							<jvmFlag>-Ddatastore.default_high_rep_job_policy_unapplied_job_pct=50</jvmFlag>
