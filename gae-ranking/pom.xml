@@ -20,7 +20,7 @@
 	<url>http://developers.dushu.hu/</url>
 
 	<prerequisites>
-		<maven>2.2.1</maven>
+		<maven>3.0</maven>
 	</prerequisites>
 
 	<developers>
