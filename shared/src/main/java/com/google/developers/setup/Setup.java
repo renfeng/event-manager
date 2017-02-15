@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,8 +57,8 @@ public class Setup implements PropertiesContant {
 	static void refreshPeopleHaveYou() throws IOException, JSONException, InterruptedException {
 
 		Map<String, String> incoming = new HashMap<>();
-		extract(FileUtils.readFileToString(new File(PEOPLE_HTML)), incoming);
-		extract(FileUtils.readFileToString(new File(PEOPLE_HTML_2)), incoming);
+		extract(FileUtils.readFileToString(new File(PEOPLE_HTML), Charset.defaultCharset()), incoming);
+		extract(FileUtils.readFileToString(new File(PEOPLE_HTML_2), Charset.defaultCharset()), incoming);
 
 		Map<String, String> existing = new HashMap<>();
 
@@ -66,7 +67,7 @@ public class Setup implements PropertiesContant {
 		 */
 		File file = new File(PEOPLE_PROPERTIES);
 		if (file.isFile()) {
-			List<String> lines = FileUtils.readLines(file);
+			List<String> lines = FileUtils.readLines(file, Charset.defaultCharset());
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
 				/*
@@ -165,7 +166,8 @@ public class Setup implements PropertiesContant {
 			builder.append(StringEscapeUtils.escapeJava(id) + KEY_VALUE_DELIMITER + email + "\n");
 		}
 
-		FileUtils.write(new File("src/main/resources/peopleHaveyou.properties"), builder.toString());
+		FileUtils.write(new File("src/main/resources/peopleHaveyou.properties"), builder.toString(),
+				Charset.defaultCharset());
 	}
 
 	static void extract(String html, Map<String, String> incoming) throws JSONException {

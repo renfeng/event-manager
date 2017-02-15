@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -894,7 +895,8 @@ public class ContactManager extends ServiceManager<ContactsService> implements P
 		Map<String, String> peopleHaveyouGplusIdMap = new HashMap<>();
 		{
 			List<String> lines = IOUtils.readLines(
-					Thread.currentThread().getContextClassLoader().getResourceAsStream("peopleHaveyou.properties"));
+					Thread.currentThread().getContextClassLoader().getResourceAsStream("peopleHaveyou.properties"),
+					Charset.defaultCharset());
 			for (String line : lines) {
 				int index = line.indexOf(KEY_VALUE_DELIMITER);
 				/*

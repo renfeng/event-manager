@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 /**
  * Created by renfeng on 9/27/15.
@@ -38,6 +39,6 @@ public class DriveManagerTest {
 		HttpRequestFactory factory = transport.createRequestFactory();
 		HttpRequest request = factory.buildGetRequest(new GenericUrl(downloadUrl));
 		HttpResponse response = request.execute();
-		System.out.println(IOUtils.toString(response.getContent()));
+		System.out.println(IOUtils.toString(response.getContent(), Charset.defaultCharset()));
 	}
 }

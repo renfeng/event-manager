@@ -2,8 +2,8 @@ package com.google.developers.event.mail;
 
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.developers.event.qrcode.EmailManager;
 import com.google.developers.event.MetaSpreadsheet;
+import com.google.developers.event.qrcode.EmailManager;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 @Singleton
 public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet {
@@ -47,7 +48,7 @@ public class MailReceiverServlet extends HttpServlet implements MetaSpreadsheet 
 		logger.info("address: " + address);
 
 		try {
-			emailManager.receive(IOUtils.toString(req.getInputStream()),
+			emailManager.receive(IOUtils.toString(req.getInputStream(), Charset.defaultCharset()),
 					getServletContext().getInitParameter("appengine.app.id"));
 		} catch (MessagingException e) {
 			logger.error("Error processing inbound message", e);

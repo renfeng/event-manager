@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 @Singleton
 public class EventsAPI extends HttpServlet {
@@ -54,7 +55,7 @@ public class EventsAPI extends HttpServlet {
 				"https://developers.google.com/events/" + eventId);
 		HttpRequest request = factory.buildGetRequest(url);
 		HttpResponse response = request.execute();
-		String html = IOUtils.toString(response.getContent());
+		String html = IOUtils.toString(response.getContent(), Charset.defaultCharset());
 
 		Document document = Jsoup.parse(html);
 
@@ -92,7 +93,7 @@ public class EventsAPI extends HttpServlet {
 		request.getHeaders().set("accept-language", "en-US,en;");
 
 		HttpResponse response = request.execute();
-		String html = IOUtils.toString(response.getContent());
+		String html = IOUtils.toString(response.getContent(), Charset.defaultCharset());
 
 		Document document = Jsoup.parse(html);
 
