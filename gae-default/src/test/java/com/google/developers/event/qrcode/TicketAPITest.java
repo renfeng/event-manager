@@ -25,7 +25,7 @@ public class TicketAPITest {
 
 		JsonFactory jsonFactory = injector.getInstance(JsonFactory.class);
 		JsonParser parser = jsonFactory.createJsonParser(IOUtils.toString(
-				new FileReader("src/test/resources/testmail.json")));
+				new FileReader("src/test/resources/testmail.json.1")));
 		EmailJson json = parser.parse(EmailJson.class);
 
 	}

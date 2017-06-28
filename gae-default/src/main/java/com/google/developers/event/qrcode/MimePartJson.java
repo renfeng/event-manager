@@ -11,7 +11,7 @@ import java.util.List;
 public class MimePartJson {
 
 	@Key("multipart/related")
-	private List<MimePartJson> multipartRelated = new ArrayList<>();
+	private List<MimePartJson> multipartRelated;
 
 	@Key("multipart/alternative")
 	private MimePartJson multipartAlternative;

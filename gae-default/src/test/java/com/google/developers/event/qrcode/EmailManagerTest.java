@@ -3,7 +3,6 @@ package com.google.developers.event.qrcode;
 import com.google.appengine.tools.development.testing.LocalMemcacheServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.developers.event.DevelopersSharedModule;
-import com.google.developers.event.qrcode.EmailManager;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
